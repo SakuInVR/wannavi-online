@@ -30,16 +30,16 @@ npm run build
 
 - [x] VercelでGitHubリポジトリをImportする
 - [x] Framework PresetがNext.jsになっていることを確認する
-- [ ] Build Commandが `npm run build` であることを確認する
+- [x] Build Commandが `npm run build` であることを確認する
 - [x] 初回デプロイが成功することを確認する
+- [ ] 重複プロジェクト `wannavi-online` のGit連携を切る、または削除する
 
 ## 3. Environment Variables
 
 VercelのEnvironment Variablesに設定します。
 
 ```bash
-NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXX
-NEXT_PUBLIC_GA_MEASUREMENT_ID=G-GKHT28VF83
+NEXT_PUBLIC_ADSENSE_DEFAULT_SLOT=1234567890
 ```
 
 設定後は再デプロイします。
@@ -89,31 +89,35 @@ SMOKE_BASE_URL=https://www.wannavi.online npm run smoke:site
 ## 7. Google Analytics
 
 - [x] GA4プロパティを作成する
-- [x] `NEXT_PUBLIC_GA_MEASUREMENT_ID` を設定する
+- [x] `G-GKHT28VF83` が本番に出ていることを確認する
 - [ ] リアルタイムレポートでアクセスが計測されることを確認する
 - [ ] `affiliate_cta_click` が送信されることを確認する
 - [ ] `tool_recommendation_click` が送信されることを確認する
 
 ## 8. AdSense
 
-- [ ] AdSenseにサイトを追加する
-- [ ] `NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT` を設定する
-- [ ] `https://wannavi.online/ads.txt` に `pub-...` が出ることを確認する
-- [ ] 審査に出す前に、最低限の独自記事と固定ページを確認する
+- [x] AdSense publisher meta tagを設定する
+- [x] `https://www.wannavi.online/ads.txt` に `pub-9852760004523512` が出ることを確認する
+- [x] 審査に出す前に、最低限の独自記事と固定ページを確認する
+- [ ] AdSenseにサイトを追加し審査を通す
 - [ ] 承認後、広告スロットIDを `AdSlot` に設定する
 
 ## 9. Affiliate
 
 - [ ] Amazonアソシエイトに申請する
-- [ ] 楽天アフィリエイトを準備する
-- [ ] ASPに登録する
-- [ ] Vercel Environment Variablesに `AFFILIATE_AI_TOOLS_URL` を設定する
-- [ ] Vercel Environment Variablesに `AFFILIATE_DTM_STARTER_KIT_URL` を設定する
-- [ ] Vercel Environment Variablesに `AFFILIATE_VR_CREATOR_KIT_URL` を設定する
-- [ ] Vercel Environment Variablesに `AFFILIATE_INSTRUMENT_STARTER_KIT_URL` を設定する
-- [ ] 設定後にVercelで再デプロイする
-- [ ] `/go/ai-tools`、`/go/dtm-starter-kit`、`/go/vr-creator-kit`、`/go/instrument-starter-kit` が実リンクへリダイレクトされることを確認する
-- [ ] PR表記が表示されることを確認する
+- [x] もしもアフィリエイトの楽天市場リンクを準備する
+- [x] A8の動画教材エディター養成コースリンクを準備する
+- [x] ASPに登録する
+- [x] Vercel Environment Variablesに `AFFILIATE_AI_TOOLS_URL` を設定する
+- [x] Vercel Environment Variablesに `AFFILIATE_DTM_STARTER_KIT_URL` を設定する
+- [x] Vercel Environment Variablesに `AFFILIATE_VR_CREATOR_KIT_URL` を設定する
+- [x] Vercel Environment Variablesに `AFFILIATE_INSTRUMENT_STARTER_KIT_URL` を設定する
+- [x] Vercel Environment Variablesに `AFFILIATE_RAKUTEN_MARKETPLACE_URL` を設定する
+- [x] Vercel Environment Variablesに `AFFILIATE_VIDEO_EDITOR_TRAINING_URL` を設定する
+- [x] 設定後にVercelで再デプロイする
+- [x] `/go/*` が実リンクへリダイレクトされることを `npm run affiliate:check` で確認する
+- [x] PR表記が表示されることを確認する
+- [ ] 記事クラスタごとに商品別ASPリンクを増やす
 
 コード側のCTAは、記事カテゴリに応じて `/go/...` に自動接続されます。
 実リンクはコードへ直書きせず、VercelのEnvironment Variablesで差し替えます。
@@ -126,15 +130,17 @@ AdSense審査前の最低ライン:
 - [ ] DTMカテゴリ: 4記事
 - [ ] VRクリエイターカテゴリ: 4記事
 - [ ] 楽器演奏者カテゴリ: 4記事
-- [ ] 収益記事: 各カテゴリ1記事以上。frontmatterの `affiliateIntent: "high"` で管理する
-- [ ] 運営者情報、プライバシー、お問い合わせ、広告PR表記が埋まっている
+- [x] 動画クリエイターカテゴリ: 4記事
+- [x] 収益記事: 各カテゴリ1記事以上。frontmatterの `affiliateIntent: "high"` で管理する
+- [x] 運営者情報、プライバシー、お問い合わせ、広告PR表記が埋まっている
+- [x] `npm run adsense:check` が本番で通る
 
 ## 11. Routine
 
 記事を追加するたびに実行:
 
 ```bash
-npm run preflight
+npm run ready:publish
 ```
 
 内訳:
@@ -145,6 +151,7 @@ npm run validate:video-research
 npm run audit:site
 npm run lint
 npm run build
+npm run affiliate:env
 ```
 
 ローカルまたは公開URLの主要ページ確認:
@@ -157,6 +164,12 @@ npm run smoke:site
 
 ```bash
 npm run production:check
+```
+
+push後の本番確認:
+
+```bash
+npm run production:verify
 ```
 
 記事公開後に見るもの:

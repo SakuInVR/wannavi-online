@@ -24,11 +24,10 @@ http://localhost:3000
 https://www.wannavi.online
 ```
 
-Google AnalyticsはVercelのEnvironment Variablesで設定します。AdSense承認後、同じ場所にクライアントIDを追加します。
+Google AnalyticsとAdSense publisher IDは `src/lib/site.ts` で管理しています。AdSense承認後に広告ユニットを作ったら、VercelのEnvironment Variablesへ広告スロットIDを追加します。
 
 ```bash
-NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXX
-NEXT_PUBLIC_GA_MEASUREMENT_ID=G-GKHT28VF83
+NEXT_PUBLIC_ADSENSE_DEFAULT_SLOT=1234567890
 ```
 
 Search Consoleの所有権確認は、`public/google2113cf3ce542cca7.html` のHTMLファイル方式で対応しています。
@@ -43,10 +42,14 @@ Search Consoleの所有権確認は、`public/google2113cf3ce542cca7.html` のHT
 
 詳しい記事方針、`affiliateIntent`、監査条件の意味は [CONTENT_GUIDE.md](./CONTENT_GUIDE.md) にまとめています。
 
-1. `ARTICLE_TEMPLATE.mdx` をコピーする
-2. `content/articles/new-article-slug.mdx` として保存する
-3. frontmatter の `title`, `description`, `category`, `publishedAt` を埋める
-4. 本文内に必要なら収益導線コンポーネントを置く
+記事は、YouTube動画3本を参考にした具体例ベースで作ります。
+
+1. `npm run new:article` で下書きを作る
+2. タイトルに合うYouTube動画3本を選ぶ
+3. `npm run analyze:youtube` で分析JSONを作る
+4. `content/articles/*.mdx` に具体例、つまずき、買う/買わない判断を書く
+5. `npm run publish:article` で公開状態にする
+6. `npm run ready:publish` を通してからpushする
 
 記事ページには、PR表記、カテゴリ別CTA、記事下広告枠が自動で入ります。通常の記事は本文を書くところから始めればOKです。
 新規記事は `draft: true` で作られます。公開するときは `draft: false` に変更してください。
@@ -62,6 +65,12 @@ npm run new:article -- "AI Engineer Portfolio Roadmap" ai-engineer
 
 ```bash
 npm run new:article -- "AIエンジニアになりたい人の教材選び" ai-engineer ai-engineer-study-tools
+```
+
+動画リサーチ:
+
+```bash
+npm run analyze:youtube -- "ai-engineer-study-tools" "https://www.youtube.com/watch?v=..." "https://www.youtube.com/watch?v=..." "https://www.youtube.com/watch?v=..."
 ```
 
 下書きを公開状態にする:
@@ -93,13 +102,16 @@ npm run report:content
 アップ前チェック:
 
 ```bash
-npm run preflight
+npm run ready:publish
 ```
 
 個別に実行する場合:
 
 ```bash
 npm run validate:content
+npm run validate:video-research
+npm run affiliate:products
+npm run affiliate:env
 npm run audit:site
 npm run lint
 npm run build
@@ -129,6 +141,12 @@ npm run production:check
 ASP登録前はアフィリエイトURLが未設定なので失敗して正常です。
 シェル環境変数だけでなく、`.env.local` も読み取ります。
 
+push後に本番反映をまとめて確認する場合:
+
+```bash
+npm run production:verify
+```
+
 GitHubに置く場合は、同じチェックが `.github/workflows/ci.yml` でも走ります。
 
 使えるカテゴリ:
@@ -138,6 +156,7 @@ ai-engineer
 dtm
 vr-creator
 instrument-player
+video-creator
 ```
 
 ## MDXで使える収益コンポーネント
@@ -176,6 +195,7 @@ instrument-player
 - `feed.xml`
 - `ads.txt`
 - Google Analytics
+- Google AdSense publisher meta/script
 - Search Console verification
 - Monetization click events
 - Centralized outbound link redirects
@@ -197,8 +217,7 @@ instrument-player
 ## 公開前に差し替えるもの
 
 - Vercel Environment Variablesの `AFFILIATE_*_URL`
-- `.env.local` の `NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT`
-- `AdSlot` の `adSlotId`
+- AdSense承認後の `NEXT_PUBLIC_ADSENSE_DEFAULT_SLOT`
 - 必要に応じて `src/lib/site.ts` の `contactEmail`
 
 ## デプロイ手順の目安
@@ -209,7 +228,7 @@ instrument-player
 2. Vercelの自動デプロイが通ることを確認する
 3. Search Consoleに `https://www.wannavi.online/sitemap.xml` を送信する
 4. GA4のリアルタイム計測を確認する
-5. AdSense審査後、`NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT` を設定する
+5. AdSense審査後、広告ユニットを作り `NEXT_PUBLIC_ADSENSE_DEFAULT_SLOT` を設定する
 6. ASP登録後、Vercel Environment Variablesの `AFFILIATE_*_URL` に実リンクを設定する
 
 `vercel.json` では、`feed.xml` と `ads.txt` のキャッシュ、基本的なセキュリティヘッダーを設定しています。
@@ -226,7 +245,7 @@ AdSense用ads.txt:
 https://www.wannavi.online/ads.txt
 ```
 
-`NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT=ca-pub-...` を設定してビルドすると、`ads.txt` に `pub-...` が自動で入ります。
+AdSense publisher IDは `src/lib/site.ts` の `adsenseClient` から `ads.txt` に自動反映されます。
 
 ## 収益化の基本導線
 
@@ -249,6 +268,8 @@ AFFILIATE_AI_TOOLS_URL
 AFFILIATE_DTM_STARTER_KIT_URL
 AFFILIATE_VR_CREATOR_KIT_URL
 AFFILIATE_INSTRUMENT_STARTER_KIT_URL
+AFFILIATE_RAKUTEN_MARKETPLACE_URL
+AFFILIATE_VIDEO_EDITOR_TRAINING_URL
 ```
 
 外部リンクIDと環境変数名は `src/lib/outbound-links.ts` に集約しています。未設定の `/go/...` は広告PR表記ページへリダイレクトされます。
