@@ -5,7 +5,13 @@ export type OutboundLink = {
   label: string;
   envKey: string;
   fallbackUrl?: string;
-  category: "ai-engineer" | "dtm" | "vr-creator" | "instrument-player" | "general";
+  category:
+    | "ai-engineer"
+    | "dtm"
+    | "vr-creator"
+    | "instrument-player"
+    | "video-creator"
+    | "general";
 };
 
 export const outboundLinks: OutboundLink[] = [

@@ -18,7 +18,7 @@
     "id": "video-editor-training",
     "label": "動画教材エディター養成コース",
     "envKey": "AFFILIATE_VIDEO_EDITOR_TRAINING_URL",
-    "category": "ai-engineer",
+    "category": "video-creator",
     "asp": "a8",
     "articleSlugs": ["video-editor-training-start"],
     "memo": "A8で広告リンク作成画面を確認済み。既存記事に無理に差し込むより、動画教材エディターになりたい人向けの記事を商品起点で作る候補。"

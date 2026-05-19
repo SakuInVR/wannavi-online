@@ -37,6 +37,13 @@ export const monetizationOffers: Record<CategorySlug, MonetizationOffer> = {
     label: "楽器練習の候補を見る",
     href: outboundHref("instrument-starter-kit"),
   },
+  "video-creator": {
+    title: "動画編集を始めるための学習環境",
+    description:
+      "編集ソフト、教材動画づくり、添削、案件獲得サポートを、目標期間に合わせて整理します。",
+    label: "動画編集の候補を見る",
+    href: outboundHref("video-editor-training"),
+  },
 };
 
 export function getMonetizationOffer(category: string) {

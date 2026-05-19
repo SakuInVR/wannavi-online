@@ -45,6 +45,13 @@ export const categories = [
       "大人の練習習慣、最初の楽器選び、上達の記録を続けるための実践ナビ。",
     accent: "from-violet-500 to-indigo-400",
   },
+  {
+    slug: "video-creator",
+    title: "動画クリエイターになりたい",
+    description:
+      "動画編集、教材動画、案件獲得、学習環境選びを現実的に進める実践ナビ。",
+    accent: "from-orange-500 to-pink-400",
+  },
 ] as const;
 
 export type CategorySlug = (typeof categories)[number]["slug"];

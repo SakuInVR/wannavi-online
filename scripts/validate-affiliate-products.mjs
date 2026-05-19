@@ -8,6 +8,7 @@ const allowedCategories = new Set([
   "dtm",
   "vr-creator",
   "instrument-player",
+  "video-creator",
   "general",
 ]);
 const idPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
