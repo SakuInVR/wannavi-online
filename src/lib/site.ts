@@ -1,10 +1,10 @@
 export const siteConfig = {
   name: "Wanna Navi",
   domain: "wannavi.online",
-  url: "https://wannavi.online",
-  contactEmail: "contact@wannavi.online",
+  url: "https://www.wannavi.online",
+  contactEmail: "info@wannavi.online",
   description:
-    "なりたい自分までの最初の一歩を、ロードマップと道具選びでナビゲートする実践メディア。",
+    "なりたい自分へ進むための、実践ロードマップと道具選びをまとめるメディア。",
 };
 
 export const staticPages = [
@@ -26,14 +26,14 @@ export const categories = [
     slug: "dtm",
     title: "DTMerになりたい",
     description:
-      "最初の機材、作曲の練習、音作りまで、音を形にするための実践ナビ。",
+      "最初の機材、作曲の練習、曲作りまで、音を形にするための実践ナビ。",
     accent: "from-fuchsia-500 to-rose-400",
   },
   {
     slug: "vr-creator",
     title: "VRクリエイターになりたい",
     description:
-      "VRChat、アバター、Quest対応、ワールド制作のつまずきを攻略するガイド。",
+      "VRChat、アバター、Quest対応、ワールド制作のつまずきを減らすガイド。",
     accent: "from-emerald-500 to-lime-400",
   },
 ] as const;

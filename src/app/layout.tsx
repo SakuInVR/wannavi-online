@@ -86,7 +86,7 @@ export default function RootLayout({
           <div className="mx-auto max-w-6xl">
             <p className="text-lg font-black">Wanna Navi</p>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-              なりたい自分までの最初の一歩を、ロードマップと道具選びでナビゲートします。
+              なりたい自分へ進むための最初の一歩を、ロードマップと道具選びでナビゲートします。
             </p>
             <nav className="mt-6 flex flex-wrap gap-4 text-sm font-bold text-slate-300">
               {staticPages.map((page) => (

@@ -14,7 +14,7 @@ export const outboundLinks: OutboundLink[] = [
   },
   {
     id: "dtm-starter-kit",
-    label: "DTM初心者機材候補",
+    label: "DTM初心者向け機材候補",
     url: "",
     category: "dtm",
   },
