@@ -22,7 +22,7 @@ export function ToolRecommendation({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
-            おすすめ道具
+            おすすめ
           </p>
           <h3 className="mt-2 text-xl font-bold text-slate-950">{name}</h3>
           <p className="mt-2 text-sm leading-6 text-slate-600">{reason}</p>
@@ -44,7 +44,7 @@ export function ToolRecommendation({
           })
         }
       >
-        候補を見る
+        詳しく見る
       </a>
     </div>
   );

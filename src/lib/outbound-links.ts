@@ -17,25 +17,25 @@ export type OutboundLink = {
 export const outboundLinks: OutboundLink[] = [
   {
     id: "ai-tools",
-    label: "AI開発ツール候補",
+    label: "AI開発ツール・学習サービス",
     envKey: "AFFILIATE_AI_TOOLS_URL",
     category: "ai-engineer",
   },
   {
     id: "dtm-starter-kit",
-    label: "DTM初心者向け機材候補",
+    label: "DTM初心者向け機材",
     envKey: "AFFILIATE_DTM_STARTER_KIT_URL",
     category: "dtm",
   },
   {
     id: "vr-creator-kit",
-    label: "VR制作環境候補",
+    label: "VR制作環境",
     envKey: "AFFILIATE_VR_CREATOR_KIT_URL",
     category: "vr-creator",
   },
   {
     id: "instrument-starter-kit",
-    label: "楽器練習スタート候補",
+    label: "楽器練習スターター",
     envKey: "AFFILIATE_INSTRUMENT_STARTER_KIT_URL",
     category: "instrument-player",
   },

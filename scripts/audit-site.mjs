@@ -18,6 +18,8 @@ const requiredFiles = [
   "src/app/feed.xml/route.ts",
   "src/app/ads.txt/route.ts",
   "src/components/AffiliateCTA.tsx",
+  "src/components/AdCreativeCard.tsx",
+  "src/components/ProductAd.tsx",
   "src/components/ToolRecommendation.tsx",
   "src/components/RelatedArticles.tsx",
   "src/components/TableOfContents.tsx",
@@ -27,6 +29,7 @@ const requiredFiles = [
   "src/components/DisclosureNote.tsx",
   "src/components/MonetizationPanel.tsx",
   "src/lib/monetization.ts",
+  "src/lib/ad-creatives.ts",
   "src/lib/outbound-links.ts",
   "src/lib/structured-data.ts",
   "src/lib/analytics.ts",
@@ -120,7 +123,7 @@ const robots = read("src/app/robots.ts");
 assert(robots.includes("/go/"), "robots.ts does not disallow outbound redirect routes", failures);
 
 const articlePage = read("src/app/articles/[slug]/page.tsx");
-assert(articlePage.includes("DisclosureNote"), "Article page does not auto-render disclosure", failures);
+assert(articlePage.includes("ProductAd"), "Article page does not expose image ad component to MDX", failures);
 assert(articlePage.includes("TableOfContents"), "Article page does not auto-render table of contents", failures);
 assert(articlePage.includes("MonetizationPanel"), "Article page does not auto-render monetization panel", failures);
 assert(articlePage.includes("AdSlot"), "Article page does not auto-render ad slot", failures);
@@ -135,6 +138,11 @@ assert(articleCard.includes("/tags/"), "Article cards do not link tags to tag pa
 
 const monetization = read("src/lib/monetization.ts");
 assert(monetization.includes("outboundHref"), "Monetization offers do not use centralized outbound links", failures);
+
+const affiliateCta = read("src/components/AffiliateCTA.tsx");
+const adCreativeCard = read("src/components/AdCreativeCard.tsx");
+assert(affiliateCta.includes("PR"), "Affiliate CTA does not include PR labeling", failures);
+assert(adCreativeCard.includes("PR"), "Image ad card does not include PR labeling", failures);
 
 const outboundLinks = read("src/lib/outbound-links.ts");
 assert(outboundLinks.includes("ai-tools"), "Outbound link registry is missing AI offer", failures);

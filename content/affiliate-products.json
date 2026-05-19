@@ -12,15 +12,30 @@
       "instrument-first-instrument-guide",
       "instrument-digital-piano-guide"
     ],
-    "memo": "もしもアフィリエイトで提携中。楽器、DTM機材、VR機材、PC周辺機器などの物販導線に使う。報酬率は画面確認時点で2%。"
+    "memo": "もしもアフィリエイトで提携中。楽器、DTM機材、VR機材、PC周辺機器などの物販導線に使う。"
   },
   {
     "id": "video-editor-training",
-    "label": "動画教材エディター養成コース",
+    "label": "動画編集者向け学習コース",
     "envKey": "AFFILIATE_VIDEO_EDITOR_TRAINING_URL",
     "category": "video-creator",
     "asp": "a8",
     "articleSlugs": ["video-editor-training-start"],
-    "memo": "A8で広告リンク作成画面を確認済み。既存記事に無理に差し込むより、動画教材エディターになりたい人向けの記事を商品起点で作る候補。"
+    "memo": "A8で広告リンク作成画面を確認済み。動画教材エディターになりたい人向けの記事を商品起点で作る候補。"
+  },
+  {
+    "id": "ai-learning-tools",
+    "label": "AI開発学習・制作ツール",
+    "envKey": "AFFILIATE_AI_TOOLS_URL",
+    "category": "ai-engineer",
+    "asp": "other",
+    "articleSlugs": [
+      "ai-engineer-ai-editor-guide",
+      "ai-engineer-api-cost-guide",
+      "ai-engineer-first-month",
+      "ai-engineer-local-ai-pc-guide",
+      "ai-engineer-tools-first"
+    ],
+    "memo": "AIエンジニアカテゴリの暫定商品枠。ASPで画像広告素材が取れたら content/ad-creatives.json に追加する。"
   }
 ]

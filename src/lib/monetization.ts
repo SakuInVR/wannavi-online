@@ -10,9 +10,9 @@ export type MonetizationOffer = {
 
 export const monetizationOffers: Record<CategorySlug, MonetizationOffer> = {
   "ai-engineer": {
-    title: "AI開発を始めるための道具リスト",
+    title: "AI開発を始めるための学習・制作環境",
     description:
-      "AIエディタ、学習教材、ホスティング、開発PCまわりを、最初の1ヶ月で使う順に整理します。",
+      "AIエディタ、学習教材、ホスティング、開発PCまわりを、最初の1ヶ月で使いやすい順に整理します。",
     label: "AI開発の候補を見る",
     href: outboundHref("ai-tools"),
   },
@@ -26,7 +26,7 @@ export const monetizationOffers: Record<CategorySlug, MonetizationOffer> = {
   "vr-creator": {
     title: "VR制作を始めるための基本セット",
     description:
-      "VR機器、Unity環境、アバター制作まわりの道具を、つまずきにくい順番で整理します。",
+      "VR機材、Unity環境、アバター制作まわりの道具を、つまずきにくい順番で整理します。",
     label: "VR制作の候補を見る",
     href: outboundHref("vr-creator-kit"),
   },
@@ -40,7 +40,7 @@ export const monetizationOffers: Record<CategorySlug, MonetizationOffer> = {
   "video-creator": {
     title: "動画編集を始めるための学習環境",
     description:
-      "編集ソフト、教材動画づくり、添削、案件獲得サポートを、目標期間に合わせて整理します。",
+      "編集ソフト、教材動画づくり、案件獲得サポートを、目標時期に合わせて整理します。",
     label: "動画編集の候補を見る",
     href: outboundHref("video-editor-training"),
   },

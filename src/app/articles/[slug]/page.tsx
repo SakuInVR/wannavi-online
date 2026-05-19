@@ -9,9 +9,9 @@ import remarkGfm from "remark-gfm";
 
 import { AdSlot } from "@/components/AdSlot";
 import { AffiliateCTA } from "@/components/AffiliateCTA";
-import { DisclosureNote } from "@/components/DisclosureNote";
 import { JsonLd } from "@/components/JsonLd";
 import { MonetizationPanel } from "@/components/MonetizationPanel";
+import { ProductAd } from "@/components/ProductAd";
 import { RelatedArticles } from "@/components/RelatedArticles";
 import { TableOfContents } from "@/components/TableOfContents";
 import { ToolRecommendation } from "@/components/ToolRecommendation";
@@ -90,7 +90,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         trackingLabel={props.trackingLabel ?? `inline:${article.slug}`}
       />
     ),
-    DisclosureNote,
+    ProductAd,
     ToolRecommendation: (props: ComponentProps<typeof ToolRecommendation>) => (
       <ToolRecommendation
         {...props}
@@ -153,7 +153,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
         ) : null}
         <TableOfContents headings={article.headings} />
-        <DisclosureNote />
         <div className="article-body mt-10">{content}</div>
         <MonetizationPanel category={article.category} />
         <AdSlot slotName={`${article.slug}-bottom`} />

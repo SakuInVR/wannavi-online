@@ -1,0 +1,12 @@
+[
+  {
+    "id": "video-editor-training-main-banner",
+    "productId": "video-editor-training",
+    "title": "動画編集を仕事にしたい人向けの学習コース",
+    "description": "カット、テロップ、案件獲得までを一気に学ぶ導線。広告素材の画像URLを取得したら、この枠が画像広告として表示されます。",
+    "asp": "a8",
+    "status": "candidate",
+    "articleSlugs": ["video-editor-training-start"],
+    "memo": "A8の広告素材画面で画像バナーを選定し、提携承認後に imageUrl を入れる。"
+  }
+]
