@@ -1,3 +1,5 @@
+import { siteConfig } from "@/lib/site";
+
 type AdSlotProps = {
   label?: string;
   slotName?: string;
@@ -9,7 +11,10 @@ export function AdSlot({
   slotName = "article-inline",
   adSlotId,
 }: AdSlotProps) {
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT;
+  const clientId =
+    process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT ?? siteConfig.adsenseClient;
+  const resolvedAdSlotId =
+    adSlotId ?? process.env.NEXT_PUBLIC_ADSENSE_DEFAULT_SLOT;
 
   return (
     <aside
@@ -19,17 +24,17 @@ export function AdSlot({
       <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">
         {label}
       </p>
-      {clientId && adSlotId ? (
+      {clientId && resolvedAdSlotId ? (
         <ins
           className="adsbygoogle block"
           data-ad-client={clientId}
-          data-ad-slot={adSlotId}
+          data-ad-slot={resolvedAdSlotId}
           data-ad-format="auto"
           data-full-width-responsive="true"
         />
       ) : (
         <p className="mt-2 text-sm text-slate-500">
-          広告枠。AdSense承認後に環境変数と広告スロットIDを設定すると広告タグとして表示されます。
+          広告枠。AdSense承認後に広告スロットIDを設定すると広告タグとして表示されます。
         </p>
       )}
     </aside>

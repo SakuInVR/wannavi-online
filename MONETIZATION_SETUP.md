@@ -4,7 +4,7 @@
 
 ## 現在の仕組み
 
-本文中の `AffiliateCTA` と記事下のカテゴリCTAは、カテゴリごとの `/go/...` に自動接続されます。
+本文中の `AffiliateCTA`、`ToolRecommendation`、記事下のカテゴリCTAは、カテゴリごとの `/go/...` に自動接続されます。
 
 ```text
 AIエンジニア -> /go/ai-tools
@@ -13,8 +13,7 @@ VRクリエイター -> /go/vr-creator-kit
 楽器演奏者 -> /go/instrument-starter-kit
 ```
 
-`/go/...` の実リンクは、Vercel Environment Variablesで差し替えます。
-コードへASPやAmazonの実URLを直書きしません。
+`/go/...` の実リンクは、Vercel Environment Variablesで差し替えます。コードへASPやAmazonの実URLを直接書き込みません。
 
 ## Vercelに入れる環境変数
 
@@ -27,12 +26,12 @@ AFFILIATE_INSTRUMENT_STARTER_KIT_URL=
 
 設定後はProductionを再デプロイします。
 
-## 確認コマンド
+## アフィリエイト確認コマンド
 
 本番向けの未設定確認:
 
 ```bash
-npm run production:check
+npm run affiliate:check
 ```
 
 公開URLの主要ページ確認:
@@ -69,4 +68,16 @@ ads.txt
 PR表記
 ```
 
-残作業は、AdSense管理画面側でのサイト審査完了と、承認後に必要な広告スロット設定です。
+AdSense審査後、広告ユニットのスロットIDが発行されたら、Vercelに次を設定します。
+
+```bash
+NEXT_PUBLIC_ADSENSE_DEFAULT_SLOT=
+```
+
+`NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT` は `src/lib/site.ts` にも既定値がありますが、Vercel側にも入れておくと運用が分かりやすいです。
+
+```bash
+NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT=ca-pub-9852760004523512
+```
+
+広告スロットIDを設定してProductionを再デプロイすると、記事下の `AdSlot` が実広告タグになります。

@@ -52,7 +52,7 @@ if (fs.existsSync(filePath)) {
 const escapedTitle = rawTitle.replaceAll('"', '\\"');
 const content = `---
 title: "${escapedTitle}"
-description: "この記事で解決する悩みを120文字以内で書く。"
+description: "この記事で解決する悩みを80文字前後で具体的に書く。"
 category: "${rawCategory}"
 publishedAt: "${today()}"
 tags:
@@ -66,12 +66,13 @@ sourceVideos:
   - "https://www.youtube.com/watch?v=REPLACE_ME_3"
 ---
 
-この記事は動画リサーチ前提の下書きです。公開前に次を必ず完了してください。
+この記事は動画リサーチ前提の下書きです。公開前に必ず次を完了してください。
 
 - タイトルに合うYouTube動画3本を選ぶ
 - \`npm run analyze:youtube\` で分析する
 - \`research/youtube/\` に分析JSONを残す
 - 本文末尾の \`## 参考にした視点\` を実URLで埋める
+- 一般論ではなく、動画から見えた具体例を本文に入れる
 
 ## この記事のゴール
 

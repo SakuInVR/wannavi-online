@@ -64,6 +64,13 @@ function hasMatchingResearch(sourceVideos, researchEntries) {
   );
 }
 
+function hasPlaceholder(content, sourceVideos) {
+  return (
+    content.includes("REPLACE_ME") ||
+    sourceVideos.some((url) => url.includes("REPLACE_ME"))
+  );
+}
+
 function validateVideoBackedArticle(filename, data, content, researchEntries) {
   let failures = 0;
   const sourceVideos = data.sourceVideos;
@@ -76,6 +83,10 @@ function validateVideoBackedArticle(filename, data, content, researchEntries) {
     if (!youtubePattern.test(normalizeUrl(url))) {
       failures += fail(`${filename}: invalid YouTube source video URL "${url}"`);
     }
+  }
+
+  if (hasPlaceholder(content, sourceVideos)) {
+    failures += fail(`${filename}: remove video research placeholders before publishing`);
   }
 
   if (!hasMatchingResearch(sourceVideos, researchEntries)) {
