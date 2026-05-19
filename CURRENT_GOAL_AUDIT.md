@@ -2,102 +2,69 @@
 
 Objective: 記事を書いてアップするだけで、あとは自動で収益導線が動く仕組みを作る。
 
-## Success Criteria
+Last checked: 2026-05-19 JST
+
+## Current Evidence
 
 | Requirement | Evidence | Status |
 | --- | --- | --- |
-| Next.jsサイトが本番ドメインで公開されている | `https://www.wannavi.online` は既存ビルドで公開済み | Partial |
+| Next.jsサイトが本番ドメインで公開されている | `npm run production:version` confirmed `https://www.wannavi.online` serves commit `803131b` | Done |
 | 記事をMDXで追加できる | `content/articles/*.mdx`, `npm run new:article` | Done |
-| トップページ、カテゴリページ、記事ページがある | `src/app`, `npm run build` routes | Done |
+| トップページ、カテゴリページ、記事ページがある | `npm run build` generated `/`, `/categories/[slug]`, `/articles/[slug]` | Done |
+| カテゴリ追加に強い | Categories are read from `src/lib/site.ts`; article generator now reads the same source | Done |
 | MDX記事管理ができる | `src/lib/articles.ts`, `content/articles` | Done |
-| SEO設定がある | metadata, sitemap, robots, feed, Open Graph | Done |
+| SEO設定がある | metadata, sitemap, robots, feed, Open Graph, JSON-LD | Done |
 | アフィリエイトCTAがある | `AffiliateCTA`, `/go/[id]`, `src/lib/monetization.ts` | Done |
 | おすすめ道具コンポーネントがある | `ToolRecommendation` | Done |
 | 関連記事コンポーネントがある | article page related links | Done |
-| 記事制作が動画リサーチ前提になっている | `VIDEO_RESEARCH_WORKFLOW.md`, `scripts/check-video-research.mjs` | Done |
-| YouTube 3本をGemini分析して記事化できる | `scripts/analyze-youtube.mjs`, `research/youtube/*.json` | Done |
-| 公開記事が動画分析JSONと紐づく | `npm run validate:video-research` passed for 29 articles | Done |
-| 高収益意図の記事が各カテゴリにある | `npm run report:content` shows high-intent articles | Done |
-| AdSense meta/script/ads.txtがある | `src/app/layout.tsx`, `AdSenseScript`, `ads.txt` | Done |
-| AdSense広告スロットを本番設定できる | `NEXT_PUBLIC_ADSENSE_DEFAULT_SLOT`, `AdSlot` | Ready, external setup needed |
-| アフィリエイトURLを本番設定できる | `AFFILIATE_*_URL`, `/go/[id]` | Ready, external setup needed |
-| 本番が最新GitHubコミットを配信している | `npm run production:version` currently 404 for `/build-info` | Blocked |
-| 最新記事が本番に反映されている | `npm run production:content` currently fails for `instrument-guitar-first-month` | Blocked |
-| Vercelデプロイが安定している | `npm run deployment:check` detects duplicate projects and rate limit | Blocked |
-| 実際に収益が発生しうる状態 | AdSense approval, ad slot ID, affiliate real URLs are not verified | Not done |
+| 記事制作が動画リサーチ前提になっている | `VIDEO_RESEARCH_WORKFLOW.md`, `scripts/analyze-youtube.mjs`, `scripts/check-video-research.mjs` | Done |
+| YouTube 3本をGemini分析して記事化できる | `research/youtube/*.json`; `npm run validate:video-research` passed for 33 articles | Done |
+| 公開記事が十分ある | `npm run production:content` passed for 33 published articles | Done |
+| 高収益意図の記事が各カテゴリにある | `npm run adsense:check` passed | Done |
+| AdSense meta/script/ads.txtがある | `npm run adsense:check` passed against production | Done |
+| アフィリエイトURLが本番で動く | `npm run affiliate:check` passed; 6 `/go/*` links redirect to ASP domains | Done |
+| 本番が最新GitHubコミットを配信している | `npm run production:version` passed for commit `803131b` | Done |
+| 実際に収益が発生しうる状態 | ASP links are live; AdSense site readiness passes, but AdSense approval/ad unit slot is external | Partial |
 
 ## Current Blocking Issues
 
-1. Vercel has two projects or environments deploying the same repository:
-   - `Vercel - wannavi_online`
-   - `Vercel - wannavi-online`
+1. Vercel still deploys the same GitHub repository to two projects:
+   - correct/domain project: `wannavi_online`
+   - duplicate project: `wannavi-online`
 
-2. Latest commits are rate limited:
+   Evidence:
 
-```text
-Deployment rate limited - retry in 24 hours.
-```
+   ```text
+   npm run deployment:check
+   => Potential duplicate Vercel projects detected
+   ```
 
-3. Production `https://www.wannavi.online` is still serving an older build:
+2. AdSense approval and ad unit slot creation are external Google-side steps.
+   The site includes the publisher meta tag and passes readiness, but real ad serving still depends on Google review and `NEXT_PUBLIC_ADSENSE_DEFAULT_SLOT` once an ad unit exists.
 
-```text
-npm run production:version
-=> build-info: expected 200, got 404
-```
+3. Affiliate coverage is basic but not complete.
+   Current real links cover Moshimo/Rakuten marketplace-style redirects and one A8 video editor training link. More ASP product mappings should be added per article cluster.
 
-4. The latest article exists in GitHub and passes local checks, but is not on production yet:
+## Recommended Next Actions
 
-```text
-instrument-guitar-first-month: expected 200, got 404
-```
+1. In Vercel, keep `wannavi_online` and disconnect Git or delete `wannavi-online` after confirming it has no custom domain.
+2. When AdSense provides an ad unit slot, set `NEXT_PUBLIC_ADSENSE_DEFAULT_SLOT` in Vercel Production and redeploy.
+3. Add more product-specific affiliate inventory under `content/affiliate-products.json`.
+4. Continue publishing video-researched articles using:
 
-## User-Side Required Actions
-
-Vercel:
-
-1. Open Vercel Projects.
-2. Check both `wannavi_online` and `wannavi-online`.
-3. Find which project has `www.wannavi.online` in Domains.
-4. Keep that one as the main project.
-5. Disable GitHub auto deploy or disconnect Git on the other project.
-6. After the build limit resets, retry deploy on the main project.
-7. Run:
-
-```bash
-npm run deployment:check
-npm run production:version
-npm run production:content
-```
-
-AdSense:
-
-1. Complete AdSense review.
-2. Create an ad unit.
-3. Set Vercel Production env:
-
-```bash
-NEXT_PUBLIC_ADSENSE_DEFAULT_SLOT=...
-```
-
-Affiliate:
-
-Set real affiliate URLs in Vercel Production env:
-
-```bash
-AFFILIATE_AI_TOOLS_URL=...
-AFFILIATE_DTM_STARTER_KIT_URL=...
-AFFILIATE_VR_CREATOR_KIT_URL=...
-AFFILIATE_INSTRUMENT_STARTER_KIT_URL=...
-```
-
-Then run:
-
-```bash
-npm run affiliate:check
-```
+   ```bash
+   npm run new:article -- "記事タイトル" video-creator article-slug
+   npm run analyze:youtube -- "article-slug" "https://www.youtube.com/watch?v=..." "https://www.youtube.com/watch?v=..." "https://www.youtube.com/watch?v=..."
+   npm run preflight
+   git push origin main
+   npm run production:version
+   npm run production:content
+   npm run adsense:check
+   npm run affiliate:check
+   ```
 
 ## Completion Decision
 
 Do not mark the goal complete yet.
 
-The content engine, article workflow, SEO, CTA, and tracking foundations are implemented. The remaining gap is external production activation: Vercel duplicate project cleanup, successful production deployment, AdSense approval/slot setup, and real affiliate URLs.
+The site now supports the intended workflow end to end: MDX article creation, video research, validation, deployment, SEO, AdSense readiness, and ASP redirects. The remaining gap is business-side activation and cleanup: Vercel duplicate project cleanup, AdSense approval/ad unit slot, and broader affiliate inventory coverage.

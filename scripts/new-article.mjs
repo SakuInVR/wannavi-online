@@ -1,13 +1,16 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const categories = new Set([
-  "ai-engineer",
-  "dtm",
-  "vr-creator",
-  "instrument-player",
-  "video-creator",
-]);
+function read(relativePath) {
+  return fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
+}
+
+function getCategorySlugs() {
+  const site = read("src/lib/site.ts");
+  return [...site.matchAll(/slug:\s*"([^"]+)"/g)].map((match) => match[1]);
+}
+
+const categories = new Set(getCategorySlugs());
 
 function toSlug(value) {
   return value
