@@ -25,6 +25,9 @@ const checks = [
   { path: "/feed.xml", includes: "<rss version=\"2.0\">" },
   { path: "/ads.txt", includes: "google.com, pub-9852760004523512" },
   { path: "/go/ai-tools", expectedStatus: 302, locationIncludes: "/disclosure" },
+  { path: "/go/dtm-starter-kit", expectedStatus: 302, locationIncludes: "/disclosure" },
+  { path: "/go/vr-creator-kit", expectedStatus: 302, locationIncludes: "/disclosure" },
+  { path: "/go/instrument-starter-kit", expectedStatus: 302, locationIncludes: "/disclosure" },
 ];
 
 async function checkRoute({ path, includes, expectedStatus = 200, locationIncludes }) {
