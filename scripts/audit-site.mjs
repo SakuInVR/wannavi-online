@@ -45,6 +45,7 @@ const requiredFiles = [
   "vercel.json",
   ".github/workflows/ci.yml",
   "LAUNCH_CHECKLIST.md",
+  "MONETIZATION_SETUP.md",
   "CONTENT_GUIDE.md",
   "PROJECT_STATUS.md",
 ];

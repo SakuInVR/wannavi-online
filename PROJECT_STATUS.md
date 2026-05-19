@@ -22,11 +22,12 @@
 - 記事メタデータを `npm run validate:content` で検証できる
 - サイト全体の必要部品を `npm run audit:site` で監査できる
 - 通常公開前チェックを `npm run preflight` で一括実行できる
+- 動画分析型記事の根拠を `npm run validate:video-research` で検証できる
 - 主要URL確認を `npm run smoke:site` で実行できる
 - AdSense申請前チェックを `npm run adsense:check` で実行できる
 - 本番未設定チェックを `npm run production:check` で実行できる
 - 記事在庫を `npm run report:content` で確認できる
-- 20本の公開記事がある
+- 24本の公開記事がある
 - 4カテゴリがある
   - AIエンジニア
   - DTM
@@ -37,6 +38,7 @@
 - 新規カテゴリ追加時、監査・記事レポート・AdSense申請前チェックがカテゴリ一覧に追従する
 - トップ、全記事、カテゴリ一覧、カテゴリ別、タグ一覧、タグ別、記事詳細ページがある
 - 記事ページにPR表記、目次、カテゴリ別CTA、広告枠、関連記事、タグリンクが自動で入る
+- MDX本文内の `AffiliateCTA` もカテゴリ別の `/go/...` に自動接続される
 - `sitemap.xml`、`robots.txt`、`feed.xml`、`ads.txt` がある
 - `/go/...` で外部リンクを中央管理できる
 - `/go/...` の遷移先をVercel Environment Variablesの `AFFILIATE_*_URL` で差し替えられる
@@ -45,6 +47,7 @@
 - OG画像を自動生成できる
 - GitHub Actions CIが `npm run preflight` を実行する
 - Vercel向けの `vercel.json` がある
+- YouTube動画3本をGemini APIで分析し、具体例を反映した動画分析型リライトが12本ある
 
 ## 通常チェック
 
@@ -52,6 +55,12 @@
 
 ```bash
 npm run preflight
+```
+
+動画分析型記事だけ確認:
+
+```bash
+npm run validate:video-research
 ```
 
 記事在庫の確認:
@@ -83,7 +92,7 @@ npm run production:check
 - AdSenseのサイト審査を完了させる
 - ASP、Amazon、楽天などのリンクを準備する
 - Vercel Environment Variablesの `AFFILIATE_*_URL` に実リンクを設定する
-- 必要に応じて記事内の個別 `AffiliateCTA` と `ToolRecommendation` の `href` を実リンクへ差し替える
+- 設定後に `/go/...` が実リンクへリダイレクトされることを確認する
 - AdSense承認後、必要なら広告スロットIDを記事内 `AdSlot` に設定する
 - 実運用の問い合わせ先を変える場合は `src/lib/site.ts` の `contactEmail` を変更する
 

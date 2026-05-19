@@ -18,6 +18,7 @@ npm run preflight
 
 ```bash
 npm run validate:content
+npm run validate:video-research
 npm run audit:site
 npm run lint
 npm run build
@@ -106,10 +107,16 @@ SMOKE_BASE_URL=https://www.wannavi.online npm run smoke:site
 - [ ] Amazonアソシエイトに申請する
 - [ ] 楽天アフィリエイトを準備する
 - [ ] ASPに登録する
-- [ ] `src/lib/monetization.ts` の `href` を実リンクへ差し替える
-- [ ] `src/lib/outbound-links.ts` の `url` を実リンクへ差し替える
-- [ ] 記事内の `AffiliateCTA` と `ToolRecommendation` の `href` を差し替える
+- [ ] Vercel Environment Variablesに `AFFILIATE_AI_TOOLS_URL` を設定する
+- [ ] Vercel Environment Variablesに `AFFILIATE_DTM_STARTER_KIT_URL` を設定する
+- [ ] Vercel Environment Variablesに `AFFILIATE_VR_CREATOR_KIT_URL` を設定する
+- [ ] Vercel Environment Variablesに `AFFILIATE_INSTRUMENT_STARTER_KIT_URL` を設定する
+- [ ] 設定後にVercelで再デプロイする
+- [ ] `/go/ai-tools`、`/go/dtm-starter-kit`、`/go/vr-creator-kit`、`/go/instrument-starter-kit` が実リンクへリダイレクトされることを確認する
 - [ ] PR表記が表示されることを確認する
+
+コード側のCTAは、記事カテゴリに応じて `/go/...` に自動接続されます。
+実リンクはコードへ直書きせず、VercelのEnvironment Variablesで差し替えます。
 
 ## 10. First Content Goal
 
@@ -134,6 +141,7 @@ npm run preflight
 
 ```bash
 npm run validate:content
+npm run validate:video-research
 npm run audit:site
 npm run lint
 npm run build
