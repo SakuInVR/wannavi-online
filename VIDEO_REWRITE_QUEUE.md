@@ -29,7 +29,7 @@
   - 4小節ループ制作の実演動画を参照する
 - [x] `dtm-first-tools.mdx`
   - 初心者機材紹介と失敗談の動画を参照する
-- `dtm-headphones-guide.mdx`
+- [x] `dtm-headphones-guide.mdx`
   - モニターヘッドホン比較・初心者向け解説動画を参照する
 
 ### VRクリエイター
