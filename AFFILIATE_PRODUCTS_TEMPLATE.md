@@ -36,3 +36,11 @@ npm run affiliate:products
 npm run affiliate:env
 npm run affiliate:check
 ```
+
+商品を先に決めて、その商品に合う記事の下書きを作る場合:
+
+```bash
+npm run new:product-article -- example-digital-piano "電子ピアノ Example Digital Piano は初心者に向いている？"
+```
+
+生成された記事は `draft: true` です。YouTube動画3本を差し替え、本文を具体化してから公開します。

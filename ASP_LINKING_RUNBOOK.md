@@ -106,6 +106,12 @@ npm run affiliate:map
 npm run affiliate:products
 ```
 
+商品IDから記事ドラフトも作れます。
+
+```bash
+npm run new:product-article -- product-id "記事タイトル"
+```
+
 ```bash
 npm run affiliate:env
 ```

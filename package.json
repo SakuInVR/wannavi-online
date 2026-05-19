@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "new:article": "node scripts/new-article.mjs",
+    "new:product-article": "node scripts/new-product-article.mjs",
     "publish:article": "node scripts/publish-article.mjs",
     "unpublish:article": "node scripts/unpublish-article.mjs",
     "touch:article": "node scripts/touch-article.mjs",
