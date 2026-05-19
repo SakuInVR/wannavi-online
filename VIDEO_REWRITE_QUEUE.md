@@ -16,7 +16,7 @@
 
 ### AIエンジニア
 
-- `ai-engineer-ai-editor-guide.mdx`
+- [x] `ai-engineer-ai-editor-guide.mdx`
   - AIエディタ実演、失敗例、初心者の使いすぎ防止の動画を参照する
 - `ai-engineer-tools-first.mdx`
   - 開発環境構築の実演動画を参照する
