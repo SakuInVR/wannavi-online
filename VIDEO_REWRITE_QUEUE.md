@@ -11,7 +11,7 @@
   - 大人からピアノを始めた人の実演・練習ルーティン動画を参照する
 - [x] `instrument-adult-piano-practice-routine.mdx`
   - 社会人の練習時間確保、短時間練習、録音振り返りの動画を参照する
-- `instrument-piano-classic-step-up.mdx`
+- [x] `instrument-piano-classic-step-up.mdx`
   - 初心者向けクラシック曲、譜読み、分割練習の動画を参照する
 
 ### AIエンジニア
