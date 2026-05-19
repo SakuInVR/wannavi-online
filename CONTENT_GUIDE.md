@@ -223,3 +223,15 @@ MDX記事化
 
 動画を参照する目的は、記事に実際の練習・作業・失敗例の手触りを入れるためです。
 動画の内容を丸写しせず、複数動画から共通する読者の困りごとと実践手順を抽出します。
+
+動画分析型の記事は、frontmatter に `sourceVideos` を3本入れます。
+Gemini APIなどで分析した結果は `research/youtube/` にJSONとして保存します。
+`npm run validate:video-research` は、動画分析型の記事に次がそろっているか確認します。
+
+```text
+sourceVideos が3本ある
+対応する research/youtube の分析JSONがある
+本文に「参考にした視点」セクションがある
+```
+
+このチェックは `npm run preflight` に含まれます。
