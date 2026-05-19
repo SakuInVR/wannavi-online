@@ -99,6 +99,12 @@ npm run touch:article -- ai-engineer-study-tools
 npm run report:content
 ```
 
+次に足すべき記事やASP商品リンク候補を見る:
+
+```bash
+npm run report:next
+```
+
 アップ前チェック:
 
 ```bash
@@ -204,6 +210,7 @@ video-creator
 - Site smoke test script
 - Production readiness check
 - Content report script
+- Next action report script
 - アフィリCTAコンポーネント
 - おすすめ道具コンポーネント
 - 関連記事コンポーネント

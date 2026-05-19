@@ -30,7 +30,8 @@
     "preflight": "npm run validate:content && npm run validate:video-research && npm run affiliate:products && npm run audit:site && npm run lint && npm run build",
     "ready:publish": "npm run preflight && npm run affiliate:env",
     "production:verify": "npm run deployment:check && npm run production:version && npm run production:content && npm run adsense:check && npm run affiliate:check",
-    "report:content": "node scripts/report-content.mjs"
+    "report:content": "node scripts/report-content.mjs",
+    "report:next": "node scripts/report-next-actions.mjs"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
