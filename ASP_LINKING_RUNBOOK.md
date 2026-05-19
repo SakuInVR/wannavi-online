@@ -116,6 +116,16 @@ npm run new:product-article -- product-id "記事タイトル"
 npm run affiliate:env
 ```
 
+ASPリンクを `.env.affiliate.local` にまとめてからVercel Productionへ入れる場合:
+
+```bash
+copy .env.affiliate.example .env.affiliate.local
+npm run affiliate:sync
+npm run affiliate:sync -- --apply
+```
+
+`affiliate:sync` はまずdry-runします。`--apply` を付けたときだけ、未登録の `AFFILIATE_*_URL` をVercel Productionへ追加します。
+
 Vercel Productionへ設定して再デプロイしたあと、本番の `/go/...` を確認します。
 
 ```bash
