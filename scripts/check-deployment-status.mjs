@@ -6,6 +6,8 @@ const repository =
   getRepositoryFromRemote() ??
   "SakuInVR/wannavi-online";
 const sha = process.env.GIT_SHA ?? process.argv[3] ?? getCurrentSha();
+const requiredVercelContext =
+  process.env.VERCEL_REQUIRED_STATUS_CONTEXT ?? "Vercel – wannavi_online";
 
 function getCurrentSha() {
   return execFileSync("git", ["rev-parse", "HEAD"], {
@@ -55,6 +57,9 @@ console.log(`Combined status: ${status.state}`);
 const vercelStatuses = status.statuses.filter((item) =>
   item.context.toLowerCase().includes("vercel"),
 );
+const requiredVercelStatuses = vercelStatuses.filter(
+  (item) => item.context === requiredVercelContext,
+);
 
 if (vercelStatuses.length === 0) {
   console.log("Vercel status: none found for this commit");
@@ -66,6 +71,14 @@ if (vercelStatuses.length === 0) {
       console.log(`  ${item.target_url}`);
     }
   }
+}
+
+if (requiredVercelStatuses.length > 0) {
+  console.log(`Required Vercel context: ${requiredVercelContext}`);
+} else if (vercelStatuses.length > 0) {
+  console.warn(
+    `Required Vercel context "${requiredVercelContext}" was not found; falling back to all Vercel statuses.`,
+  );
 }
 
 const matchingDeployments = deployments.filter((deployment) => deployment.sha === sha);
@@ -102,13 +115,18 @@ if (duplicates.length > 0) {
   }
 }
 
+const statusesToGate =
+  requiredVercelStatuses.length > 0 ? requiredVercelStatuses : vercelStatuses;
+
 if (
-  vercelStatuses.some((item) =>
+  statusesToGate.some((item) =>
     item.description.toLowerCase().includes("rate limited"),
   )
 ) {
   console.error("Vercel deployment is rate limited. Retry after the Vercel limit resets.");
   process.exitCode = 1;
-} else if (vercelStatuses.some((item) => item.state === "failure" || item.state === "error")) {
+} else if (statusesToGate.some((item) => item.state === "failure" || item.state === "error")) {
+  process.exitCode = 1;
+} else if (statusesToGate.some((item) => item.state === "pending")) {
   process.exitCode = 1;
 }
