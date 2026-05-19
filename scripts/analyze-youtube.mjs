@@ -18,14 +18,36 @@ if (!apiKey) {
 }
 
 function slugify(value) {
-  const slug = value
+  return value
     .toLowerCase()
     .replace(/https?:\/\//g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
+}
 
-  return slug || `youtube-research-${new Date().toISOString().slice(0, 10)}`;
+function getVideoId(url) {
+  return (
+    url.match(/[?&]v=([A-Za-z0-9_-]{11})/)?.[1] ??
+    url.match(/youtu\.be\/([A-Za-z0-9_-]{11})/)?.[1] ??
+    url.match(/youtube\.com\/embed\/([A-Za-z0-9_-]{11})/)?.[1] ??
+    ""
+  );
+}
+
+function getOutputSlug(title, urls) {
+  const titleSlug = slugify(title);
+
+  if (titleSlug) {
+    return titleSlug;
+  }
+
+  const videoSlug = urls
+    .map(getVideoId)
+    .filter(Boolean)
+    .join("-");
+
+  return videoSlug || `youtube-research-${new Date().toISOString().slice(0, 10)}`;
 }
 
 async function analyzeVideo(url, index) {
@@ -116,7 +138,7 @@ for (const [index, url] of urls.slice(0, 3).entries()) {
   result.videos.push(await analyzeVideo(url, index + 1));
 }
 
-const outputPath = path.join(outputDir, `${slugify(title)}.json`);
+const outputPath = path.join(outputDir, `${getOutputSlug(title, urls)}.json`);
 fs.writeFileSync(outputPath, `${JSON.stringify(result, null, 2)}\n`);
 
 console.log(outputPath);
