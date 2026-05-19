@@ -7,9 +7,14 @@ const checks = [
   { path: "/tags", includes: "タグ一覧" },
   { path: "/tags/DTM", includes: "DTM の記事" },
   { path: "/categories/ai-engineer", includes: "AIエンジニアになりたい" },
+  { path: "/categories/instrument-player", includes: "楽器演奏者になりたい" },
   {
     path: "/articles/ai-engineer-first-month",
     includes: "AIエンジニアになりたい人の最初の1ヶ月ロードマップ",
+  },
+  {
+    path: "/articles/instrument-player-first-month",
+    includes: "楽器演奏者になりたい人の最初の1ヶ月ロードマップ",
   },
   { path: "/about", includes: "運営者情報" },
   { path: "/privacy", includes: "プライバシーポリシー" },
@@ -18,7 +23,7 @@ const checks = [
   { path: "/sitemap.xml", includes: "/articles/ai-engineer-first-month" },
   { path: "/robots.txt", includes: "Disallow: /go/" },
   { path: "/feed.xml", includes: "<rss version=\"2.0\">" },
-  { path: "/ads.txt", includes: "NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT" },
+  { path: "/ads.txt", includes: "google.com, pub-9852760004523512" },
   { path: "/go/ai-tools", expectedStatus: 302, locationIncludes: "/disclosure" },
 ];
 
