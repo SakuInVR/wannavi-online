@@ -20,6 +20,7 @@
     "production:version": "node scripts/check-production-version.mjs",
     "deployment:check": "node scripts/check-deployment-status.mjs",
     "adsense:check": "node scripts/check-adsense-ready.mjs",
+    "affiliate:env": "node scripts/check-affiliate-env.mjs",
     "affiliate:check": "node scripts/check-affiliate-redirects.mjs",
     "analyze:youtube": "node scripts/analyze-youtube.mjs",
     "preflight": "npm run validate:content && npm run validate:video-research && npm run audit:site && npm run lint && npm run build",
