@@ -9,6 +9,7 @@ const articleDirectory = path.join(root, "content", "articles");
 const idPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const statuses = new Set(["candidate", "applied", "approved", "rejected"]);
 const asps = new Set(["a8", "moshimo", "valuecommerce", "other"]);
+const urlFields = ["clickUrl", "imageUrl", "impressionUrl"];
 
 function fail(message) {
   console.error(`- ${message}`);
@@ -104,16 +105,22 @@ for (const [index, creative] of creatives.entries()) {
     if (!creative.imageAlt) {
       failures += fail(`${label}: approved creative must have imageAlt`);
     }
+
+    if (!creative.clickUrl) {
+      failures += fail(`${label}: approved creative must have clickUrl`);
+    }
   }
 
-  if (creative.imageUrl) {
-    try {
-      const parsed = new URL(creative.imageUrl);
-      if (!["http:", "https:"].includes(parsed.protocol)) {
-        failures += fail(`${label}: imageUrl must use http or https`);
+  for (const field of urlFields) {
+    if (creative[field]) {
+      try {
+        const parsed = new URL(creative[field]);
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+          failures += fail(`${label}: ${field} must use http or https`);
+        }
+      } catch {
+        failures += fail(`${label}: ${field} must be a valid URL`);
       }
-    } catch {
-      failures += fail(`${label}: imageUrl must be a valid URL`);
     }
   }
 }

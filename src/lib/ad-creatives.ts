@@ -10,8 +10,10 @@ export type AdCreative = {
   description: string;
   asp: "a8" | "moshimo" | "valuecommerce" | "other";
   status: AdCreativeStatus;
+  clickUrl?: string;
   imageUrl?: string;
   imageAlt?: string;
+  impressionUrl?: string;
   width?: number;
   height?: number;
   articleSlugs: string[];
@@ -33,5 +35,5 @@ export function getAdCreativesForArticle(slug: string) {
 }
 
 export function getAdCreativeHref(creative: AdCreative) {
-  return outboundHref(creative.productId);
+  return creative.clickUrl ?? outboundHref(creative.productId);
 }

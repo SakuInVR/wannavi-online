@@ -9,6 +9,7 @@ type AdCreativeCardProps = {
   href: string;
   imageUrl: string;
   imageAlt: string;
+  impressionUrl?: string;
   ctaLabel?: string;
 };
 
@@ -19,6 +20,7 @@ export function AdCreativeCard({
   href,
   imageUrl,
   imageAlt,
+  impressionUrl,
   ctaLabel = "公式ページを見る",
 }: AdCreativeCardProps) {
   return (
@@ -58,6 +60,17 @@ export function AdCreativeCard({
           </span>
         </div>
       </a>
+      {impressionUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element -- ASP impression pixels must be requested exactly as provided.
+        <img
+          src={impressionUrl}
+          alt=""
+          width="1"
+          height="1"
+          loading="lazy"
+          className="sr-only"
+        />
+      ) : null}
     </aside>
   );
 }

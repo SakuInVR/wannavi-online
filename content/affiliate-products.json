@@ -37,5 +37,14 @@
       "ai-engineer-tools-first"
     ],
     "memo": "AIエンジニアカテゴリの暫定商品枠。ASPで画像広告素材が取れたら content/ad-creatives.json に追加する。"
+  },
+  {
+    "id": "gaming-pc-shop",
+    "label": "VRChat向けゲーミングPC",
+    "envKey": "AFFILIATE_VR_CREATOR_KIT_URL",
+    "category": "vr-creator",
+    "asp": "moshimo",
+    "articleSlugs": ["vrchat-pc-spec-guide", "vrchat-starter-gear-guide"],
+    "memo": "VRChat用PC記事に合うゲーミングPC広告枠。ASP管理画面でパソコン工房、マウスコンピューター、FRONTIERなどの画像素材を確認して差し替える。"
   }
 ]

@@ -20,6 +20,7 @@ export function ProductAd({ id }: ProductAdProps) {
       href={getAdCreativeHref(creative)}
       imageUrl={creative.imageUrl}
       imageAlt={creative.imageAlt ?? creative.title}
+      impressionUrl={creative.impressionUrl}
     />
   );
 }

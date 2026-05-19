@@ -8,5 +8,21 @@
     "status": "candidate",
     "articleSlugs": ["video-editor-training-start"],
     "memo": "A8の広告素材画面で画像バナーを選定し、提携承認後に imageUrl を入れる。"
+  },
+  {
+    "id": "gaming-pc-vrchat-banner",
+    "productId": "gaming-pc-shop",
+    "title": "VRChatを快適に遊ぶためのゲーミングPC",
+    "description": "中古ゲーミングPC専門店のGP-ZERO。VRChatやPCVR用に、GPU、VRAM、メモリ、冷却を見ながら予算を抑えて候補を探したい人向けです。",
+    "asp": "moshimo",
+    "status": "approved",
+    "clickUrl": "https://af.moshimo.com/af/c/click?a_id=5575341&p_id=4608&pc_id=12072&pl_id=61653",
+    "imageUrl": "https://image.moshimo.com/af-img/4202/000000061653.jpg",
+    "imageAlt": "GP-ZERO 中古ゲーミングPC専門店",
+    "impressionUrl": "https://i.moshimo.com/af/i/impression?a_id=5575341&p_id=4608&pc_id=12072&pl_id=61653",
+    "width": 600,
+    "height": 600,
+    "articleSlugs": ["vrchat-pc-spec-guide"],
+    "memo": "A8はゲーミングPC検索で該当なし。ValueCommerceは候補が強いが広告素材ボタンが無効。もしもでGP-ZEROに提携申請し、審査なしで原稿取得済み。"
   }
 ]

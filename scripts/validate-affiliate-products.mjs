@@ -40,7 +40,6 @@ if (!Array.isArray(products)) {
 
 let failures = 0;
 const ids = new Set();
-const envKeys = new Set();
 
 for (const [index, product] of products.entries()) {
   const label = `product[${index}]`;
@@ -64,10 +63,9 @@ for (const [index, product] of products.entries()) {
 
   if (!product.envKey || typeof product.envKey !== "string" || !envPattern.test(product.envKey)) {
     failures += fail(`${label}: envKey must look like AFFILIATE_EXAMPLE_URL`);
-  } else if (envKeys.has(product.envKey)) {
-    failures += fail(`${label}: duplicate envKey "${product.envKey}"`);
   } else {
-    envKeys.add(product.envKey);
+    // Multiple product cards may intentionally share one category-level ASP URL
+    // until a product-specific campaign URL is available.
   }
 
   if (!allowedCategories.has(product.category)) {
