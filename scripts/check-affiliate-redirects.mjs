@@ -1,13 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
+import { readAffiliateLinks } from "./read-affiliate-links.mjs";
 
 const baseUrl = process.env.AFFILIATE_CHECK_BASE_URL ?? "https://www.wannavi.online";
-const root = process.cwd();
-const source = fs.readFileSync(path.join(root, "src/lib/outbound-links.ts"), "utf8");
-
-const links = [...source.matchAll(/id:\s*"([^"]+)"[\s\S]*?envKey:\s*"([^"]+)"/g)].map(
-  ([, id, envKey]) => ({ id, envKey }),
-);
+const links = readAffiliateLinks();
 
 if (links.length === 0) {
   console.error("No outbound affiliate links were found.");

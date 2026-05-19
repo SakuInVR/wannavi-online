@@ -1,3 +1,5 @@
+import affiliateProducts from "../../content/affiliate-products.json";
+
 export type OutboundLink = {
   id: string;
   label: string;
@@ -33,8 +35,26 @@ export const outboundLinks: OutboundLink[] = [
   },
 ];
 
+type AffiliateProduct = {
+  id: string;
+  label: string;
+  envKey: string;
+  category: OutboundLink["category"];
+};
+
+const productLinks: OutboundLink[] = (affiliateProducts as AffiliateProduct[]).map(
+  (product) => ({
+    id: product.id,
+    label: product.label,
+    envKey: product.envKey,
+    category: product.category,
+  }),
+);
+
+export const allOutboundLinks = [...outboundLinks, ...productLinks];
+
 export function getOutboundLink(id: string) {
-  return outboundLinks.find((link) => link.id === id);
+  return allOutboundLinks.find((link) => link.id === id);
 }
 
 export function getOutboundUrl(link: OutboundLink) {

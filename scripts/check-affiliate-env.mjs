@@ -1,13 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
+import { readAffiliateLinks } from "./read-affiliate-links.mjs";
 
 const root = process.cwd();
-const source = fs.readFileSync(path.join(root, "src/lib/outbound-links.ts"), "utf8");
 const envFiles = [".env.local", ".env"];
 
-const links = [...source.matchAll(/id:\s*"([^"]+)"[\s\S]*?envKey:\s*"([^"]+)"/g)].map(
-  ([, id, envKey]) => ({ id, envKey }),
-);
+const links = readAffiliateLinks();
 
 function readLocalEnv() {
   const values = {};

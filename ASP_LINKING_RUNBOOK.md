@@ -100,6 +100,12 @@ npm run affiliate:map
 
 カテゴリごとの `/go/...`、Vercelに入れる環境変数名、そのリンクを使う記事一覧を表示します。ASP案件を選ぶ前にこれを見て、収益意図が高い記事群から強い案件を当てます。
 
+商品を先に見つけてから記事を書く場合は、[AFFILIATE_PRODUCTS_TEMPLATE.md](./AFFILIATE_PRODUCTS_TEMPLATE.md) の形で `content/affiliate-products.json` に商品を追加します。これで `/go/product-id` の商品別リンクを記事から使えます。
+
+```bash
+npm run affiliate:products
+```
+
 ```bash
 npm run affiliate:env
 ```

@@ -21,10 +21,11 @@
     "deployment:check": "node scripts/check-deployment-status.mjs",
     "adsense:check": "node scripts/check-adsense-ready.mjs",
     "affiliate:map": "node scripts/report-affiliate-map.mjs",
+    "affiliate:products": "node scripts/validate-affiliate-products.mjs",
     "affiliate:env": "node scripts/check-affiliate-env.mjs",
     "affiliate:check": "node scripts/check-affiliate-redirects.mjs",
     "analyze:youtube": "node scripts/analyze-youtube.mjs",
-    "preflight": "npm run validate:content && npm run validate:video-research && npm run audit:site && npm run lint && npm run build",
+    "preflight": "npm run validate:content && npm run validate:video-research && npm run affiliate:products && npm run audit:site && npm run lint && npm run build",
     "report:content": "node scripts/report-content.mjs"
   },
   "dependencies": {
