@@ -1,6 +1,6 @@
 # Wanna Navi Project Status
 
-最終更新: 2026-05-16
+最終更新: 2026-05-19
 
 ## 目的
 
@@ -8,30 +8,38 @@
 
 ## 現在できていること
 
+- 本番URL `https://www.wannavi.online` で公開済み
+- GitHubとVercelの自動デプロイが動作済み
+- Search ConsoleのHTMLファイル確認済み
+- Search Consoleにサイトマップ送信済み
+- GA4測定ID `G-GKHT28VF83` をサイトへ組み込み済み
+- AdSenseメタタグ `google-adsense-account` を全ページのheadへ組み込み済み
+- `ads.txt` が `pub-9852760004523512` を返す
 - Next.js App Routerでサイトが動く
 - MDX記事を `content/articles` に追加できる
 - 記事追加コマンド `npm run new:article` がある
-- 日本語タイトルでもslug指定で記事を作れる
-- 下書きを公開状態にする `npm run publish:article` がある
-- 公開済み記事を下書きに戻す `npm run unpublish:article` がある
-- リライト後に更新日だけ上げる `npm run touch:article` がある
+- 下書き公開、非公開、更新日の反映コマンドがある
 - 記事メタデータを `npm run validate:content` で検証できる
 - サイト全体の必要部品を `npm run audit:site` で監査できる
 - 通常公開前チェックを `npm run preflight` で一括実行できる
 - 主要URL確認を `npm run smoke:site` で実行できる
+- AdSense申請前チェックを `npm run adsense:check` で実行できる
 - 本番未設定チェックを `npm run production:check` で実行できる
 - 記事在庫を `npm run report:content` で確認できる
-- 13本の公開記事がある
+- 20本の公開記事がある
+- 4カテゴリがある
+  - AIエンジニア
+  - DTM
+  - VRクリエイター
+  - 楽器演奏者
 - 各カテゴリに4本以上の記事がある
 - 各カテゴリに `affiliateIntent: "high"` の記事が1本以上ある
-- 新規記事は `draft: true` で作成され、公開面に出ない
-- ドラフト記事は直URLでも404になる
+- 新規カテゴリ追加時、監査・記事レポート・AdSense申請前チェックがカテゴリ一覧に追従する
 - トップ、全記事、カテゴリ一覧、カテゴリ別、タグ一覧、タグ別、記事詳細ページがある
 - 記事ページにPR表記、目次、カテゴリ別CTA、広告枠、関連記事、タグリンクが自動で入る
 - `sitemap.xml`、`robots.txt`、`feed.xml`、`ads.txt` がある
 - `/go/...` で外部リンクを中央管理できる
 - `/go/...` は `robots.txt` でクロール対象から外している
-- AdSense、GA4、Search Console確認コードを環境変数で差し込める
 - GA4がある場合、CTAクリックイベントを送れる
 - OG画像を自動生成できる
 - GitHub Actions CIが `npm run preflight` を実行する
@@ -53,8 +61,14 @@ npm run report:content
 
 公開URLの主要ページ確認:
 
+```powershell
+$env:SMOKE_BASE_URL='https://www.wannavi.online'; npm run smoke:site
+```
+
+AdSense申請前チェック:
+
 ```bash
-SMOKE_BASE_URL=https://wannavi.online npm run smoke:site
+npm run adsense:check
 ```
 
 本番公開直前の未設定確認:
@@ -63,27 +77,20 @@ SMOKE_BASE_URL=https://wannavi.online npm run smoke:site
 npm run production:check
 ```
 
-## 本番公開までに残っている外部作業
+## まだ残っている外部作業
 
-- GitHubにリポジトリを作成してpushする
-- VercelにImportする
-- `wannavi.online` のDNSをVercelへ向ける
-- Vercelに環境変数を設定する
-  - `NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT`
-  - `NEXT_PUBLIC_GA_MEASUREMENT_ID`
-  - `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`
-- Search Consoleに登録する
-- `https://wannavi.online/sitemap.xml` を送信する
-- GA4でリアルタイム計測を確認する
-- AdSenseにサイトを追加して審査へ出す
+- AdSenseのサイト審査を完了させる
 - ASP、Amazon、楽天などのリンクを準備する
 - `src/lib/outbound-links.ts` の `url` を実リンクへ差し替える
-- `src/lib/site.ts` の `contactEmail` を実運用の連絡先へ変更する
-- 運営者情報ページを実運用の内容へ具体化する
+- 必要に応じて記事内の `AffiliateCTA` と `ToolRecommendation` の `href` を実リンクへ差し替える
+- AdSense承認後、必要なら広告スロットIDを記事内 `AdSlot` に設定する
+- 実運用の問い合わせ先を変える場合は `src/lib/site.ts` の `contactEmail` を変更する
 
 ## ゴール達成判定
 
-コード側の土台はかなり揃っているが、まだ「勝手に収益が発生する」状態ではない。
-理由は、実デプロイ、DNS接続、AdSense審査、ASP登録、実リンク差し替えが未完了だから。
+コード側の土台、本番公開、Search Console、GA4、AdSenseメタタグ、ads.txt、カテゴリ追加に強い記事運用は整っている。
 
-`npm run production:check` が通り、公開URLで `npm run smoke:site` が通り、AdSenseまたはアフィリエイトリンクが実際に有効になった時点で、ゴール達成にかなり近い。
+ただし、まだ「勝手に収益が発生する」状態ではない。
+理由は、AdSense審査の完了と、ASP/Amazon/楽天などの実リンク差し替えが残っているため。
+
+`npm run production:check` が通り、AdSenseまたはアフィリエイトリンクが実際に有効になった時点で、ゴール達成にかなり近い。
