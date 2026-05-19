@@ -1,7 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const categories = new Set(["ai-engineer", "dtm", "vr-creator", "instrument-player"]);
+const categories = new Set([
+  "ai-engineer",
+  "dtm",
+  "vr-creator",
+  "instrument-player",
+  "video-creator",
+]);
 
 function toSlug(value) {
   return value
