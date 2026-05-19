@@ -108,9 +108,7 @@ if (
   )
 ) {
   console.error("Vercel deployment is rate limited. Retry after the Vercel limit resets.");
-  process.exit(1);
-}
-
-if (vercelStatuses.some((item) => item.state === "failure" || item.state === "error")) {
-  process.exit(1);
+  process.exitCode = 1;
+} else if (vercelStatuses.some((item) => item.state === "failure" || item.state === "error")) {
+  process.exitCode = 1;
 }
