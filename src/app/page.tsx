@@ -19,7 +19,8 @@ export default function Home() {
               あなたは、何になりたい？
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-              AI、音楽、VR、個人開発。なりたい姿までの最初の一歩を、ロードマップと道具選びでナビゲートする実践メディアです。
+              AI、音楽、VR、個人開発。なりたい姿までの最初の一歩を、
+              ロードマップと道具選びでナビゲートする実践メディアです。
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -66,7 +67,8 @@ export default function Home() {
               <h2 className="mt-2 text-3xl font-black text-slate-950">新着ロードマップ</h2>
             </div>
             <p className="max-w-xl text-sm leading-6 text-slate-600">
-              記事はMDXファイルとして管理。ロードマップ記事からおすすめ道具・収益記事へ自然に案内します。
+              記事はMDXファイルとして管理しています。ロードマップ記事から、
+              おすすめ道具や関連記事へ自然につながる構成です。
             </p>
           </div>
           <div className="mt-8 grid gap-5 md:grid-cols-3">

@@ -4,8 +4,8 @@
 
 ## 1. GitHub
 
-- [ ] GitHubにリポジトリを作成する
-- [ ] このプロジェクトをpushする
+- [x] GitHubにリポジトリを作成する
+- [x] このプロジェクトをpushする
 - [ ] GitHub ActionsのCIが通ることを確認する
 
 CIで確認されるもの:
@@ -27,10 +27,10 @@ npm run build
 
 ## 2. Vercel
 
-- [ ] VercelでGitHubリポジトリをImportする
-- [ ] Framework PresetがNext.jsになっていることを確認する
+- [x] VercelでGitHubリポジトリをImportする
+- [x] Framework PresetがNext.jsになっていることを確認する
 - [ ] Build Commandが `npm run build` であることを確認する
-- [ ] 初回デプロイが成功することを確認する
+- [x] 初回デプロイが成功することを確認する
 
 ## 3. Environment Variables
 
@@ -38,8 +38,7 @@ VercelのEnvironment Variablesに設定します。
 
 ```bash
 NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXX
-NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
-NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=google-site-verification-code
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-GKHT28VF83
 ```
 
 設定後は再デプロイします。
@@ -52,10 +51,10 @@ npm run production:check
 
 ## 4. Domain
 
-- [ ] VercelのDomainsに `wannavi.online` を追加する
-- [ ] DNSにVercel指定のレコードを設定する
-- [ ] `https://wannavi.online` が表示されることを確認する
-- [ ] `https://www.wannavi.online` を使う場合はリダイレクト方針を決める
+- [x] VercelのDomainsに `wannavi.online` を追加する
+- [x] DNSにVercel指定のレコードを設定する
+- [x] `https://wannavi.online` が表示されることを確認する
+- [x] `https://www.wannavi.online` を正規URLとして使う
 
 ## 5. Public URL Checks
 
@@ -63,33 +62,33 @@ npm run production:check
 
 ```text
 https://wannavi.online/
-https://wannavi.online/sitemap.xml
-https://wannavi.online/robots.txt
-https://wannavi.online/feed.xml
-https://wannavi.online/ads.txt
-https://wannavi.online/about
-https://wannavi.online/privacy
-https://wannavi.online/contact
-https://wannavi.online/disclosure
+https://www.wannavi.online/sitemap.xml
+https://www.wannavi.online/robots.txt
+https://www.wannavi.online/feed.xml
+https://www.wannavi.online/ads.txt
+https://www.wannavi.online/about
+https://www.wannavi.online/privacy
+https://www.wannavi.online/contact
+https://www.wannavi.online/disclosure
 ```
 
 公開URLに対して自動確認する場合:
 
 ```bash
-SMOKE_BASE_URL=https://wannavi.online npm run smoke:site
+SMOKE_BASE_URL=https://www.wannavi.online npm run smoke:site
 ```
 
 ## 6. Search Console
 
-- [ ] Search Consoleに `wannavi.online` を追加する
-- [ ] verification metaで所有権確認する
-- [ ] `https://wannavi.online/sitemap.xml` を送信する
+- [x] Search Consoleに `wannavi.online` を追加する
+- [x] HTMLファイルで所有権確認する
+- [x] `https://www.wannavi.online/sitemap.xml` を送信する
 - [ ] インデックス登録リクエストをトップページと主要記事に行う
 
 ## 7. Google Analytics
 
-- [ ] GA4プロパティを作成する
-- [ ] `NEXT_PUBLIC_GA_MEASUREMENT_ID` を設定する
+- [x] GA4プロパティを作成する
+- [x] `NEXT_PUBLIC_GA_MEASUREMENT_ID` を設定する
 - [ ] リアルタイムレポートでアクセスが計測されることを確認する
 - [ ] `affiliate_cta_click` が送信されることを確認する
 - [ ] `tool_recommendation_click` が送信されることを確認する

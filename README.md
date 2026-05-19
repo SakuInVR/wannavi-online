@@ -18,13 +18,20 @@ http://localhost:3000
 
 ## 広告設定
 
-AdSense承認後、`.env.local` にクライアントIDを設定します。AnalyticsとSearch Consoleの確認コードも同じ場所で管理します。
+本番URL:
+
+```text
+https://www.wannavi.online
+```
+
+Google AnalyticsはVercelのEnvironment Variablesで設定します。AdSense承認後、同じ場所にクライアントIDを追加します。
 
 ```bash
 NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXX
-NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
-NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=google-site-verification-code
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-GKHT28VF83
 ```
+
+Search Consoleの所有権確認は、`public/google2113cf3ce542cca7.html` のHTMLファイル方式で対応しています。
 
 記事内の `AdSlot` に広告スロットIDを入れると、広告タグとして出力されます。
 
@@ -107,7 +114,7 @@ npm run smoke:site
 別URLを確認する場合:
 
 ```bash
-SMOKE_BASE_URL=https://wannavi.online npm run smoke:site
+SMOKE_BASE_URL=https://www.wannavi.online npm run smoke:site
 ```
 
 `smoke:site` は、トップ、記事、カテゴリ、タグ、固定ページ、SEO系ファイル、未設定時の `/go/...` リダイレクトを確認します。
@@ -119,6 +126,7 @@ npm run production:check
 ```
 
 `production:check` は、AdSense / Analytics / Search Console / 外部リンクURL / 運営者情報のプレースホルダーが残っていると失敗します。
+AdSense承認前やASP登録前は、AdSense IDと外部リンクURLが未設定なので失敗して正常です。
 シェル環境変数だけでなく、`.env.local` も読み取ります。
 
 GitHubに置く場合は、同じチェックが `.github/workflows/ci.yml` でも走ります。
@@ -187,39 +195,35 @@ vr-creator
 
 ## 公開前に差し替えるもの
 
-- `src/lib/site.ts` の `contactEmail`
 - `AffiliateCTA` と `ToolRecommendation` の `href`
 - `src/lib/outbound-links.ts` の `url`
 - `.env.local` の `NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT`
-- `.env.local` の `NEXT_PUBLIC_GA_MEASUREMENT_ID`
-- `.env.local` の `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`
 - `AdSlot` の `adSlotId`
-- 実際の運営者情報
+- 必要に応じて `src/lib/site.ts` の `contactEmail`
 
 ## デプロイ手順の目安
 
 詳細な公開チェックリストは [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md) にまとめています。
 
-1. GitHubにリポジトリを作る
-2. VercelでこのリポジトリをImportする
-3. `wannavi.online` をVercelのDomainsに追加する
-4. DNS側でVercel指定のレコードを設定する
-5. VercelのEnvironment Variablesに `NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT`, `NEXT_PUBLIC_GA_MEASUREMENT_ID`, `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` を入れる
-6. Search Consoleに `https://wannavi.online/sitemap.xml` を送信する
-7. AdSense審査後、`src/lib/monetization.ts` と記事内CTAの `href` を実リンクへ差し替える
+1. GitHubにpushする
+2. Vercelの自動デプロイが通ることを確認する
+3. Search Consoleに `https://www.wannavi.online/sitemap.xml` を送信する
+4. GA4のリアルタイム計測を確認する
+5. AdSense審査後、`NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT` を設定する
+6. ASP登録後、`src/lib/monetization.ts` と記事内CTAの `href` を実リンクへ差し替える
 
 `vercel.json` では、`feed.xml` と `ads.txt` のキャッシュ、基本的なセキュリティヘッダーを設定しています。
 
 RSS:
 
 ```text
-https://wannavi.online/feed.xml
+https://www.wannavi.online/feed.xml
 ```
 
 AdSense用ads.txt:
 
 ```text
-https://wannavi.online/ads.txt
+https://www.wannavi.online/ads.txt
 ```
 
 `NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT=ca-pub-...` を設定してビルドすると、`ads.txt` に `pub-...` が自動で入ります。
