@@ -91,7 +91,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       />
     ),
     DisclosureNote,
-    ToolRecommendation,
+    ToolRecommendation: (props: ComponentProps<typeof ToolRecommendation>) => (
+      <ToolRecommendation
+        {...props}
+        href={props.href ?? offer?.href}
+        trackingLabel={props.trackingLabel ?? `tool:${article.slug}`}
+      />
+    ),
   };
 
   const { content } = await compileMDX({
