@@ -24,13 +24,19 @@ const checks = [
   { path: "/robots.txt", includes: "Disallow: /go/" },
   { path: "/feed.xml", includes: "<rss version=\"2.0\">" },
   { path: "/ads.txt", includes: "google.com, pub-9852760004523512" },
-  { path: "/go/ai-tools", expectedStatus: 302, locationIncludes: "/disclosure" },
-  { path: "/go/dtm-starter-kit", expectedStatus: 302, locationIncludes: "/disclosure" },
-  { path: "/go/vr-creator-kit", expectedStatus: 302, locationIncludes: "/disclosure" },
-  { path: "/go/instrument-starter-kit", expectedStatus: 302, locationIncludes: "/disclosure" },
+  { path: "/go/ai-tools", expectedStatus: 302, requiresLocation: true },
+  { path: "/go/dtm-starter-kit", expectedStatus: 302, requiresLocation: true },
+  { path: "/go/vr-creator-kit", expectedStatus: 302, requiresLocation: true },
+  { path: "/go/instrument-starter-kit", expectedStatus: 302, requiresLocation: true },
 ];
 
-async function checkRoute({ path, includes, expectedStatus = 200, locationIncludes }) {
+async function checkRoute({
+  path,
+  includes,
+  expectedStatus = 200,
+  locationIncludes,
+  requiresLocation = false,
+}) {
   const url = new URL(path, baseUrl);
   const response = await fetch(url, { redirect: "manual" });
   const text = await response.text();
@@ -43,9 +49,14 @@ async function checkRoute({ path, includes, expectedStatus = 200, locationInclud
     throw new Error(`${path}: missing expected text "${includes}"`);
   }
 
-  if (locationIncludes) {
+  if (locationIncludes || requiresLocation) {
     const location = response.headers.get("location") ?? "";
-    if (!location.includes(locationIncludes)) {
+
+    if (requiresLocation && !location) {
+      throw new Error(`${path}: expected non-empty Location header`);
+    }
+
+    if (locationIncludes && !location.includes(locationIncludes)) {
       throw new Error(`${path}: expected Location to include "${locationIncludes}", got "${location}"`);
     }
   }
