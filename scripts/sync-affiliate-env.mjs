@@ -8,6 +8,8 @@ const envFile = process.env.AFFILIATE_ENV_FILE ?? ".env.affiliate.local";
 const envPath = path.join(root, envFile);
 const apply = process.argv.includes("--apply");
 const requiredLinks = readAffiliateLinks();
+const npx = process.platform === "win32" ? "npx.cmd" : "npx";
+const useShell = process.platform === "win32";
 
 function readEnvFile() {
   if (!fs.existsSync(envPath)) {
@@ -69,9 +71,10 @@ function validateUrl(key, value) {
 
 function vercelEnvList() {
   try {
-    return execFileSync("npx", ["vercel", "env", "ls"], {
+    return execFileSync(npx, ["vercel", "env", "ls"], {
       cwd: root,
       encoding: "utf8",
+      shell: useShell,
       stdio: ["ignore", "pipe", "pipe"],
     });
   } catch (error) {
@@ -122,10 +125,11 @@ for (const link of uniqueLinks) {
     continue;
   }
 
-  const child = spawnSync("npx", ["vercel", "env", "add", link.envKey, "production"], {
+  const child = spawnSync(npx, ["vercel", "env", "add", link.envKey, "production"], {
     cwd: root,
     input: `${localEnv[link.envKey]}\n`,
     encoding: "utf8",
+    shell: useShell,
     stdio: ["pipe", "pipe", "pipe"],
   });
 

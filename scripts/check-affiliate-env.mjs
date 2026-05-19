@@ -3,7 +3,7 @@ import path from "node:path";
 import { readAffiliateLinks } from "./read-affiliate-links.mjs";
 
 const root = process.cwd();
-const envFiles = [".env.local", ".env"];
+const envFiles = [".env.affiliate.local", ".env.local", ".env"];
 
 const links = readAffiliateLinks();
 
