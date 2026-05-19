@@ -1,7 +1,8 @@
 export type OutboundLink = {
   id: string;
   label: string;
-  url: string;
+  envKey: string;
+  fallbackUrl?: string;
   category: "ai-engineer" | "dtm" | "vr-creator" | "instrument-player" | "general";
 };
 
@@ -9,31 +10,35 @@ export const outboundLinks: OutboundLink[] = [
   {
     id: "ai-tools",
     label: "AI開発ツール候補",
-    url: "",
+    envKey: "AFFILIATE_AI_TOOLS_URL",
     category: "ai-engineer",
   },
   {
     id: "dtm-starter-kit",
     label: "DTM初心者向け機材候補",
-    url: "",
+    envKey: "AFFILIATE_DTM_STARTER_KIT_URL",
     category: "dtm",
   },
   {
     id: "vr-creator-kit",
     label: "VR制作環境候補",
-    url: "",
+    envKey: "AFFILIATE_VR_CREATOR_KIT_URL",
     category: "vr-creator",
   },
   {
     id: "instrument-starter-kit",
     label: "楽器練習スタート候補",
-    url: "",
+    envKey: "AFFILIATE_INSTRUMENT_STARTER_KIT_URL",
     category: "instrument-player",
   },
 ];
 
 export function getOutboundLink(id: string) {
   return outboundLinks.find((link) => link.id === id);
+}
+
+export function getOutboundUrl(link: OutboundLink) {
+  return process.env[link.envKey] || link.fallbackUrl || "";
 }
 
 export function outboundHref(id: string) {

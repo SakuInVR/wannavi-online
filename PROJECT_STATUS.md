@@ -39,6 +39,7 @@
 - 記事ページにPR表記、目次、カテゴリ別CTA、広告枠、関連記事、タグリンクが自動で入る
 - `sitemap.xml`、`robots.txt`、`feed.xml`、`ads.txt` がある
 - `/go/...` で外部リンクを中央管理できる
+- `/go/...` の遷移先をVercel Environment Variablesの `AFFILIATE_*_URL` で差し替えられる
 - `/go/...` は `robots.txt` でクロール対象から外している
 - GA4がある場合、CTAクリックイベントを送れる
 - OG画像を自動生成できる
@@ -81,8 +82,8 @@ npm run production:check
 
 - AdSenseのサイト審査を完了させる
 - ASP、Amazon、楽天などのリンクを準備する
-- `src/lib/outbound-links.ts` の `url` を実リンクへ差し替える
-- 必要に応じて記事内の `AffiliateCTA` と `ToolRecommendation` の `href` を実リンクへ差し替える
+- Vercel Environment Variablesの `AFFILIATE_*_URL` に実リンクを設定する
+- 必要に応じて記事内の個別 `AffiliateCTA` と `ToolRecommendation` の `href` を実リンクへ差し替える
 - AdSense承認後、必要なら広告スロットIDを記事内 `AdSlot` に設定する
 - 実運用の問い合わせ先を変える場合は `src/lib/site.ts` の `contactEmail` を変更する
 

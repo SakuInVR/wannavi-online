@@ -125,8 +125,8 @@ SMOKE_BASE_URL=https://www.wannavi.online npm run smoke:site
 npm run production:check
 ```
 
-`production:check` は、AdSense / Analytics / Search Console / 外部リンクURL / 運営者情報のプレースホルダーが残っていると失敗します。
-AdSense承認前やASP登録前は、AdSense IDと外部リンクURLが未設定なので失敗して正常です。
+`production:check` は、AdSense / Analytics / Search Console / アフィリエイトURL / 運営者情報のプレースホルダーが残っていると失敗します。
+ASP登録前はアフィリエイトURLが未設定なので失敗して正常です。
 シェル環境変数だけでなく、`.env.local` も読み取ります。
 
 GitHubに置く場合は、同じチェックが `.github/workflows/ci.yml` でも走ります。
@@ -196,8 +196,7 @@ instrument-player
 
 ## 公開前に差し替えるもの
 
-- `AffiliateCTA` と `ToolRecommendation` の `href`
-- `src/lib/outbound-links.ts` の `url`
+- Vercel Environment Variablesの `AFFILIATE_*_URL`
 - `.env.local` の `NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT`
 - `AdSlot` の `adSlotId`
 - 必要に応じて `src/lib/site.ts` の `contactEmail`
@@ -211,7 +210,7 @@ instrument-player
 3. Search Consoleに `https://www.wannavi.online/sitemap.xml` を送信する
 4. GA4のリアルタイム計測を確認する
 5. AdSense審査後、`NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT` を設定する
-6. ASP登録後、`src/lib/monetization.ts` と記事内CTAの `href` を実リンクへ差し替える
+6. ASP登録後、Vercel Environment Variablesの `AFFILIATE_*_URL` に実リンクを設定する
 
 `vercel.json` では、`feed.xml` と `ads.txt` のキャッシュ、基本的なセキュリティヘッダーを設定しています。
 
@@ -243,9 +242,16 @@ https://www.wannavi.online/ads.txt
 
 まずは各カテゴリに、集客記事3本、収益記事1本を追加するとサイトの導線が見えやすくなります。
 
-カテゴリ別の自動CTAは `src/lib/monetization.ts` で管理します。ASPやAmazonのリンクが決まったら、各カテゴリの `href` を差し替えます。
+カテゴリ別の自動CTAは `src/lib/monetization.ts` で管理します。ASPやAmazonのリンクが決まったら、Vercel Environment Variablesに以下を設定します。
 
-外部リンクは `src/lib/outbound-links.ts` に集約しています。ASPやAmazonの実URLが決まったら、まずここの `url` を差し替えます。未設定の `/go/...` は広告PR表記ページへリダイレクトされます。
+```text
+AFFILIATE_AI_TOOLS_URL
+AFFILIATE_DTM_STARTER_KIT_URL
+AFFILIATE_VR_CREATOR_KIT_URL
+AFFILIATE_INSTRUMENT_STARTER_KIT_URL
+```
+
+外部リンクIDと環境変数名は `src/lib/outbound-links.ts` に集約しています。未設定の `/go/...` は広告PR表記ページへリダイレクトされます。
 
 `/go/...` は外部リンク用の中継URLです。検索に載せたいページではないため、`robots.txt` でクロール対象から外します。
 

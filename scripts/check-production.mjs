@@ -79,8 +79,12 @@ for (const name of requiredEnv) {
 }
 
 const outboundLinks = read("src/lib/outbound-links.ts");
-assert(!outboundLinks.includes('url: "",'), "Outbound link registry still contains empty urls");
-assert(!outboundLinks.includes("url: ''"), "Outbound link registry still contains empty urls");
+const affiliateEnvKeys = [...outboundLinks.matchAll(/envKey:\s*"([^"]+)"/g)].map(
+  (match) => match[1],
+);
+for (const key of affiliateEnvKeys) {
+  assert(Boolean(getConfigValue(key)), `Missing affiliate URL environment variable: ${key}`);
+}
 
 const site = read("src/lib/site.ts");
 assert(

@@ -93,7 +93,8 @@ affiliateIntent: "high" の記事を1本以上
 外部リンクID
 ```
 
-収益CTAは `src/lib/monetization.ts`、外部リンクIDは `src/lib/outbound-links.ts` に追加します。
+収益CTAは `src/lib/monetization.ts`、外部リンクIDと環境変数名は `src/lib/outbound-links.ts` に追加します。
+ASPやAmazonの実リンクは、コードではなくVercel Environment Variablesの `AFFILIATE_*_URL` に入れます。
 
 ## draft
 

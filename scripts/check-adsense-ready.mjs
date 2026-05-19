@@ -112,7 +112,10 @@ assert(
 );
 
 const outboundLinks = read("src/lib/outbound-links.ts");
-warn(!outboundLinks.includes('url: "",'), "Outbound links still point to disclosure until real affiliate URLs are available.");
+warn(
+  outboundLinks.includes("envKey:"),
+  "Outbound links should be managed by affiliate URL environment variables.",
+);
 
 const siteConfig = read("src/lib/site.ts");
 assert(
