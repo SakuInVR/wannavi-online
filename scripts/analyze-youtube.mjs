@@ -18,12 +18,14 @@ if (!apiKey) {
 }
 
 function slugify(value) {
-  return value
+  const slug = value
     .toLowerCase()
     .replace(/https?:\/\//g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
+
+  return slug || `youtube-research-${new Date().toISOString().slice(0, 10)}`;
 }
 
 async function analyzeVideo(url, index) {

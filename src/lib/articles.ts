@@ -15,6 +15,7 @@ export type ArticleFrontmatter = {
   updatedAt?: string;
   heroLabel?: string;
   tags?: string[];
+  sourceVideos?: string[];
   affiliateIntent?: "low" | "medium" | "high";
   draft?: boolean;
 };
