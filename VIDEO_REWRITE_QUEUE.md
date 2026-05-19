@@ -34,7 +34,7 @@
 
 ### VRクリエイター
 
-- `vrchat-quest-avatar.mdx`
+- [x] `vrchat-quest-avatar.mdx`
   - Quest対応の実作業動画を参照する
 - `vrchat-shader-basics.mdx`
   - シェーダー設定の画面解説動画を参照する
