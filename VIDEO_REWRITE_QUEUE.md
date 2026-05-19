@@ -38,7 +38,7 @@
   - Quest対応の実作業動画を参照する
 - `vrchat-shader-basics.mdx`
   - シェーダー設定の画面解説動画を参照する
-- `vrchat-avatar-commission-checklist.mdx`
+- [x] `vrchat-avatar-commission-checklist.mdx`
   - アバター依頼・改変の経験談動画を参照する
 
 ## リライト完了条件
