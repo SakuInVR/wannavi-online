@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ComponentProps } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { compileMDX } from "next-mdx-remote/rsc";
@@ -19,18 +20,12 @@ import {
   getArticleBySlug,
   getRelatedArticles,
 } from "@/lib/articles";
+import { getMonetizationOffer } from "@/lib/monetization";
 import { siteConfig } from "@/lib/site";
 import { articleJsonLd, breadcrumbJsonLd } from "@/lib/structured-data";
 
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
-};
-
-const mdxComponents = {
-  AdSlot,
-  AffiliateCTA,
-  DisclosureNote,
-  ToolRecommendation,
 };
 
 export function generateStaticParams() {
@@ -84,6 +79,20 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   if (article.draft) {
     notFound();
   }
+
+  const offer = getMonetizationOffer(article.category);
+  const mdxComponents = {
+    AdSlot,
+    AffiliateCTA: (props: ComponentProps<typeof AffiliateCTA>) => (
+      <AffiliateCTA
+        {...props}
+        href={props.href ?? offer?.href}
+        trackingLabel={props.trackingLabel ?? `inline:${article.slug}`}
+      />
+    ),
+    DisclosureNote,
+    ToolRecommendation,
+  };
 
   const { content } = await compileMDX({
     source: article.body,
