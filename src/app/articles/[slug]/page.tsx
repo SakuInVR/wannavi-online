@@ -138,7 +138,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <div className="mt-6 flex flex-wrap gap-3 text-sm font-semibold text-slate-500">
           <span>{article.publishedAt}</span>
           <span>{article.readingMinutes}</span>
-          {article.affiliateIntent ? <span>収益導線: {article.affiliateIntent}</span> : null}
         </div>
         {article.tags?.length ? (
           <div className="mt-5 flex flex-wrap gap-2">

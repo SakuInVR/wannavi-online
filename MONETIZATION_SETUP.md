@@ -24,6 +24,8 @@ AFFILIATE_VR_CREATOR_KIT_URL=
 AFFILIATE_INSTRUMENT_STARTER_KIT_URL=
 ```
 
+ASP別のリンク作成手順とカテゴリ対応は [ASP_LINKING_RUNBOOK.md](./ASP_LINKING_RUNBOOK.md) にまとめています。
+
 設定後はProductionを再デプロイします。
 
 ## アフィリエイト確認コマンド
