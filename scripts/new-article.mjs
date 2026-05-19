@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const categories = new Set(["ai-engineer", "dtm", "vr-creator"]);
+const categories = new Set(["ai-engineer", "dtm", "vr-creator", "instrument-player"]);
 
 function toSlug(value) {
   return value
@@ -60,18 +60,32 @@ tags:
   - "ロードマップ"
 affiliateIntent: "medium"
 draft: true
+sourceVideos:
+  - "https://www.youtube.com/watch?v=REPLACE_ME_1"
+  - "https://www.youtube.com/watch?v=REPLACE_ME_2"
+  - "https://www.youtube.com/watch?v=REPLACE_ME_3"
 ---
 
-導入文。読者の「なりたい」と「今つまずいていること」を最初に拾う。
+この記事は動画リサーチ前提の下書きです。公開前に次を必ず完了してください。
 
-PR表記、カテゴリ別CTA、記事下広告枠は記事ページ側で自動挿入されます。
-\`affiliateIntent\` はサイト内の管理ラベルです。迷ったら \`CONTENT_GUIDE.md\` を見てください。
+- タイトルに合うYouTube動画3本を選ぶ
+- \`npm run analyze:youtube\` で分析する
+- \`research/youtube/\` に分析JSONを残す
+- 本文末尾の \`## 参考にした視点\` を実URLで埋める
 
 ## この記事のゴール
 
 - 読者ができるようになること
 - 最初にそろえるもの
-- 次に読む記事への導線
+- 今日やる1ステップ
+
+## 動画から見えた具体例
+
+3本の動画に共通していた具体例、作業画面、練習手順、失敗談をここに整理する。
+
+## 初心者がつまずくポイント
+
+読者が止まりやすい場面と、その場での判断基準を書く。
 
 ## 最初に必要なもの
 
@@ -81,9 +95,9 @@ PR表記、カテゴリ別CTA、記事下広告枠は記事ページ側で自動
   priceHint="無料枠からでOK"
 />
 
-## よくある挫折ポイント
+## 買わなくていいもの、急がなくていいもの
 
-ここに初心者が止まりやすいところを書く。
+読者が不安で買いすぎないように、後回しにできるものも書く。
 
 <AffiliateCTA
   title="関連する教材・機材・サービス"
@@ -91,9 +105,15 @@ PR表記、カテゴリ別CTA、記事下広告枠は記事ページ側で自動
   label="候補を見る"
 />
 
-## 次にやること
+## 今日やること
 
-今日やる具体的な1ステップを書く。
+読者が今日できる具体的な1ステップを書く。
+
+## 参考にした視点
+
+- [動画1タイトル](https://www.youtube.com/watch?v=REPLACE_ME_1): 何を参考にしたか。
+- [動画2タイトル](https://www.youtube.com/watch?v=REPLACE_ME_2): 何を参考にしたか。
+- [動画3タイトル](https://www.youtube.com/watch?v=REPLACE_ME_3): 何を参考にしたか。
 `;
 
 fs.mkdirSync(articlesDirectory, { recursive: true });

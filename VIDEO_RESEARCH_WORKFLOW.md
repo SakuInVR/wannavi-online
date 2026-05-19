@@ -1,35 +1,44 @@
 # Video Research Workflow
 
-Wanna Naviの記事は、今後「タイトル決定 → YouTube動画3本選定 → Gemini分析 → 記事執筆」の順で作成します。
+Wanna Naviの記事は、今後この順番で作成します。
+
+```text
+タイトル決定
+→ YouTube動画3本を選定
+→ Gemini APIまたはユーザー指定AIで3本を分析
+→ 分析結果から具体例、つまずき、判断基準を抽出
+→ MDX記事化
+→ 検証して公開
+```
 
 ## なぜ動画を見るか
 
-既存の記事は、構成はあるものの具体的な経験例が薄くなりやすい課題があります。
-YouTubeの解説動画を参照すると、実際の練習画面、つまずき方、話し手の悩み、道具の使い方が見えます。
-記事では動画を丸写しせず、複数動画から共通する具体例と読者の判断基準を抽出します。
+既存記事は、構成はあっても具体的な経験例が薄くなりやすい課題があります。
+
+YouTubeの解説動画を参照すると、実際の練習画面、作業手順、つまずき方、機材の使い方、話し手の判断基準が見えます。記事では動画を丸写しせず、複数動画から共通する具体例と読者の判断基準を抽出します。
 
 ## 記事作成の順番
 
 1. 記事タイトルを決める
-2. そのタイトルに合うYouTube動画を3本選ぶ
-3. Gemini API、またはユーザー指定のAIで3本を分析する
-4. 分析結果から、具体例、つまずき、判断基準、手順を抽出する
-5. MDX記事を書く
-6. 動画を参照したことを記事末尾の「参考にした視点」に短く残す
-7. `npm run preflight`
-8. GitHubへpush
-9. 本番URLで表示確認
+2. タイトルに合うYouTube動画を3本選ぶ
+3. `npm run analyze:youtube` で3本をGemini分析する
+4. `research/youtube/` に保存されたJSONを読む
+5. MDX frontmatterに `sourceVideos` を3本入れる
+6. 本文末尾に `## 参考にした視点` を入れる
+7. 動画由来の具体例を、読者向けの手順や判断基準に変換する
+8. `npm run preflight` を通す
+9. GitHubへpushする
+10. 必要に応じて本番URLで表示を確認する
 
 ## Geminiで動画分析する
 
-公開YouTube URLを3本用意して、次を実行します。
-
 ```bash
-npm run analyze:youtube -- "記事タイトル" "https://www.youtube.com/watch?v=..." "https://www.youtube.com/watch?v=..." "https://www.youtube.com/watch?v=..."
+npm run analyze:youtube -- "article-slug-or-title" "https://www.youtube.com/watch?v=..." "https://www.youtube.com/watch?v=..." "https://www.youtube.com/watch?v=..."
 ```
 
-`GEMINI_API_KEY` が必要です。
-分析結果は `research/youtube/` にJSONで保存されます。
+`GEMINI_API_KEY` が必要です。分析結果は `research/youtube/` にJSONとして保存されます。
+
+PowerShellで日本語引数が文字化けする場合は、分析ファイル名を安定させるために英字slugを使います。記事本文とfrontmatterのタイトルは日本語で書きます。
 
 ## 動画選定基準
 
@@ -41,22 +50,33 @@ npm run analyze:youtube -- "記事タイトル" "https://www.youtube.com/watch?v
 3本目: 買い物、失敗談、比較、経験談があるもの
 ```
 
-同じ主張の動画だけを3本選ばないようにします。
-記事では、複数動画に共通する内容を中心にし、1本だけの主張は「一例」として扱います。
+同じ主張の動画だけを3本選ばないようにします。記事では、複数動画に共通する内容を中心にしつつ、1本だけの主張は「一例」として扱います。
 
 ## 記事に入れる必須要素
 
 - 動画から見えた具体的な場面
 - 初心者が止まりやすい瞬間
-- まずやる小さい手順
+- 最初にやる小さな手順
 - 買わなくていいもの、急がなくていいもの
-- 読者が今日できる1ステップ
+- 今日できる1ステップ
 - 必要なら収益導線
 
-## 注意
+## 注意点
 
-- 動画の内容を長く引用しない
-- 動画制作者の主張を断定的に一般化しない
-- 商品紹介は、動画の影響だけで決めない
-- 公開記事では、参照元動画のURLを必要に応じて明記する
+- 動画内容を長く引用しない
+- 動画制作者の主張を絶対視しない
+- 商品紹介を動画の影響だけで決めない
+- 公開記事では参照したYouTube URLを明記する
 - Geminiの分析結果は事実確認なしで鵜呑みにしない
+
+## 検証
+
+動画分析型の記事は、次を満たす必要があります。
+
+```text
+sourceVideos が3本ある
+対応する research/youtube の分析JSONがある
+本文に ## 参考にした視点 がある
+```
+
+このチェックは `npm run validate:video-research` と `npm run preflight` に含まれます。
