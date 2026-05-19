@@ -17,6 +17,7 @@
     "smoke:site": "node scripts/smoke-site.mjs",
     "production:check": "node scripts/check-production.mjs",
     "production:content": "node scripts/check-production-content.mjs",
+    "deployment:check": "node scripts/check-deployment-status.mjs",
     "adsense:check": "node scripts/check-adsense-ready.mjs",
     "affiliate:check": "node scripts/check-affiliate-redirects.mjs",
     "analyze:youtube": "node scripts/analyze-youtube.mjs",

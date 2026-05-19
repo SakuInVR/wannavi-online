@@ -28,6 +28,12 @@ AFFILIATE_INSTRUMENT_STARTER_KIT_URL=
 
 ## アフィリエイト確認コマンド
 
+Vercelのデプロイ状態確認:
+
+```bash
+npm run deployment:check
+```
+
 本番向けの未設定確認:
 
 ```bash
