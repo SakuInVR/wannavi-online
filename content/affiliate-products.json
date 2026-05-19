@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "id": "rakuten-marketplace",
+    "label": "楽天市場",
+    "envKey": "AFFILIATE_RAKUTEN_MARKETPLACE_URL",
+    "category": "general",
+    "asp": "moshimo",
+    "articleSlugs": [
+      "dtm-first-tools",
+      "dtm-audio-interface-first",
+      "vrchat-starter-gear-guide",
+      "instrument-first-instrument-guide",
+      "instrument-digital-piano-guide"
+    ],
+    "memo": "もしもアフィリエイトで提携中。楽器、DTM機材、VR機材、PC周辺機器などの物販導線に使う。報酬率は画面確認時点で2%。"
+  },
+  {
+    "id": "video-editor-training",
+    "label": "動画教材エディター養成コース",
+    "envKey": "AFFILIATE_VIDEO_EDITOR_TRAINING_URL",
+    "category": "ai-engineer",
+    "asp": "a8",
+    "articleSlugs": ["video-editor-training-start"],
+    "memo": "A8で広告リンク作成画面を確認済み。既存記事に無理に差し込むより、動画教材エディターになりたい人向けの記事を商品起点で作る候補。"
+  }
+]
