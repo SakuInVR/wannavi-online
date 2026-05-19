@@ -3,7 +3,17 @@ import path from "node:path";
 import matter from "gray-matter";
 
 const articlesDirectory = path.join(process.cwd(), "content", "articles");
-const categories = ["ai-engineer", "dtm", "vr-creator"];
+
+function read(relativePath) {
+  return fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
+}
+
+function getCategorySlugs() {
+  const site = read("src/lib/site.ts");
+  return [...site.matchAll(/slug:\s*"([^"]+)"/g)].map((match) => match[1]);
+}
+
+const categories = getCategorySlugs();
 
 const report = Object.fromEntries(
   categories.map((category) => [

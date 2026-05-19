@@ -38,7 +38,7 @@ export default function Home() {
             </div>
           </div>
           <div className="rounded-lg border border-white/10 bg-white/5 p-5">
-            <div className="grid gap-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
               {categories.map((category) => (
                 <Link
                   key={category.slug}

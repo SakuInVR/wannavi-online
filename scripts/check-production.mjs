@@ -39,7 +39,27 @@ function parseEnvFile(relativePath) {
 
 function getConfigValue(name) {
   const localEnv = parseEnvFile(".env.local");
-  return process.env[name] || localEnv[name];
+  const envValue = process.env[name] || localEnv[name];
+
+  if (envValue) {
+    return envValue;
+  }
+
+  const site = read("src/lib/site.ts");
+  if (name === "NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT") {
+    return site.match(/adsenseClient:\s*"([^"]+)"/)?.[1];
+  }
+  if (name === "NEXT_PUBLIC_GA_MEASUREMENT_ID") {
+    return site.match(/gaMeasurementId:\s*"([^"]+)"/)?.[1];
+  }
+  if (
+    name === "NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION" &&
+    fs.existsSync(path.join(root, "public", "google2113cf3ce542cca7.html"))
+  ) {
+    return "html-file-verification";
+  }
+
+  return undefined;
 }
 
 function assert(condition, message) {

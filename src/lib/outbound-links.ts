@@ -2,7 +2,7 @@ export type OutboundLink = {
   id: string;
   label: string;
   url: string;
-  category: "ai-engineer" | "dtm" | "vr-creator" | "general";
+  category: "ai-engineer" | "dtm" | "vr-creator" | "instrument-player" | "general";
 };
 
 export const outboundLinks: OutboundLink[] = [
@@ -23,6 +23,12 @@ export const outboundLinks: OutboundLink[] = [
     label: "VR制作環境候補",
     url: "",
     category: "vr-creator",
+  },
+  {
+    id: "instrument-starter-kit",
+    label: "楽器練習スタート候補",
+    url: "",
+    category: "instrument-player",
   },
 ];
 

@@ -1,7 +1,8 @@
 import Script from "next/script";
+import { siteConfig } from "@/lib/site";
 
 export function AdSenseScript() {
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT;
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT ?? siteConfig.adsenseClient;
 
   if (!clientId) {
     return null;

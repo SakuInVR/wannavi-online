@@ -30,6 +30,13 @@ export const monetizationOffers: Record<CategorySlug, MonetizationOffer> = {
     label: "VR制作の候補を見る",
     href: outboundHref("vr-creator-kit"),
   },
+  "instrument-player": {
+    title: "楽器練習を続けるための基本セット",
+    description:
+      "最初の楽器、練習環境、譜面、録音、レッスン候補を、続けやすさから整理します。",
+    label: "楽器練習の候補を見る",
+    href: outboundHref("instrument-starter-kit"),
+  },
 };
 
 export function getMonetizationOffer(category: string) {

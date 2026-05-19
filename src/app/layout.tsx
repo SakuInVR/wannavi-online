@@ -42,6 +42,9 @@ export const metadata: Metadata = {
         google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
       }
     : undefined,
+  other: {
+    "google-adsense-account": siteConfig.adsenseClient,
+  },
 };
 
 export default function RootLayout({
@@ -59,7 +62,7 @@ export default function RootLayout({
             <Link href="/" className="text-lg font-black tracking-tight text-slate-950">
               Wanna Navi
             </Link>
-            <nav className="flex items-center gap-4 text-sm font-bold text-slate-600">
+            <nav className="flex flex-wrap items-center gap-4 text-sm font-bold text-slate-600">
               <Link href="/articles" className="hover:text-slate-950">
                 Articles
               </Link>
@@ -77,6 +80,9 @@ export default function RootLayout({
               </Link>
               <Link href="/categories/vr-creator" className="hover:text-slate-950">
                 VR
+              </Link>
+              <Link href="/categories/instrument-player" className="hover:text-slate-950">
+                Music
               </Link>
             </nav>
           </div>

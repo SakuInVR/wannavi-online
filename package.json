@@ -15,6 +15,7 @@
     "audit:site": "node scripts/audit-site.mjs",
     "smoke:site": "node scripts/smoke-site.mjs",
     "production:check": "node scripts/check-production.mjs",
+    "adsense:check": "node scripts/check-adsense-ready.mjs",
     "preflight": "npm run validate:content && npm run audit:site && npm run lint && npm run build",
     "report:content": "node scripts/report-content.mjs"
   },

@@ -49,7 +49,12 @@ const requiredFiles = [
   "PROJECT_STATUS.md",
 ];
 
-const categories = ["ai-engineer", "dtm", "vr-creator"];
+function getCategorySlugs() {
+  const site = read("src/lib/site.ts");
+  return [...site.matchAll(/slug:\s*"([^"]+)"/g)].map((match) => match[1]);
+}
+
+const categories = getCategorySlugs();
 const minimumArticlesPerCategory = 4;
 
 function read(relativePath) {
@@ -134,6 +139,11 @@ const outboundLinks = read("src/lib/outbound-links.ts");
 assert(outboundLinks.includes("ai-tools"), "Outbound link registry is missing AI offer", failures);
 assert(outboundLinks.includes("dtm-starter-kit"), "Outbound link registry is missing DTM offer", failures);
 assert(outboundLinks.includes("vr-creator-kit"), "Outbound link registry is missing VR offer", failures);
+assert(
+  outboundLinks.includes("instrument-starter-kit"),
+  "Outbound link registry is missing instrument player offer",
+  failures,
+);
 
 const envExample = read(".env.example");
 assert(envExample.includes("NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT"), ".env.example is missing AdSense variable", failures);

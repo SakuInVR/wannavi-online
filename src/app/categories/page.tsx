@@ -39,7 +39,7 @@ export default function CategoriesPage() {
         <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
           なりたい姿ごとに、最初の一歩と必要な道具を整理しています。
         </p>
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
+        <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {categories.map((category) => (
             <Link
               key={category.slug}

@@ -79,6 +79,22 @@ CIで検証が走る
 
 このうち、機材/教材/ツール選びの記事は `affiliateIntent: "high"` にしやすいです。
 
+## カテゴリを追加するとき
+
+カテゴリを追加するときは、まず `src/lib/site.ts` の `categories` に1件足します。
+カテゴリページ、トップページ、サイトマップ、記事レポート、監査はこのカテゴリ一覧を参照します。
+
+追加直後は、次をそろえるとサイト全体の品質を保ちやすくなります。
+
+```text
+4記事以上
+affiliateIntent: "high" の記事を1本以上
+カテゴリ別の収益CTA
+外部リンクID
+```
+
+収益CTAは `src/lib/monetization.ts`、外部リンクIDは `src/lib/outbound-links.ts` に追加します。
+
 ## draft
 
 新しく作った記事は `draft: true` から始めます。

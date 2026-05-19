@@ -3,9 +3,19 @@ import path from "node:path";
 import matter from "gray-matter";
 
 const articlesDirectory = path.join(process.cwd(), "content", "articles");
-const allowedCategories = new Set(["ai-engineer", "dtm", "vr-creator"]);
 const allowedAffiliateIntents = new Set(["low", "medium", "high"]);
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+function read(relativePath) {
+  return fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
+}
+
+function getCategorySlugs() {
+  const site = read("src/lib/site.ts");
+  return [...site.matchAll(/slug:\s*"([^"]+)"/g)].map((match) => match[1]);
+}
+
+const allowedCategories = new Set(getCategorySlugs());
 
 function fail(message) {
   console.error(`- ${message}`);

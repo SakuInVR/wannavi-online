@@ -1,5 +1,7 @@
+import { siteConfig } from "@/lib/site";
+
 function getPublisherId() {
-  const client = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT;
+  const client = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT ?? siteConfig.adsenseClient;
 
   if (!client) {
     return undefined;

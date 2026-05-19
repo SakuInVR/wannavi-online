@@ -1,7 +1,8 @@
 import Script from "next/script";
+import { siteConfig } from "@/lib/site";
 
 export function AnalyticsScript() {
-  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? siteConfig.gaMeasurementId;
 
   if (!measurementId) {
     return null;
