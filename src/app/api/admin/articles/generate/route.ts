@@ -191,15 +191,21 @@ export async function POST(request: NextRequest) {
       .from("asp_materials")
       .select("*")
       .eq("status", "active")
+      .is("parent_id", null) // only parent groups
       .order("created_at", { ascending: false })
       .limit(20);
 
     if (allMaterials && allMaterials.length > 0) {
-      // Prefer materials with matching category_hint, then take up to 5
       const matched = allMaterials.filter(
         (m) => !m.category_hint || m.category_hint === category
       );
       const selected = (matched.length > 0 ? matched : allMaterials).slice(0, 5);
+
+      // Collect their IDs
+      materialIds.length = 0;
+      for (const m of selected) {
+        materialIds.push(m.id);
+      }
 
       aspMaterials = selected.map((m) => ({
         name: m.name,
@@ -263,9 +269,7 @@ export async function POST(request: NextRequest) {
     .insert({
       title,
       category,
-      asp_material_ids: aspMaterials.length > 0 
-        ? aspMaterials.map((_, i) => materialIds[i] ?? "") 
-        : [],
+      asp_material_ids: materialIds.filter(id => id && id !== ""),
       extra_instructions: extra_instructions ?? null,
       status: "running",
     })
@@ -308,11 +312,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: articleError.message }, { status: 500 });
     }
 
-    // Link ASP materials
-    if (aspMaterials.length > 0 && article) {
-      const rows = aspMaterials.map((m, i) => ({
+    // Link ASP materials (only if we have real UUIDs)
+    const validMaterialIds = materialIds.filter(id => id && id !== "");
+    if (validMaterialIds.length > 0 && article) {
+      const rows = validMaterialIds.map((mid) => ({
         article_id: article.id,
-        asp_material_id: materialIds[i] ?? "",
+        asp_material_id: mid,
       }));
       await supabase.from("article_asp_materials").insert(rows);
     }
