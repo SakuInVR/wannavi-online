@@ -125,13 +125,27 @@ export async function POST(request: NextRequest) {
   });
 
   // 5. Create job record
-  const slug = title
+  const baseSlug = title
     .toLowerCase()
     .normalize("NFKD")
     .replace(/[^a-z0-9\s-]/g, "")
     .trim()
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
+
+  // 重複slugを避ける
+  let slug = baseSlug;
+  let suffix = 2;
+  while (true) {
+    const { data: existing } = await supabase
+      .from("articles")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (!existing) break;
+    slug = `${baseSlug}-${suffix}`;
+    suffix++;
+  }
 
   const { data: job, error: jobError } = await supabase
     .from("article_generation_jobs")

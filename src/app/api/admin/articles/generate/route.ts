@@ -11,7 +11,7 @@ import type { AspMaterialForPrompt, VideoAnalysis } from "@/lib/deepseek";
 import { buildFeedbackInjection, fetchCategoryFeedback } from "@/lib/feedback";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = "gemini-1.5-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
 
 /* ------------------------------------------------------------------ */
 /* Step 1: Auto video research with Gemini                            */
@@ -272,13 +272,27 @@ export async function POST(request: NextRequest) {
     : buildArticleUserPrompt({ title, category });
 
   // ── Step 5: Create job record ──
-  const slug = title
+  const baseSlug = title
     .toLowerCase()
     .normalize("NFKD")
     .replace(/[^a-z0-9\s-]/g, "")
     .trim()
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
+
+  // 重複slugを避ける
+  let slug = baseSlug;
+  let suffix = 2;
+  while (true) {
+    const { data: existing } = await supabase
+      .from("articles")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (!existing) break;
+    slug = `${baseSlug}-${suffix}`;
+    suffix++;
+  }
 
   const { data: job, error: jobError } = await supabase
     .from("article_generation_jobs")
