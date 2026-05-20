@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { callDeepSeek, buildArticleSystemPrompt, buildArticleUserPrompt } from "@/lib/deepseek";
+import type { AspMaterialForPrompt } from "@/lib/deepseek";
 import { buildFeedbackInjection, fetchCategoryFeedback } from "@/lib/feedback";
 
 export async function POST(request: NextRequest) {
@@ -21,17 +22,15 @@ export async function POST(request: NextRequest) {
 
   const materialIds: string[] = asp_material_ids ?? [];
 
-  // 1. Fetch ASP materials
-  let aspMaterials: Array<{
-    name: string;
-    description: string | null;
-    affiliateUrl: string | null;
-  }> = [];
+  // 1. Fetch ASP materials with full metadata
+  let aspMaterials: AspMaterialForPrompt[] = [];
 
   if (materialIds.length > 0) {
     const { data: materials } = await supabase
       .from("asp_materials")
-      .select("name, description, affiliate_url")
+      .select(
+        "name, description, affiliate_url, price_note, usage_type, display_style, placement_context, variation_label"
+      )
       .in("id", materialIds);
 
     aspMaterials =
@@ -39,6 +38,11 @@ export async function POST(request: NextRequest) {
         name: m.name,
         description: m.description,
         affiliateUrl: m.affiliate_url,
+        priceNote: m.price_note,
+        usageType: m.usage_type ?? "recommendation",
+        displayStyle: m.display_style ?? "product_card",
+        placementContext: m.placement_context,
+        variationLabel: m.variation_label,
       })) ?? [];
   }
 
@@ -81,7 +85,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: jobError.message }, { status: 500 });
   }
 
-  // 5. Call DeepSeek (non-blocking-ish - we wait here but could be background)
+  // 5. Call DeepSeek
   try {
     const result = await callDeepSeek([
       { role: "system", content: systemPrompt },
@@ -107,7 +111,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (articleError) {
-      // Mark job as failed
       await supabase
         .from("article_generation_jobs")
         .update({ status: "failed", error_message: articleError.message })
@@ -137,7 +140,7 @@ export async function POST(request: NextRequest) {
       })
       .eq("id", job.id);
 
-    // 9. Attempt Discord notification (fire-and-forget)
+    // 9. Discord notification (fire-and-forget)
     const webhookUrl = process.env.DISCORD_REVIEW_WEBHOOK_URL;
     if (webhookUrl && article) {
       fetch(webhookUrl, {

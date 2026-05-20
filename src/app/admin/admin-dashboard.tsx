@@ -31,6 +31,10 @@ export interface AspMaterial {
   image_url: string | null;
   price_note: string | null;
   category_hint: string | null;
+  usage_type: string;
+  display_style: string;
+  placement_context: string | null;
+  variation_label: string | null;
   status: string;
   created_at: string;
 }
@@ -65,9 +69,8 @@ export function AdminDashboard({
   const [pending, setPending] = useState<Article[]>(initialPending);
   const [categories, setCategories] = useState<UserCategory[]>(initialCategories);
   const [aspMaterials, setAspMaterials] = useState<AspMaterial[]>(initialAspMaterials);
-  const [stats, setStats] = useState(initialStats);
+  const [, setStats] = useState(initialStats);
 
-  /* refresh helpers */
   async function refreshPending() {
     const res = await fetch("/api/admin/articles/pending");
     if (res.ok) setPending(await res.json());
@@ -81,7 +84,6 @@ export function AdminDashboard({
     if (res.ok) setAspMaterials(await res.json());
   }
 
-  // Refresh all data on mount and tab switch
   useEffect(() => {
     if (!supabaseConfigured) return;
     refreshPending();
@@ -110,14 +112,12 @@ export function AdminDashboard({
 
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="border-b border-gray-200 bg-white px-4 py-3 sm:px-6">
         <h1 className="text-lg font-bold text-gray-900 sm:text-xl">
           🛠️ Wanna Navi 管理画面
         </h1>
       </header>
 
-      {/* Tab bar */}
       <nav className="flex overflow-x-auto border-b border-gray-200 bg-white px-2 sm:px-6">
         {tabs.map((t) => (
           <button
@@ -134,10 +134,9 @@ export function AdminDashboard({
         ))}
       </nav>
 
-      {/* Tab content */}
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         {tab === "overview" && (
-          <OverviewTab stats={stats} pendingCount={pending.length} />
+          <OverviewTab stats={initialStats} pendingCount={pending.length} />
         )}
         {tab === "new-article" && (
           <NewArticleTab
@@ -223,7 +222,6 @@ function NewArticleTab({
     articleId?: string;
   } | null>(null);
 
-  // Combine hardcoded + user categories
   const allCategories = [
     { slug: "ai-engineer", title: "AIエンジニアになりたい" },
     { slug: "dtm", title: "DTMerになりたい" },
@@ -276,7 +274,6 @@ function NewArticleTab({
         articleId: json.article_id,
       });
 
-      // Reset form
       setTitle("");
       setExtraInstructions("");
       setSelectedAsps([]);
@@ -287,6 +284,22 @@ function NewArticleTab({
       setGenerating(false);
     }
   }
+
+  // Group ASP materials by variation_label for easier selection
+  const groupedAsps = new Map<string, AspMaterial[]>();
+  for (const m of aspMaterials) {
+    const key = m.variation_label || m.name;
+    if (!groupedAsps.has(key)) groupedAsps.set(key, []);
+    groupedAsps.get(key)!.push(m);
+  }
+
+  const usageLabels: Record<string, string> = {
+    recommendation: "おすすめ",
+    comparison: "比較用",
+    tool_intro: "道具紹介",
+    budget_option: "予算別",
+    step_up: "次のステップ",
+  };
 
   return (
     <div>
@@ -328,7 +341,7 @@ function NewArticleTab({
           </select>
         </div>
 
-        {/* ASP materials */}
+        {/* ASP materials with usage info */}
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
             含めるASP素材 <span className="text-xs text-gray-400">（任意・複数選択）</span>
@@ -338,22 +351,31 @@ function NewArticleTab({
               ASP素材がまだ登録されていません。「ASP素材」タブから追加してください。
             </p>
           ) : (
-            <div className="max-h-40 space-y-1 overflow-y-auto rounded-md border border-gray-200 p-2">
+            <div className="max-h-52 space-y-1 overflow-y-auto rounded-md border border-gray-200 p-2">
               {aspMaterials.map((m) => (
                 <label
                   key={m.id}
-                  className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-gray-50"
+                  className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-gray-50"
                 >
                   <input
                     type="checkbox"
                     checked={selectedAsps.includes(m.id)}
                     onChange={() => toggleAsp(m.id)}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                    className="h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600"
                   />
-                  <span>
-                    <span className="font-medium">{m.name}</span>
-                    <span className="ml-1 text-xs text-gray-400">[{m.asp_name}]</span>
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <span className="font-medium truncate">{m.name}</span>
+                      <span className="text-xs text-gray-400">[{m.asp_name}]</span>
+                      {m.variation_label && (
+                        <span className="text-xs bg-purple-100 text-purple-700 px-1 rounded">{m.variation_label}</span>
+                      )}
+                    </div>
+                    <div className="flex gap-1 mt-0.5">
+                      <span className="text-xs bg-gray-100 text-gray-600 px-1 rounded">{usageLabels[m.usage_type] ?? m.usage_type}</span>
+                      {m.price_note && <span className="text-xs text-green-600">{m.price_note}</span>}
+                    </div>
+                  </div>
                 </label>
               ))}
             </div>
@@ -369,7 +391,7 @@ function NewArticleTab({
             value={extraInstructions}
             onChange={(e) => setExtraInstructions(e.target.value)}
             rows={3}
-            placeholder="例：読者ターゲットは40代男性、導入では昔諦めた経験に共感させる、比較表は不要"
+            placeholder="例：読者ターゲットは40代男性、導入では昔諦めた経験に共感させる"
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
@@ -390,7 +412,6 @@ function NewArticleTab({
           )}
         </button>
 
-        {/* Result */}
         {result && (
           <div
             className={`rounded-md px-4 py-3 text-sm ${
@@ -416,7 +437,7 @@ function NewArticleTab({
 }
 
 /* ------------------------------------------------------------------ */
-/* Tab: ASP Materials                                                 */
+/* Tab: ASP Materials (bulk registration + smart fields)              */
 /* ------------------------------------------------------------------ */
 
 function AspMaterialsTab({
@@ -426,22 +447,39 @@ function AspMaterialsTab({
   materials: AspMaterial[];
   onRefresh: () => void;
 }) {
+  const [mode, setMode] = useState<"single" | "bulk">("single");
   const [showForm, setShowForm] = useState(false);
+
+  // Single form
   const [name, setName] = useState("");
   const [aspName, setAspName] = useState("");
   const [description, setDescription] = useState("");
   const [affiliateUrl, setAffiliateUrl] = useState("");
   const [priceNote, setPriceNote] = useState("");
+  const [usageType, setUsageType] = useState("recommendation");
+  const [displayStyle, setDisplayStyle] = useState("product_card");
+  const [variationLabel, setVariationLabel] = useState("");
+  const [placementContext, setPlacementContext] = useState("");
+
+  // Bulk form
+  const [bulkText, setBulkText] = useState("");
+
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  async function handleAdd() {
+  function resetForm() {
+    setName(""); setAspName(""); setDescription(""); setAffiliateUrl("");
+    setPriceNote(""); setUsageType("recommendation"); setDisplayStyle("product_card");
+    setVariationLabel(""); setPlacementContext("");
+    setBulkText("");
+  }
+
+  async function handleAddSingle() {
     if (!name.trim() || !aspName.trim()) {
       setMsg("名前とASP名は必須です");
       return;
     }
-    setSaving(true);
-    setMsg(null);
+    setSaving(true); setMsg(null);
 
     const res = await fetch("/api/admin/asp-materials", {
       method: "POST",
@@ -452,17 +490,55 @@ function AspMaterialsTab({
         description: description.trim(),
         affiliate_url: affiliateUrl.trim() || null,
         price_note: priceNote.trim() || null,
+        usage_type: usageType,
+        display_style: displayStyle,
+        variation_label: variationLabel.trim() || null,
+        placement_context: placementContext.trim() || null,
       }),
     });
 
+    if (res.ok) { resetForm(); setShowForm(false); onRefresh(); }
+    else { const json = await res.json(); setMsg(json.error ?? "保存に失敗"); }
+    setSaving(false);
+  }
+
+  async function handleAddBulk() {
+    if (!bulkText.trim()) {
+      setMsg("1行1素材で入力してください");
+      return;
+    }
+
+    const lines = bulkText.trim().split("\n").filter(Boolean);
+    const materials = lines.map((line) => {
+      // Format: name | asp_name | price | usage_type | description
+      const parts = line.split("|").map((s) => s.trim());
+      return {
+        name: parts[0] ?? "",
+        asp_name: parts[1] ?? "",
+        price_note: parts[2] ?? "",
+        usage_type: parts[3] ?? "recommendation",
+        display_style: parts[4] ?? "product_card",
+        description: parts[5] ?? "",
+      };
+    }).filter((m) => m.name && m.asp_name);
+
+    if (materials.length === 0) {
+      setMsg("有効な素材がありません。フォーマット: 商品名 | ASP名 | 価格 | 用途");
+      return;
+    }
+
+    setSaving(true); setMsg(null);
+
+    const res = await fetch("/api/admin/asp-materials", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ materials }),
+    });
+
     if (res.ok) {
-      setName("");
-      setAspName("");
-      setDescription("");
-      setAffiliateUrl("");
-      setPriceNote("");
-      setShowForm(false);
-      onRefresh();
+      const json = await res.json();
+      setMsg(`✅ ${json.count}件のASP素材を一括登録しました`);
+      resetForm(); setShowForm(false); onRefresh();
     } else {
       const json = await res.json();
       setMsg(json.error ?? "保存に失敗");
@@ -479,6 +555,21 @@ function AspMaterialsTab({
     onRefresh();
   }
 
+  const usageLabels: Record<string, string> = {
+    recommendation: "おすすめ",
+    comparison: "比較用",
+    tool_intro: "道具紹介",
+    budget_option: "予算別",
+    step_up: "次のステップ",
+  };
+
+  const displayLabels: Record<string, string> = {
+    inline_link: "文中リンク",
+    product_card: "商品カード",
+    comparison_row: "比較表の行",
+    cta_banner: "CTAバナー",
+  };
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
@@ -486,7 +577,7 @@ function AspMaterialsTab({
           🔗 ASP素材一覧 <span className="text-sm font-normal text-gray-400">({materials.length}件)</span>
         </h2>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => { setShowForm(!showForm); setMsg(null); }}
           className="rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 sm:text-sm"
         >
           ＋ 新規追加
@@ -495,58 +586,110 @@ function AspMaterialsTab({
 
       {/* Add form */}
       {showForm && (
-        <div className="mb-4 space-y-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="商品/サービス名 *"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-          <input
-            type="text"
-            value={aspName}
-            onChange={(e) => setAspName(e.target.value)}
-            placeholder="ASP名 (例: A8.net, もしもアフィリエイト) *"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="商品説明・おすすめポイント"
-            rows={2}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-          <input
-            type="url"
-            value={affiliateUrl}
-            onChange={(e) => setAffiliateUrl(e.target.value)}
-            placeholder="アフィリエイトURL"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-          <input
-            type="text"
-            value={priceNote}
-            onChange={(e) => setPriceNote(e.target.value)}
-            placeholder="価格帯 (例: ¥5,000〜)"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-          <div className="flex gap-2">
+        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+          {/* Mode toggle */}
+          <div className="mb-3 flex gap-2">
             <button
-              onClick={handleAdd}
-              disabled={saving}
-              className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+              onClick={() => setMode("single")}
+              className={`rounded px-3 py-1 text-xs font-medium ${mode === "single" ? "bg-blue-600 text-white" : "bg-white text-gray-600"}`}
             >
-              {saving ? "保存中..." : "保存"}
+              1件ずつ
             </button>
             <button
-              onClick={() => setShowForm(false)}
-              className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300"
+              onClick={() => setMode("bulk")}
+              className={`rounded px-3 py-1 text-xs font-medium ${mode === "bulk" ? "bg-blue-600 text-white" : "bg-white text-gray-600"}`}
             >
-              キャンセル
+              一括登録
             </button>
           </div>
-          {msg && <p className="text-sm text-red-600">{msg}</p>}
+
+          {mode === "single" ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)}
+                  placeholder="商品/サービス名 *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+                <input type="text" value={aspName} onChange={(e) => setAspName(e.target.value)}
+                  placeholder="ASP名 (A8.net等) *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+              </div>
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)}
+                placeholder="商品説明・おすすめポイント" rows={2}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <input type="url" value={affiliateUrl} onChange={(e) => setAffiliateUrl(e.target.value)}
+                  placeholder="アフィリエイトURL" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+                <input type="text" value={priceNote} onChange={(e) => setPriceNote(e.target.value)}
+                  placeholder="価格帯 (例: ¥5,000〜)" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs text-gray-500">用途タイプ</label>
+                  <select value={usageType} onChange={(e) => setUsageType(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                    <option value="recommendation">おすすめ紹介</option>
+                    <option value="comparison">比較表用</option>
+                    <option value="tool_intro">道具・機材紹介</option>
+                    <option value="budget_option">予算別選択肢</option>
+                    <option value="step_up">次のステップ</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-gray-500">表示スタイル</label>
+                  <select value={displayStyle} onChange={(e) => setDisplayStyle(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                    <option value="product_card">商品カード</option>
+                    <option value="inline_link">文中リンク</option>
+                    <option value="comparison_row">比較表の行</option>
+                    <option value="cta_banner">CTAバナー</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <input type="text" value={variationLabel} onChange={(e) => setVariationLabel(e.target.value)}
+                  placeholder="バリエーション名 (例: 61鍵盤, 88鍵盤)" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+                <input type="text" value={placementContext} onChange={(e) => setPlacementContext(e.target.value)}
+                  placeholder="挿入文脈 (例: 初心者向け導入部分)" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+              </div>
+              <div className="flex gap-2">
+                <button onClick={handleAddSingle} disabled={saving}
+                  className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50">
+                  {saving ? "保存中..." : "保存"}
+                </button>
+                <button onClick={() => setShowForm(false)}
+                  className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300">
+                  キャンセル
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-gray-500">
+                1行1素材。フォーマット: <code>商品名 | ASP名 | 価格 | 用途 | 表示 | 説明</code><br />
+                用途: recommendation / comparison / tool_intro / budget_option / step_up<br />
+                表示: product_card / inline_link / comparison_row / cta_banner
+              </p>
+              <textarea
+                value={bulkText}
+                onChange={(e) => setBulkText(e.target.value)}
+                rows={8}
+                placeholder={`ローランド FP-30X | A8.net | ¥65,000〜 | recommendation | product_card | 初心者向け電子ピアノ
+KAWAI ES120 | A8.net | ¥70,000〜 | comparison | comparison_row | タッチが重め
+YAMAHA P-225 | もしも | ¥55,000〜 | budget_option | product_card | コスパ最強`}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono"
+              />
+              <div className="flex gap-2">
+                <button onClick={handleAddBulk} disabled={saving}
+                  className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50">
+                  {saving ? "登録中..." : `一括登録`}
+                </button>
+                <button onClick={() => setShowForm(false)}
+                  className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300">
+                  キャンセル
+                </button>
+              </div>
+            </div>
+          )}
+
+          {msg && <p className={`text-sm ${msg.startsWith("✅") ? "text-green-600" : "text-red-600"}`}>{msg}</p>}
         </div>
       )}
 
@@ -558,38 +701,37 @@ function AspMaterialsTab({
       ) : (
         <ul className="space-y-2">
           {materials.map((m) => (
-            <li
-              key={m.id}
-              className="rounded-lg border border-gray-200 bg-white p-3 text-sm"
-            >
+            <li key={m.id} className="rounded-lg border border-gray-200 bg-white p-3 text-sm">
               <div className="flex items-start justify-between gap-2">
-                <div>
-                  <span className="font-semibold text-gray-900">{m.name}</span>
-                  <span className="ml-2 text-xs text-gray-400">[{m.asp_name}]</span>
-                  {m.price_note && (
-                    <span className="ml-2 text-xs text-green-600">{m.price_note}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-semibold text-gray-900 truncate">{m.name}</span>
+                    <span className="text-xs text-gray-400 shrink-0">[{m.asp_name}]</span>
+                    {m.variation_label && (
+                      <span className="text-xs bg-purple-100 text-purple-700 px-1.5 rounded shrink-0">{m.variation_label}</span>
+                    )}
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                    <span className="text-xs bg-blue-100 text-blue-700 px-1 rounded">{usageLabels[m.usage_type]}</span>
+                    <span className="text-xs bg-gray-100 text-gray-600 px-1 rounded">{displayLabels[m.display_style]}</span>
+                    {m.price_note && <span className="text-xs text-green-600">{m.price_note}</span>}
+                  </div>
+                  {m.description && <p className="mt-1 text-xs text-gray-500 line-clamp-2">{m.description}</p>}
+                  {m.placement_context && (
+                    <p className="mt-0.5 text-xs text-gray-400 italic">📍 {m.placement_context}</p>
+                  )}
+                  {m.affiliate_url && (
+                    <a href={m.affiliate_url} target="_blank" rel="noopener noreferrer"
+                      className="mt-1 block truncate text-xs text-blue-500 underline">
+                      {m.affiliate_url}
+                    </a>
                   )}
                 </div>
-                <button
-                  onClick={() => handleArchive(m.id)}
-                  className="shrink-0 text-xs text-red-500 hover:underline"
-                >
+                <button onClick={() => handleArchive(m.id)}
+                  className="shrink-0 text-xs text-red-500 hover:underline">
                   削除
                 </button>
               </div>
-              {m.description && (
-                <p className="mt-1 text-xs text-gray-500">{m.description}</p>
-              )}
-              {m.affiliate_url && (
-                <a
-                  href={m.affiliate_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-1 block truncate text-xs text-blue-500 underline"
-                >
-                  {m.affiliate_url}
-                </a>
-              )}
             </li>
           ))}
         </ul>
@@ -621,8 +763,7 @@ function CategoriesTab({
       setMsg("スラッグとタイトルは必須です");
       return;
     }
-    setSaving(true);
-    setMsg(null);
+    setSaving(true); setMsg(null);
 
     const res = await fetch("/api/admin/categories", {
       method: "POST",
@@ -634,16 +775,8 @@ function CategoriesTab({
       }),
     });
 
-    if (res.ok) {
-      setSlug("");
-      setTitle("");
-      setDescription("");
-      setShowForm(false);
-      onRefresh();
-    } else {
-      const json = await res.json();
-      setMsg(json.error ?? "保存に失敗");
-    }
+    if (res.ok) { setSlug(""); setTitle(""); setDescription(""); setShowForm(false); onRefresh(); }
+    else { const json = await res.json(); setMsg(json.error ?? "保存に失敗"); }
     setSaving(false);
   }
 
@@ -651,54 +784,31 @@ function CategoriesTab({
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">📁 カテゴリ管理</h2>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 sm:text-sm"
-        >
+        <button onClick={() => setShowForm(!showForm)}
+          className="rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 sm:text-sm">
           ＋ 新規カテゴリ
         </button>
       </div>
 
-      {/* Hardcoded categories info */}
       <p className="mb-3 text-xs text-gray-400">
-        デフォルトカテゴリ: AIエンジニア, DTMer, VRクリエイター, 楽器演奏者, 動画クリエイター
+        デフォルト: AIエンジニア, DTMer, VRクリエイター, 楽器演奏者, 動画クリエイター
       </p>
 
       {showForm && (
         <div className="mb-4 space-y-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
-          <input
-            type="text"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            placeholder="スラッグ (例: pro-gamer) *"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="表示名 (例: プロゲーマーになりたい) *"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="説明文"
-            rows={2}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
+          <input type="text" value={slug} onChange={(e) => setSlug(e.target.value)}
+            placeholder="スラッグ (例: pro-gamer) *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
+            placeholder="表示名 (例: プロゲーマーになりたい) *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)}
+            placeholder="説明文" rows={2} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
           <div className="flex gap-2">
-            <button
-              onClick={handleAdd}
-              disabled={saving}
-              className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-            >
+            <button onClick={handleAdd} disabled={saving}
+              className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50">
               {saving ? "保存中..." : "保存"}
             </button>
-            <button
-              onClick={() => setShowForm(false)}
-              className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300"
-            >
+            <button onClick={() => setShowForm(false)}
+              className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300">
               キャンセル
             </button>
           </div>
@@ -711,15 +821,10 @@ function CategoriesTab({
       ) : (
         <ul className="space-y-2">
           {categories.map((c) => (
-            <li
-              key={c.id}
-              className="rounded-lg border border-gray-200 bg-white p-3 text-sm"
-            >
+            <li key={c.id} className="rounded-lg border border-gray-200 bg-white p-3 text-sm">
               <span className="font-semibold text-gray-900">{c.title}</span>
               <code className="ml-2 text-xs text-gray-400">{c.slug}</code>
-              {c.description && (
-                <p className="mt-1 text-xs text-gray-500">{c.description}</p>
-              )}
+              {c.description && <p className="mt-1 text-xs text-gray-500">{c.description}</p>}
             </li>
           ))}
         </ul>
@@ -745,10 +850,8 @@ function ReviewTab({
         <h2 className="text-lg font-semibold text-gray-900">
           ⏳ レビュー待ち <span className="text-sm font-normal text-gray-400">({articles.length}件)</span>
         </h2>
-        <button
-          onClick={onRefresh}
-          className="rounded-md bg-gray-100 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-200"
-        >
+        <button onClick={onRefresh}
+          className="rounded-md bg-gray-100 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-200">
           🔄 更新
         </button>
       </div>
@@ -759,20 +862,14 @@ function ReviewTab({
         <ul className="space-y-2">
           {articles.map((a) => (
             <li key={a.id}>
-              <a
-                href={`/admin/review/${a.id}`}
-                className="flex flex-col gap-1 rounded-lg border border-gray-200 bg-white p-3 shadow-sm hover:border-yellow-400 sm:flex-row sm:items-center sm:justify-between"
-              >
+              <a href={`/admin/review/${a.id}`}
+                className="flex flex-col gap-1 rounded-lg border border-gray-200 bg-white p-3 shadow-sm hover:border-yellow-400 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <span className="text-sm font-medium text-gray-900">
-                    {a.title}
-                  </span>
+                  <span className="text-sm font-medium text-gray-900">{a.title}</span>
                   <span className="ml-2 text-xs text-gray-500">[{a.category}]</span>
                 </div>
                 <span className="text-xs text-gray-400">
-                  {new Date(a.created_at).toLocaleString("ja-JP", {
-                    timeZone: "Asia/Tokyo",
-                  })}
+                  {new Date(a.created_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
                 </span>
               </a>
             </li>
