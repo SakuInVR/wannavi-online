@@ -10,7 +10,6 @@ export const dynamic = "force-dynamic";
 
 export default async function ReviewPage({ params }: ReviewPageProps) {
   const { id } = await params;
-
   const supabase = getSupabaseAdmin();
   if (!supabase) notFound();
 
@@ -22,7 +21,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
 
   if (error || !article) notFound();
 
-  // Fetch linked ASP materials
+  // Linked ASP materials
   const { data: asps } = await supabase
     .from("article_asp_materials")
     .select("asp_material_id, asp_materials(name, asp_name, affiliate_url)")
@@ -39,6 +38,14 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
       })
       .filter(Boolean) ?? [];
 
+  // Past feedback for this category (the learning loop)
+  const { data: pastFeedback } = await supabase
+    .from("article_feedbacks")
+    .select("feedback_comment, rejected_at")
+    .eq("category", article.category)
+    .order("rejected_at", { ascending: false })
+    .limit(10);
+
   return (
     <ReviewClient
       article={article}
@@ -48,6 +55,14 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
           asp_name: string;
           affiliate_url: string | null;
         }>
+      }
+      pastFeedback={
+        ((pastFeedback as Array<{ feedback_comment: string; rejected_at: string }>) ?? []).map(
+          (fb) => ({
+            feedback_comment: fb.feedback_comment,
+            rejected_at: fb.rejected_at,
+          })
+        )
       }
     />
   );
