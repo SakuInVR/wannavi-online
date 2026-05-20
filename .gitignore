@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# generated automation ledgers
+content/deployment-checks.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
