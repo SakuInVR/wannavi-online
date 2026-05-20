@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-20T00:07:01.602Z",
+  "generatedAt": "2026-05-20T00:19:48.864Z",
   "source": "scripts/sync-article-states.mjs",
   "states": [
     {
@@ -164,13 +164,13 @@
       "affiliateIntent": "high",
       "mdxPath": "content/articles/dtm-headphones-guide.mdx",
       "sourceVideoCount": 3,
-      "pipelineState": "reviewed",
-      "blockers": [
-        "High-intent article has no affiliate product mapping."
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
       ],
-      "warnings": [],
       "nextActions": [
-        "Find a matching ASP program and add a product mapping."
+        "Acquire approved image ad creative and place ProductAd."
       ]
     },
     {
@@ -180,13 +180,13 @@
       "affiliateIntent": "high",
       "mdxPath": "content/articles/dtm-home-studio-setup.mdx",
       "sourceVideoCount": 3,
-      "pipelineState": "reviewed",
-      "blockers": [
-        "High-intent article has no affiliate product mapping."
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
       ],
-      "warnings": [],
       "nextActions": [
-        "Find a matching ASP program and add a product mapping."
+        "Acquire approved image ad creative and place ProductAd."
       ]
     },
     {
@@ -226,13 +226,13 @@
       "affiliateIntent": "high",
       "mdxPath": "content/articles/instrument-adult-piano-start.mdx",
       "sourceVideoCount": 3,
-      "pipelineState": "reviewed",
-      "blockers": [
-        "High-intent article has no affiliate product mapping."
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
       ],
-      "warnings": [],
       "nextActions": [
-        "Find a matching ASP program and add a product mapping."
+        "Acquire approved image ad creative and place ProductAd."
       ]
     },
     {
@@ -274,13 +274,13 @@
       "affiliateIntent": "high",
       "mdxPath": "content/articles/instrument-guitar-first-month.mdx",
       "sourceVideoCount": 3,
-      "pipelineState": "reviewed",
-      "blockers": [
-        "High-intent article has no affiliate product mapping."
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
       ],
-      "warnings": [],
       "nextActions": [
-        "Find a matching ASP program and add a product mapping."
+        "Acquire approved image ad creative and place ProductAd."
       ]
     },
     {
@@ -332,13 +332,13 @@
       "affiliateIntent": "high",
       "mdxPath": "content/articles/instrument-practice-room-setup.mdx",
       "sourceVideoCount": 3,
-      "pipelineState": "reviewed",
-      "blockers": [
-        "High-intent article has no affiliate product mapping."
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
       ],
-      "warnings": [],
       "nextActions": [
-        "Find a matching ASP program and add a product mapping."
+        "Acquire approved image ad creative and place ProductAd."
       ]
     },
     {
@@ -362,13 +362,13 @@
       "affiliateIntent": "high",
       "mdxPath": "content/articles/video-edit-cut-telop-first.mdx",
       "sourceVideoCount": 3,
-      "pipelineState": "reviewed",
-      "blockers": [
-        "High-intent article has no affiliate product mapping."
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
       ],
-      "warnings": [],
       "nextActions": [
-        "Find a matching ASP program and add a product mapping."
+        "Acquire approved image ad creative and place ProductAd."
       ]
     },
     {
@@ -378,13 +378,13 @@
       "affiliateIntent": "high",
       "mdxPath": "content/articles/video-editing-pc-spec-guide.mdx",
       "sourceVideoCount": 3,
-      "pipelineState": "reviewed",
-      "blockers": [
-        "High-intent article has no affiliate product mapping."
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
       ],
-      "warnings": [],
       "nextActions": [
-        "Find a matching ASP program and add a product mapping."
+        "Acquire approved image ad creative and place ProductAd."
       ]
     },
     {

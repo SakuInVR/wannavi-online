@@ -6,13 +6,18 @@
     "category": "general",
     "asp": "moshimo",
     "articleSlugs": [
+      "dtm-headphones-guide",
       "dtm-first-tools",
       "dtm-audio-interface-first",
+      "dtm-home-studio-setup",
       "vrchat-starter-gear-guide",
       "instrument-first-instrument-guide",
-      "instrument-digital-piano-guide"
+      "instrument-digital-piano-guide",
+      "instrument-adult-piano-start",
+      "instrument-guitar-first-month",
+      "instrument-practice-room-setup"
     ],
-    "memo": "もしもアフィリエイトで提携中。楽器、DTM機材、VR機材、PC周辺機器などの物販導線に使う。"
+    "memo": "もしもアフィリエイトで提携中。楽器、DTM機材、VR機材、PC周辺機器などの物販導線に使う。DTMヘッドホン、宅録機材、電子ピアノ、ギター初心者セット、防音・吸音材の記事はまずこの汎用物販枠に接続し、より強い専門ショップ広告が取れたら差し替える。"
   },
   {
     "id": "video-editor-training",
@@ -20,8 +25,8 @@
     "envKey": "AFFILIATE_VIDEO_EDITOR_TRAINING_URL",
     "category": "video-creator",
     "asp": "a8",
-    "articleSlugs": ["video-editor-training-start"],
-    "memo": "A8で広告リンク作成画面を確認済み。動画教材エディターになりたい人向けの記事を商品起点で作る候補。"
+    "articleSlugs": ["video-editor-training-start", "video-edit-cut-telop-first"],
+    "memo": "A8で広告リンク作成画面を確認済み。動画教材エディターになりたい人向けの記事、Premiere Proのカット・テロップ入門記事を商品起点で作る候補。"
   },
   {
     "id": "ai-learning-tools",
@@ -44,7 +49,11 @@
     "envKey": "AFFILIATE_VR_CREATOR_KIT_URL",
     "category": "vr-creator",
     "asp": "moshimo",
-    "articleSlugs": ["vrchat-pc-spec-guide", "vrchat-starter-gear-guide"],
-    "memo": "VRChat用PC記事に合うゲーミングPC広告枠。ASP管理画面でパソコン工房、マウスコンピューター、FRONTIERなどの画像素材を確認して差し替える。"
+    "articleSlugs": [
+      "vrchat-pc-spec-guide",
+      "vrchat-starter-gear-guide",
+      "video-editing-pc-spec-guide"
+    ],
+    "memo": "VRChat用PC、動画編集用PCの記事に合うBTO/ゲーミングPC広告枠。ASP管理画面でパソコン工房、マウスコンピューター、FRONTIER、クリエイターPC系の画像素材を確認して差し替える。"
   }
 ]
