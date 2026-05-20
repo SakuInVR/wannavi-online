@@ -49,6 +49,7 @@
     "report:next": "node scripts/report-next-actions.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.86.2",
     "gray-matter": "^4.0.3",
     "next": "16.2.6",
     "next-mdx-remote": "^6.0.0",
