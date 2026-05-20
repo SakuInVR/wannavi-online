@@ -54,7 +54,7 @@ export interface Stats {
   materials: number;
 }
 
-type Tab = "overview" | "new-article" | "video-research" | "asp-materials" | "categories" | "review";
+type Tab = "overview" | "new-article" | "asp-materials" | "categories" | "review";
 
 /* ------------------------------------------------------------------ */
 /* Dashboard                                                          */
@@ -113,7 +113,6 @@ export function AdminDashboard({
   const tabs: { key: Tab; label: string; emoji: string }[] = [
     { key: "overview", label: "概要", emoji: "📊" },
     { key: "new-article", label: "記事生成", emoji: "✍️" },
-    { key: "video-research", label: "動画リサーチ", emoji: "🎬" },
     { key: "asp-materials", label: "ASP素材", emoji: "🔗" },
     { key: "categories", label: "カテゴリ", emoji: "📁" },
     { key: "review", label: "レビュー待ち", emoji: "⏳" },
@@ -150,15 +149,6 @@ export function AdminDashboard({
         {tab === "new-article" && (
           <NewArticleTab
             categories={categories}
-            aspMaterials={aspMaterials}
-            onGenerated={() => {
-              refreshPending();
-              setTab("review");
-            }}
-          />
-        )}
-        {tab === "video-research" && (
-          <VideoResearchTab
             aspMaterials={aspMaterials}
             onGenerated={() => {
               refreshPending();
@@ -231,13 +221,15 @@ function NewArticleTab({
 }) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
+  const [youtube1, setYoutube1] = useState("");
+  const [youtube2, setYoutube2] = useState("");
+  const [youtube3, setYoutube3] = useState("");
   const [selectedAsps, setSelectedAsps] = useState<string[]>([]);
   const [extraInstructions, setExtraInstructions] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [statusText, setStatusText] = useState("");
   const [result, setResult] = useState<{
-    type: "success" | "error";
-    text: string;
-    articleId?: string;
+    type: "success" | "error"; text: string; articleId?: string;
   } | null>(null);
 
   const allCategories = [
@@ -250,150 +242,119 @@ function NewArticleTab({
   ];
 
   function toggleAsp(id: string) {
-    setSelectedAsps((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+    setSelectedAsps((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   }
 
   async function handleGenerate() {
-    if (!title.trim()) {
-      setResult({ type: "error", text: "タイトルを入力してください" });
-      return;
-    }
-    if (!category) {
-      setResult({ type: "error", text: "カテゴリを選択してください" });
-      return;
-    }
+    if (!title.trim()) { setResult({ type: "error", text: "タイトルを入力してください" }); return; }
+    if (!category) { setResult({ type: "error", text: "カテゴリを選択してください" }); return; }
 
     setGenerating(true);
     setResult(null);
 
+    const youtubeUrls = [youtube1, youtube2, youtube3].filter(Boolean);
+
     try {
+      // Step 1: Gemini research
+      setStatusText("🔍 Geminiで動画リサーチ中...");
+      
       const res = await fetch("/api/admin/articles/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: title.trim(),
           category,
-          asp_material_ids: selectedAsps,
+          asp_material_ids: selectedAsps.length > 0 ? selectedAsps : undefined,
           extra_instructions: extraInstructions.trim() || undefined,
+          youtube_urls: youtubeUrls.length > 0 ? youtubeUrls : undefined,
         }),
       });
-      const json = await res.json();
 
       if (!res.ok) {
+        const json = await res.json();
         setResult({ type: "error", text: json.error ?? "生成に失敗しました" });
         return;
       }
 
-      setResult({
-        type: "success",
-        text: `✅ 記事を生成しました！ (${json.tokens_used ?? "?"} tokens)`,
-        articleId: json.article_id,
-      });
-
-      setTitle("");
-      setExtraInstructions("");
-      setSelectedAsps([]);
+      const json = await res.json();
+      
+      const parts: string[] = [`✅ 記事生成完了 (${json.tokens_used ?? "?"} tokens)`];
+      if (json.research_sources > 0) parts.push(`📹 ${json.research_sources}件の動画リサーチを実施`);
+      if (json.asp_materials_used > 0) parts.push(`🔗 ${json.asp_materials_used}件のASP素材を自動挿入`);
+      
+      setResult({ type: "success", text: parts.join(" / "), articleId: json.article_id });
+      setTitle(""); setExtraInstructions(""); setSelectedAsps([]);
+      setYoutube1(""); setYoutube2(""); setYoutube3("");
       onGenerated();
     } catch {
       setResult({ type: "error", text: "ネットワークエラー" });
     } finally {
       setGenerating(false);
+      setStatusText("");
     }
   }
 
-  // Group ASP materials by variation_label for easier selection
-  const groupedAsps = new Map<string, AspMaterial[]>();
-  for (const m of aspMaterials) {
-    const key = m.variation_label || m.name;
-    if (!groupedAsps.has(key)) groupedAsps.set(key, []);
-    groupedAsps.get(key)!.push(m);
-  }
-
   const usageLabels: Record<string, string> = {
-    recommendation: "おすすめ",
-    comparison: "比較用",
-    tool_intro: "道具紹介",
-    budget_option: "予算別",
-    step_up: "次のステップ",
+    recommendation: "おすすめ", comparison: "比較用", tool_intro: "道具紹介",
+    budget_option: "予算別", step_up: "次のステップ",
   };
 
   return (
     <div>
       <h2 className="mb-4 text-lg font-semibold text-gray-900">
-        ✍️ アフィリエイト記事の自動生成依頼
+        ✍️ 記事の自動生成
       </h2>
 
       <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4 sm:p-6">
         {/* Title */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            記事タイトル <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+          <label className="mb-1 block text-sm font-medium text-gray-700">記事タイトル <span className="text-red-500">*</span></label>
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
             placeholder="例：大人のピアノ練習法 初心者でも3ヶ月で弾けるようになる秘訣"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
         </div>
 
         {/* Category */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            カテゴリ <span className="text-red-500">*</span>
-          </label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
+          <label className="mb-1 block text-sm font-medium text-gray-700">カテゴリ <span className="text-red-500">*</span></label>
+          <select value={category} onChange={(e) => setCategory(e.target.value)}
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
             <option value="">選択してください</option>
-            {allCategories.map((c) => (
-              <option key={c.slug} value={c.slug}>
-                {c.title}
-              </option>
-            ))}
+            {allCategories.map((c) => (<option key={c.slug} value={c.slug}>{c.title}</option>))}
           </select>
         </div>
 
-        {/* ASP materials with usage info */}
+        {/* YouTube URLs (optional) */}
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
-            含めるASP素材 <span className="text-xs text-gray-400">（任意・複数選択）</span>
+            📹 YouTube URL <span className="text-xs text-gray-400">（任意・最大3件 / 未入力時はGeminiが自動リサーチ）</span>
+          </label>
+          <div className="space-y-2">
+            <input type="url" value={youtube1} onChange={(e) => setYoutube1(e.target.value)}
+              placeholder="動画A: 初心者がぶつかる壁" className="w-full rounded-md border border-gray-300 px-3 py-2 text-xs" />
+            <input type="url" value={youtube2} onChange={(e) => setYoutube2(e.target.value)}
+              placeholder="動画B: 上級者の練習ロジック" className="w-full rounded-md border border-gray-300 px-3 py-2 text-xs" />
+            <input type="url" value={youtube3} onChange={(e) => setYoutube3(e.target.value)}
+              placeholder="動画C: 機材・デバイスレビュー" className="w-full rounded-md border border-gray-300 px-3 py-2 text-xs" />
+          </div>
+        </div>
+
+        {/* ASP materials */}
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            🔗 ASP素材 <span className="text-xs text-gray-400">（選択しない場合は自動でマッチする素材を使用）</span>
           </label>
           {aspMaterials.length === 0 ? (
-            <p className="text-xs text-gray-400">
-              ASP素材がまだ登録されていません。「ASP素材」タブから追加してください。
-            </p>
+            <p className="text-xs text-gray-400">ASP素材未登録のため、Amazon商品名が本文に含まれます（レビュー時にリンク注入してください）</p>
           ) : (
-            <div className="max-h-52 space-y-1 overflow-y-auto rounded-md border border-gray-200 p-2">
+            <div className="max-h-40 space-y-1 overflow-y-auto rounded-md border border-gray-200 p-2">
               {aspMaterials.map((m) => (
-                <label
-                  key={m.id}
-                  className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-gray-50"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedAsps.includes(m.id)}
-                    onChange={() => toggleAsp(m.id)}
-                    className="h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <span className="font-medium truncate">{m.name}</span>
-                      <span className="text-xs text-gray-400">[{m.asp_name}]</span>
-                      {m.variation_label && (
-                        <span className="text-xs bg-purple-100 text-purple-700 px-1 rounded">{m.variation_label}</span>
-                      )}
-                    </div>
-                    <div className="flex gap-1 mt-0.5">
-                      <span className="text-xs bg-gray-100 text-gray-600 px-1 rounded">{usageLabels[m.usage_type] ?? m.usage_type}</span>
-                      {m.price_note && <span className="text-xs text-green-600">{m.price_note}</span>}
-                    </div>
-                  </div>
+                <label key={m.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-gray-50">
+                  <input type="checkbox" checked={selectedAsps.includes(m.id)} onChange={() => toggleAsp(m.id)}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600" />
+                  <span className="font-medium truncate">{m.name}</span>
+                  <span className="text-xs text-gray-400">[{usageLabels[m.usage_type]}]</span>
+                  {m.price_note && <span className="text-xs text-green-600">{m.price_note}</span>}
                 </label>
               ))}
             </div>
@@ -402,51 +363,34 @@ function NewArticleTab({
 
         {/* Extra instructions */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            追加指示 <span className="text-xs text-gray-400">（任意）</span>
-          </label>
-          <textarea
-            value={extraInstructions}
-            onChange={(e) => setExtraInstructions(e.target.value)}
-            rows={3}
-            placeholder="例：読者ターゲットは40代男性、導入では昔諦めた経験に共感させる"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
+          <label className="mb-1 block text-sm font-medium text-gray-700">追加指示 <span className="text-xs text-gray-400">（任意）</span></label>
+          <textarea value={extraInstructions} onChange={(e) => setExtraInstructions(e.target.value)}
+            rows={2} placeholder="例：読者ターゲットは40代男性"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+        </div>
+
+        {/* Pipeline info */}
+        <div className="rounded-md bg-gray-50 px-3 py-2 text-xs text-gray-500">
+          🔄 自動パイプライン: Gemini動画リサーチ → DeepSeek記事執筆 → ASP素材自動挿入 → レビュー待ち
         </div>
 
         {/* Submit */}
-        <button
-          onClick={handleGenerate}
-          disabled={generating}
-          className="w-full rounded-md bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
-        >
+        <button onClick={handleGenerate} disabled={generating}
+          className="w-full rounded-md bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50">
           {generating ? (
             <span className="flex items-center justify-center gap-2">
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              DeepSeekで生成中...（30秒ほどかかります）
+              {statusText || "生成中...（1〜2分）"}
             </span>
           ) : (
-            "🚀 DeepSeekで記事を生成する"
+            "🚀 記事を自動生成する"
           )}
         </button>
 
         {result && (
-          <div
-            className={`rounded-md px-4 py-3 text-sm ${
-              result.type === "success"
-                ? "bg-green-50 text-green-800"
-                : "bg-red-50 text-red-800"
-            }`}
-          >
+          <div className={`rounded-md px-4 py-3 text-sm ${result.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
             {result.text}
-            {result.articleId && (
-              <a
-                href={`/admin/review/${result.articleId}`}
-                className="ml-3 font-medium underline"
-              >
-                レビューする →
-              </a>
-            )}
+            {result.articleId && <a href={`/admin/review/${result.articleId}`} className="ml-3 font-medium underline">レビューする →</a>}
           </div>
         )}
       </div>
