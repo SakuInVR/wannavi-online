@@ -43,6 +43,7 @@ export interface AspMaterial {
   link_amp: string | null;
   link_nojs: string | null;
   disclosure_info: string | null;
+  parent_id: string | null;
   status: string;
   created_at: string;
 }
@@ -399,8 +400,20 @@ function NewArticleTab({
 }
 
 /* ------------------------------------------------------------------ */
-/* Tab: ASP Materials (redesigned: type/banner size/3 links/disclosure)*/
+/* Tab: ASP Materials (variation groups)                              */
 /* ------------------------------------------------------------------ */
+
+interface VariationRow {
+  materialType: "banner" | "text";
+  bannerWidth: string;
+  bannerHeight: string;
+  imageUrl: string;
+  textContent: string;
+  linkNormal: string;
+  linkAmp: string;
+  linkNojs: string;
+  label: string;
+}
 
 function AspMaterialsTab({
   materials,
@@ -413,54 +426,61 @@ function AspMaterialsTab({
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  // Form fields
+  // Common
   const [name, setName] = useState("");
   const [aspName, setAspName] = useState("");
-  const [materialType, setMaterialType] = useState<"banner" | "text">("banner");
-  const [bannerWidth, setBannerWidth] = useState("");
-  const [bannerHeight, setBannerHeight] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [textContent, setTextContent] = useState("");
-  const [linkNormal, setLinkNormal] = useState("");
-  const [linkAmp, setLinkAmp] = useState("");
-  const [linkNojs, setLinkNojs] = useState("");
-  const [disclosureInfo, setDisclosureInfo] = useState("");
   const [description, setDescription] = useState("");
   const [priceNote, setPriceNote] = useState("");
   const [usageType, setUsageType] = useState("recommendation");
-  const [displayStyle, setDisplayStyle] = useState("product_card");
+  const [disclosureInfo, setDisclosureInfo] = useState("");
+
+  // Variations
+  const [variations, setVariations] = useState<VariationRow[]>([
+    { materialType: "banner", bannerWidth: "", bannerHeight: "", imageUrl: "", textContent: "", linkNormal: "", linkAmp: "", linkNojs: "", label: "" },
+  ]);
+
+  function updateVariation(i: number, field: keyof VariationRow, value: string) {
+    setVariations((prev) => prev.map((v, idx) => idx === i ? { ...v, [field]: value } : v));
+  }
+  function addVariation() {
+    setVariations((prev) => [...prev, { materialType: "banner", bannerWidth: "", bannerHeight: "", imageUrl: "", textContent: "", linkNormal: "", linkAmp: "", linkNojs: "", label: "" }]);
+  }
+  function removeVariation(i: number) {
+    if (variations.length <= 1) return;
+    setVariations((prev) => prev.filter((_, idx) => idx !== i));
+  }
 
   function resetForm() {
-    setName(""); setAspName(""); setMaterialType("banner"); setBannerWidth(""); setBannerHeight("");
-    setImageUrl(""); setTextContent(""); setLinkNormal(""); setLinkAmp(""); setLinkNojs("");
-    setDisclosureInfo(""); setDescription(""); setPriceNote("");
-    setUsageType("recommendation"); setDisplayStyle("product_card");
+    setName(""); setAspName(""); setDescription(""); setPriceNote("");
+    setUsageType("recommendation"); setDisclosureInfo("");
+    setVariations([{ materialType: "banner", bannerWidth: "", bannerHeight: "", imageUrl: "", textContent: "", linkNormal: "", linkAmp: "", linkNojs: "", label: "" }]);
   }
 
   async function handleSave() {
     if (!name.trim() || !aspName.trim()) { setMsg("タイトルとASP名は必須"); return; }
-    if (materialType === "banner" && !linkNormal.trim()) { setMsg("標準リンクは必須"); return; }
-    if (materialType === "text" && !textContent.trim()) { setMsg("テキスト内容は必須"); return; }
 
     setSaving(true); setMsg(null);
     const res = await fetch("/api/admin/asp-materials", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: name.trim(), asp_name: aspName.trim(),
-        material_type: materialType,
-        banner_width: bannerWidth ? parseInt(bannerWidth) : null,
-        banner_height: bannerHeight ? parseInt(bannerHeight) : null,
-        image_url: imageUrl.trim() || null,
-        text_content: materialType === "text" ? textContent.trim() : null,
-        link_normal: linkNormal.trim() || null,
-        link_amp: linkAmp.trim() || null,
-        link_nojs: linkNojs.trim() || null,
-        disclosure_info: disclosureInfo.trim() || null,
-        description: description.trim(),
-        price_note: priceNote.trim() || null,
-        usage_type: usageType,
-        display_style: displayStyle,
+        common: {
+          name: name.trim(), asp_name: aspName.trim(), description: description.trim(),
+          price_note: priceNote.trim() || null, usage_type: usageType,
+          disclosure_info: disclosureInfo.trim() || null,
+        },
+        variations: variations.map((v) => ({
+          material_type: v.materialType,
+          banner_width: v.bannerWidth ? parseInt(v.bannerWidth) : null,
+          banner_height: v.bannerHeight ? parseInt(v.bannerHeight) : null,
+          image_url: v.imageUrl.trim() || null,
+          text_content: v.materialType === "text" ? v.textContent.trim() : null,
+          link_normal: v.linkNormal.trim() || null,
+          link_amp: v.linkAmp.trim() || null,
+          link_nojs: v.linkNojs.trim() || null,
+          variation_label: v.label.trim() || null,
+          display_style: v.materialType === "banner" ? "product_card" : "inline_link",
+        })),
       }),
     });
     if (res.ok) { resetForm(); setShowForm(false); onRefresh(); }
@@ -476,6 +496,27 @@ function AspMaterialsTab({
     onRefresh();
   }
 
+  // Group materials by parent
+  const grouped = new Map<string, { parent: AspMaterial; children: AspMaterial[] }>();
+  const orphans: AspMaterial[] = [];
+  for (const m of materials) {
+    if (m.parent_id) {
+      const key = String(m.parent_id);
+      if (!grouped.has(key)) continue; // will be handled when parent is found
+    } else {
+      if (!grouped.has(m.id)) grouped.set(m.id, { parent: m, children: [] });
+    }
+  }
+  for (const m of materials) {
+    if (m.parent_id) {
+      const key = String(m.parent_id);
+      if (grouped.has(key)) grouped.get(key)!.children.push(m);
+      else orphans.push(m);
+    } else if (!grouped.has(m.id)) {
+      orphans.push(m);
+    }
+  }
+
   const usageLabels: Record<string, string> = {
     recommendation: "おすすめ", comparison: "比較用", tool_intro: "道具紹介",
     budget_option: "予算別", step_up: "次のステップ",
@@ -485,7 +526,7 @@ function AspMaterialsTab({
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">
-          🔗 ASP素材一覧 <span className="text-sm font-normal text-gray-400">({materials.length}件)</span>
+          🔗 ASP素材一覧 <span className="text-sm font-normal text-gray-400">({materials.length}件 / {grouped.size}グループ)</span>
         </h2>
         <button onClick={() => { setShowForm(!showForm); setMsg(null); }}
           className="rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 sm:text-sm">
@@ -494,141 +535,142 @@ function AspMaterialsTab({
       </div>
 
       {showForm && (
-        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-3">
-          {/* Row 1: Title + ASP name + Material type */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-              placeholder="タイトル *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-            <input type="text" value={aspName} onChange={(e) => setAspName(e.target.value)}
-              placeholder="ASP名 (A8.net等) *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-            <select value={materialType} onChange={(e) => setMaterialType(e.target.value as "banner" | "text")}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
-              <option value="banner">バナー広告</option>
-              <option value="text">テキスト広告</option>
-            </select>
-          </div>
-
-          {/* Banner-specific */}
-          {materialType === "banner" && (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div>
-                <label className="mb-1 block text-xs text-gray-500">横幅 (px)</label>
-                <input type="number" value={bannerWidth} onChange={(e) => setBannerWidth(e.target.value)}
-                  placeholder="100" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs text-gray-500">高さ (px)</label>
-                <input type="number" value={bannerHeight} onChange={(e) => setBannerHeight(e.target.value)}
-                  placeholder="60" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs text-gray-500">画像URL</label>
-                <input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://..." className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-              </div>
+        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-4">
+          {/* Common info */}
+          <div className="rounded bg-white p-3 space-y-2">
+            <h3 className="text-xs font-semibold text-gray-700">📋 共通情報</h3>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="商品名 *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+              <input type="text" value={aspName} onChange={(e) => setAspName(e.target.value)} placeholder="ASP名 *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+              <input type="text" value={priceNote} onChange={(e) => setPriceNote(e.target.value)} placeholder="価格帯" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
             </div>
-          )}
-
-          {/* Text-specific */}
-          {materialType === "text" && (
-            <textarea value={textContent} onChange={(e) => setTextContent(e.target.value)}
-              placeholder="テキスト広告の本文 *" rows={3}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-          )}
-
-          {/* Links (3 types) */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <input type="url" value={linkNormal} onChange={(e) => setLinkNormal(e.target.value)}
-              placeholder="標準リンク *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-            <input type="url" value={linkAmp} onChange={(e) => setLinkAmp(e.target.value)}
-              placeholder="AMP対応リンク" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-            <input type="url" value={linkNojs} onChange={(e) => setLinkNojs(e.target.value)}
-              placeholder="JS非対応リンク" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="説明" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+              <select value={usageType} onChange={(e) => setUsageType(e.target.value)} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                <option value="recommendation">おすすめ</option><option value="comparison">比較用</option><option value="tool_intro">道具紹介</option><option value="budget_option">予算別</option><option value="step_up">次のステップ</option>
+              </select>
+            </div>
+            <input type="text" value={disclosureInfo} onChange={(e) => setDisclosureInfo(e.target.value)} placeholder="提携情報表示（任意）" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
           </div>
 
-          {/* Disclosure */}
-          <textarea value={disclosureInfo} onChange={(e) => setDisclosureInfo(e.target.value)}
-            placeholder="提携情報表示（例：当サイトはA8.netのアフィリエイトプログラムに参加しています）" rows={2}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-
-          {/* Extra fields */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <input type="text" value={description} onChange={(e) => setDescription(e.target.value)}
-              placeholder="説明" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-            <input type="text" value={priceNote} onChange={(e) => setPriceNote(e.target.value)}
-              placeholder="価格帯" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-            <select value={usageType} onChange={(e) => setUsageType(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
-              <option value="recommendation">おすすめ</option>
-              <option value="comparison">比較用</option>
-              <option value="tool_intro">道具紹介</option>
-              <option value="budget_option">予算別</option>
-              <option value="step_up">次のステップ</option>
-            </select>
+          {/* Variations */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold text-gray-700">🎨 バリエーション</h3>
+              <button onClick={addVariation} className="text-xs text-blue-600 underline">＋ 追加</button>
+            </div>
+            {variations.map((v, i) => (
+              <div key={i} className="rounded bg-white p-3 space-y-2 border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-gray-500">#{i + 1}</span>
+                  <div className="flex items-center gap-2">
+                    <input type="text" value={v.label} onChange={(e) => updateVariation(i, "label", e.target.value)}
+                      placeholder="ラベル (例: 300×250)" className="w-32 rounded border border-gray-300 px-2 py-1 text-xs" />
+                    <select value={v.materialType} onChange={(e) => updateVariation(i, "materialType", e.target.value)}
+                      className="rounded border border-gray-300 px-2 py-1 text-xs">
+                      <option value="banner">バナー</option><option value="text">テキスト</option>
+                    </select>
+                    {variations.length > 1 && (
+                      <button onClick={() => removeVariation(i)} className="text-xs text-red-500">✕</button>
+                    )}
+                  </div>
+                </div>
+                {v.materialType === "banner" ? (
+                  <div className="grid grid-cols-4 gap-2">
+                    <input type="number" value={v.bannerWidth} onChange={(e) => updateVariation(i, "bannerWidth", e.target.value)}
+                      placeholder="横幅" className="w-full rounded border border-gray-300 px-2 py-1 text-xs" />
+                    <input type="number" value={v.bannerHeight} onChange={(e) => updateVariation(i, "bannerHeight", e.target.value)}
+                      placeholder="高さ" className="w-full rounded border border-gray-300 px-2 py-1 text-xs" />
+                    <input type="url" value={v.imageUrl} onChange={(e) => updateVariation(i, "imageUrl", e.target.value)}
+                      placeholder="画像URL" className="col-span-2 rounded border border-gray-300 px-2 py-1 text-xs" />
+                  </div>
+                ) : (
+                  <textarea value={v.textContent} onChange={(e) => updateVariation(i, "textContent", e.target.value)}
+                    placeholder="テキスト本文" rows={2} className="w-full rounded border border-gray-300 px-2 py-1 text-xs" />
+                )}
+                <div className="grid grid-cols-3 gap-2">
+                  <input type="url" value={v.linkNormal} onChange={(e) => updateVariation(i, "linkNormal", e.target.value)}
+                    placeholder="標準リンク" className="w-full rounded border border-gray-300 px-2 py-1 text-xs" />
+                  <input type="url" value={v.linkAmp} onChange={(e) => updateVariation(i, "linkAmp", e.target.value)}
+                    placeholder="AMP" className="w-full rounded border border-gray-300 px-2 py-1 text-xs" />
+                  <input type="url" value={v.linkNojs} onChange={(e) => updateVariation(i, "linkNojs", e.target.value)}
+                    placeholder="noJS" className="w-full rounded border border-gray-300 px-2 py-1 text-xs" />
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={saving}
               className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50">
-              {saving ? "保存中..." : "保存"}
+              {saving ? "保存中..." : `${variations.length}バリエーションを保存`}
             </button>
-            <button onClick={() => setShowForm(false)}
-              className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300">キャンセル</button>
+            <button onClick={() => setShowForm(false)} className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300">キャンセル</button>
           </div>
           {msg && <p className="text-sm text-red-600">{msg}</p>}
         </div>
       )}
 
-      {/* List */}
+      {/* List - grouped */}
       {materials.length === 0 ? (
-        <p className="text-sm text-gray-500">ASP素材が未登録です。「新規追加」から登録してください。</p>
+        <p className="text-sm text-gray-500">ASP素材が未登録です。</p>
       ) : (
-        <ul className="space-y-2">
-          {materials.map((m) => (
-            <li key={m.id} className="rounded-lg border border-gray-200 bg-white p-3 text-sm">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-semibold text-gray-900 truncate">{m.name}</span>
-                    <span className={`text-xs px-1.5 rounded shrink-0 ${m.material_type === "banner" ? "bg-purple-100 text-purple-700" : "bg-teal-100 text-teal-700"}`}>
-                      {m.material_type === "banner" ? `🖼 ${m.banner_width ?? "?"}×${m.banner_height ?? "?"}` : "📝 テキスト"}
-                    </span>
-                    <span className="text-xs text-gray-400 shrink-0">[{m.asp_name}]</span>
+        <div className="space-y-3">
+          {Array.from(grouped.entries()).map(([id, { parent, children }]) => (
+            <details key={id} className="rounded-lg border border-gray-200 bg-white">
+              <summary className="cursor-pointer px-4 py-3 hover:bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-gray-900 text-sm">{parent.name}</span>
+                    <span className="text-xs text-gray-400">[{parent.asp_name}]</span>
+                    <span className="text-xs bg-blue-100 text-blue-700 px-1.5 rounded">{usageLabels[parent.usage_type]}</span>
+                    {parent.price_note && <span className="text-xs text-green-600">{parent.price_note}</span>}
                   </div>
-                  <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-                    <span className="text-xs bg-blue-100 text-blue-700 px-1 rounded">{usageLabels[m.usage_type]}</span>
-                    {m.price_note && <span className="text-xs text-green-600">{m.price_note}</span>}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">{children.length}バリエーション</span>
+                    <button onClick={(e) => { e.preventDefault(); handleArchive(parent.id); }}
+                      className="text-xs text-red-500 hover:underline">削除</button>
                   </div>
-                  {m.description && <p className="mt-1 text-xs text-gray-500 line-clamp-1">{m.description}</p>}
-
-                  {/* Links */}
-                  <div className="mt-1.5 flex flex-wrap gap-2 text-xs">
-                    {m.link_normal && (
-                      <span className="text-blue-600">
-                        <a href={m.link_normal} target="_blank" rel="noopener noreferrer" className="underline">標準</a>
-                      </span>
-                    )}
-                    {m.link_amp && (
-                      <span className="text-orange-600">
-                        <a href={m.link_amp} target="_blank" rel="noopener noreferrer" className="underline">AMP</a>
-                      </span>
-                    )}
-                    {m.link_nojs && (
-                      <span className="text-gray-500">
-                        <a href={m.link_nojs} target="_blank" rel="noopener noreferrer" className="underline">noJS</a>
-                      </span>
-                    )}
-                  </div>
-
-                  {m.disclosure_info && (
-                    <p className="mt-1 text-xs text-gray-400 italic line-clamp-1">ℹ️ {m.disclosure_info}</p>
-                  )}
                 </div>
-                <button onClick={() => handleArchive(m.id)} className="shrink-0 text-xs text-red-500 hover:underline">削除</button>
+                {parent.description && <p className="mt-1 text-xs text-gray-500">{parent.description}</p>}
+              </summary>
+              <div className="border-t border-gray-100 px-4 py-2 space-y-1">
+                {children.map((c) => (
+                  <div key={c.id} className="flex items-center justify-between py-1 text-xs">
+                    <div className="flex items-center gap-2">
+                      {c.material_type === "banner" ? (
+                        <span className="bg-purple-100 text-purple-700 px-1.5 rounded">🖼 {c.banner_width ?? "?"}×{c.banner_height ?? "?"}</span>
+                      ) : (
+                        <span className="bg-teal-100 text-teal-700 px-1.5 rounded">📝 {c.text_content?.slice(0, 20) ?? "テキスト"}</span>
+                      )}
+                      {c.variation_label && <span className="text-gray-500">{c.variation_label}</span>}
+                    </div>
+                    <div className="flex gap-2">
+                      {c.link_normal && <a href={c.link_normal} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">標準</a>}
+                      {c.link_amp && <span className="text-orange-500">AMP</span>}
+                      {c.link_nojs && <span className="text-gray-400">noJS</span>}
+                      <button onClick={() => handleArchive(c.id)} className="text-red-400">✕</button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </li>
+            </details>
           ))}
-        </ul>
+
+          {/* Orphans (no parent) */}
+          {orphans.map((m) => (
+            <div key={m.id} className="rounded-lg border border-gray-200 bg-white p-3 text-sm flex items-start justify-between">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-semibold text-gray-900 truncate">{m.name}</span>
+                  <span className="text-xs text-gray-400">[{m.asp_name}]</span>
+                  {m.material_type === "banner" && <span className="text-xs bg-purple-100 text-purple-700 px-1 rounded">🖼 {m.banner_width ?? "?"}×{m.banner_height ?? "?"}</span>}
+                </div>
+              </div>
+              <button onClick={() => handleArchive(m.id)} className="shrink-0 text-xs text-red-500 hover:underline">削除</button>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
