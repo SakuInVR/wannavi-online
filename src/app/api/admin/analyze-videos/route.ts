@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL = "gemini-1.5-flash";
 
 interface VideoInput {
   url: string;

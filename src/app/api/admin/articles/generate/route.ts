@@ -4,12 +4,14 @@ import {
   callDeepSeek,
   buildThreeVideoSystemPrompt,
   buildThreeVideoUserPrompt,
+  buildArticleSystemPrompt,
+  buildArticleUserPrompt,
 } from "@/lib/deepseek";
 import type { AspMaterialForPrompt, VideoAnalysis } from "@/lib/deepseek";
 import { buildFeedbackInjection, fetchCategoryFeedback } from "@/lib/feedback";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL = "gemini-1.5-flash";
 
 /* ------------------------------------------------------------------ */
 /* Step 1: Auto video research with Gemini                            */
@@ -139,15 +141,25 @@ export async function POST(request: NextRequest) {
 
   // ── Step 1: Auto video research with Gemini ──
   let videoSources: VideoSource[] = [];
+  let researchSucceeded = false;
   try {
     videoSources = await researchVideos(title, category, urls);
+    // Check if any analysis has real content
+    researchSucceeded = videoSources.some(
+      (s) => s.analysis && !s.analysis.includes("[分析失敗]") && s.analysis.length > 50
+    );
   } catch (err) {
     console.error("[generate] Research failed:", err);
-    // Continue with empty sources - DeepSeek can still generate
+  }
+
+  // If research failed or produced empty results, skip video context entirely
+  if (!researchSucceeded || videoSources.length === 0 || videoSources.every(s => s.analysis.length < 50)) {
+    console.log("[generate] Research did not produce usable data - generating without video context");
+    // Use empty analysis - DeepSeek will use its own knowledge
     videoSources = [
-      { url: "research-failed", analysis: "動画リサーチに失敗しました。一般知識で記事を生成します。" },
-      { url: "research-failed", analysis: "" },
-      { url: "research-failed", analysis: "" },
+      { url: "", analysis: "" },
+      { url: "", analysis: "" },
+      { url: "", analysis: "" },
     ];
   }
 
@@ -196,10 +208,15 @@ export async function POST(request: NextRequest) {
       .limit(20);
 
     if (allMaterials && allMaterials.length > 0) {
+      // Strict match: only materials with matching category_hint
       const matched = allMaterials.filter(
-        (m) => !m.category_hint || m.category_hint === category
+        (m) => m.category_hint === category
       );
-      const selected = (matched.length > 0 ? matched : allMaterials).slice(0, 5);
+      // Fallback: generic materials with no category_hint
+      const fallback = allMaterials.filter(
+        (m) => !m.category_hint
+      );
+      const selected = (matched.length > 0 ? matched : fallback).slice(0, 5);
 
       // Collect their IDs
       materialIds.length = 0;
@@ -234,26 +251,25 @@ export async function POST(request: NextRequest) {
   const feedbackSuffix = buildFeedbackInjection(feedbackEntries);
 
   // ── Step 4: Build prompts ──
-  const systemPrompt = buildThreeVideoSystemPrompt({
-    title,
-    category,
-    videoA,
-    videoB,
-    videoC,
-    aspMaterials,
-    extraInstructions: extra_instructions ?? undefined,
-    feedbackSuffix,
-  });
+  const hasResearch = researchSucceeded && videoSources.some(s => s.analysis.length > 50);
 
-  const userPrompt = buildThreeVideoUserPrompt({
-    title,
-    category,
-    videoA,
-    videoB,
-    videoC,
-    aspMaterials,
-    feedbackSuffix,
-  });
+  const systemPrompt = hasResearch
+    ? buildThreeVideoSystemPrompt({
+        title, category, videoA, videoB, videoC, aspMaterials,
+        extraInstructions: extra_instructions ?? undefined, feedbackSuffix,
+      })
+    : buildArticleSystemPrompt({
+        feedbackSuffix, aspMaterials,
+        extraInstructions: extra_instructions ?? undefined,
+        base: `あなたは「〇〇になりたい！」という読者の夢を応援する特化型ブログ「Wannavi」のプロフェッショナルライター兼メンターです。
+「${title}」という読者に向けて記事を書きます。
+読者が「今日から何をすべきか」「どの機材を買うべきか」が明確にわかるロードマップ記事を作成してください。
+読者に寄り添う、熱量のある「です・ます」調で、見出し・箇条書き・太字を使い、スマホでも読みやすく構造化してください。`,
+      });
+
+  const userPrompt = hasResearch
+    ? buildThreeVideoUserPrompt({ title, category, videoA, videoB, videoC, aspMaterials, feedbackSuffix })
+    : buildArticleUserPrompt({ title, category });
 
   // ── Step 5: Create job record ──
   const slug = title
