@@ -1,30 +1,30 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-20T00:07:13.647Z",
+  "generatedAt": "2026-05-20T00:10:48.244Z",
   "source": "scripts/sync-deployment-checks.mjs",
   "publishJob": {
-    "id": "ae2fa28f81c0-production",
-    "commitSha": "ae2fa28f81c0265cc48faea7ead27c06938c4b7b",
+    "id": "890872fb19ea-production",
+    "commitSha": "890872fb19eac552721685a34d421802080b0653",
     "branch": "main",
     "remoteUrl": "https://github.com/SakuInVR/wannavi-online.git",
     "baseUrl": "https://www.wannavi.online",
-    "status": "failed",
-    "checkedAt": "2026-05-20T00:07:13.736Z"
+    "status": "succeeded",
+    "checkedAt": "2026-05-20T00:10:48.326Z"
   },
   "checks": [
     {
       "checkName": "build-info",
       "targetUrl": "https://www.wannavi.online/build-info",
-      "status": "failed",
+      "status": "passed",
       "details": {
         "statusCode": 200,
-        "expectedSha": "ae2fa28f81c0265cc48faea7ead27c06938c4b7b",
-        "productionSha": "18405b15fda01291a1a46adc256900a4413f253f",
-        "deploymentUrl": "wannavionline-cbcirzx05-sakuinvrs-projects.vercel.app",
+        "expectedSha": "890872fb19eac552721685a34d421802080b0653",
+        "productionSha": "890872fb19eac552721685a34d421802080b0653",
+        "deploymentUrl": "wannavionline-cscp3y7pl-sakuinvrs-projects.vercel.app",
         "environment": "production",
-        "status": "failed"
+        "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.120Z"
+      "checkedAt": "2026-05-20T00:10:38.780Z"
     },
     {
       "checkName": "home",
@@ -35,7 +35,7 @@
         "hasSiteName": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.415Z"
+      "checkedAt": "2026-05-20T00:10:40.156Z"
     },
     {
       "checkName": "sitemap",
@@ -47,7 +47,7 @@
         "missingArticles": [],
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.432Z"
+      "checkedAt": "2026-05-20T00:10:41.165Z"
     },
     {
       "checkName": "article-page",
@@ -60,7 +60,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.448Z"
+      "checkedAt": "2026-05-20T00:10:41.406Z"
     },
     {
       "checkName": "article-page",
@@ -73,7 +73,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.461Z"
+      "checkedAt": "2026-05-20T00:10:41.903Z"
     },
     {
       "checkName": "article-page",
@@ -86,7 +86,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.480Z"
+      "checkedAt": "2026-05-20T00:10:42.312Z"
     },
     {
       "checkName": "article-page",
@@ -99,7 +99,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.493Z"
+      "checkedAt": "2026-05-20T00:10:42.801Z"
     },
     {
       "checkName": "article-page",
@@ -112,7 +112,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.508Z"
+      "checkedAt": "2026-05-20T00:10:43.329Z"
     },
     {
       "checkName": "article-page",
@@ -125,7 +125,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.522Z"
+      "checkedAt": "2026-05-20T00:10:43.777Z"
     },
     {
       "checkName": "article-page",
@@ -138,7 +138,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.535Z"
+      "checkedAt": "2026-05-20T00:10:44.287Z"
     },
     {
       "checkName": "article-page",
@@ -151,7 +151,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.547Z"
+      "checkedAt": "2026-05-20T00:10:44.772Z"
     },
     {
       "checkName": "article-page",
@@ -164,7 +164,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.562Z"
+      "checkedAt": "2026-05-20T00:10:45.313Z"
     },
     {
       "checkName": "article-page",
@@ -177,7 +177,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.581Z"
+      "checkedAt": "2026-05-20T00:10:45.793Z"
     },
     {
       "checkName": "article-page",
@@ -190,7 +190,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.596Z"
+      "checkedAt": "2026-05-20T00:10:46.376Z"
     },
     {
       "checkName": "article-page",
@@ -203,7 +203,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.611Z"
+      "checkedAt": "2026-05-20T00:10:46.773Z"
     },
     {
       "checkName": "article-page",
@@ -216,7 +216,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.622Z"
+      "checkedAt": "2026-05-20T00:10:47.191Z"
     },
     {
       "checkName": "article-page",
@@ -229,7 +229,7 @@
         "hasAdsenseMeta": true,
         "status": "passed"
       },
-      "checkedAt": "2026-05-20T00:07:13.635Z"
+      "checkedAt": "2026-05-20T00:10:47.702Z"
     }
   ]
 }

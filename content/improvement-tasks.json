@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-20T00:07:22.024Z",
+  "generatedAt": "2026-05-20T00:10:58.122Z",
   "source": "scripts/sync-improvement-tasks.mjs",
   "tasks": [
     {
@@ -128,21 +128,6 @@
       "reason": "High-intent article has no affiliate product mapping.",
       "action": "Use ASP opportunity vrchat-avatar-commission-checklist-affiliate-search; search moshimo first for: VRChat アバター, 3Dモデル, アバター制作, Unity アバター.",
       "evidenceTarget": "content/asp-opportunities.json#vrchat-avatar-commission-checklist-affiliate-search"
-    },
-    {
-      "id": "site-production-deployment-publish-job",
-      "status": "open",
-      "source": "automation",
-      "articleSlug": "site-production",
-      "articleTitle": "Production deployment",
-      "category": "operations",
-      "pipelineState": "published",
-      "type": "deployment",
-      "discriminator": "publish-job",
-      "priority": 90,
-      "reason": "Production verification status is failed.",
-      "action": "Inspect content/deployment-checks.json, fix failed deployment checks, then rerun npm run production:sync.",
-      "evidenceTarget": "content/deployment-checks.json"
     },
     {
       "id": "ai-engineer-ai-editor-guide-ad-creative",
@@ -297,21 +282,6 @@
       "reason": "High-intent article has no approved image ad creative.",
       "action": "Find an approved image banner or product creative, then add it to content/ad-creatives.json and place ProductAd in the article.",
       "evidenceTarget": "content/ad-creatives.json"
-    },
-    {
-      "id": "site-production-deployment-build-info",
-      "status": "open",
-      "source": "automation",
-      "articleSlug": "site-production",
-      "articleTitle": "build-info",
-      "category": "operations",
-      "pipelineState": "published",
-      "type": "deployment",
-      "discriminator": "build-info",
-      "priority": 60,
-      "reason": "build-info failed for https://www.wannavi.online/build-info.",
-      "action": "Repair the production mismatch or deployment issue, then rerun npm run production:sync.",
-      "evidenceTarget": "content/deployment-checks.json"
     }
   ]
 }
