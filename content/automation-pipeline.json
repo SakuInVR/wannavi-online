@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "states": [
+    "idea",
+    "researched",
+    "drafted",
+    "reviewed",
+    "monetized",
+    "ready",
+    "published",
+    "verified",
+    "improving"
+  ],
+  "qualityGates": {
+    "researched": [
+      "Three YouTube source URLs are attached when the video workflow is used",
+      "A matching research/youtube JSON record exists",
+      "Source notes are stored outside reader-facing prose"
+    ],
+    "reviewed": [
+      "The opening describes a concrete reader situation",
+      "The article has at least two H2 sections",
+      "The article contains a decision asset such as a table, checklist, or recommendation block",
+      "The prose does not mention the internal video research process"
+    ],
+    "monetized": [
+      "High-intent articles have at least one affiliate product mapping",
+      "Approved ad creatives include imageUrl, imageAlt, and clickUrl",
+      "Ad creative placement matches the reader's decision context"
+    ],
+    "verified": [
+      "Deployment status is healthy",
+      "Production serves the expected build",
+      "Critical pages return 200",
+      "AdSense, ads.txt, and affiliate redirects are checked"
+    ],
+    "improving": [
+      "Search Console, analytics, affiliate clicks, and manual review notes are used to create the next action queue"
+    ]
+  },
+  "entities": [
+    "Topic",
+    "ResearchJob",
+    "SourceAnalysis",
+    "Claim",
+    "DraftArticle",
+    "QualityReview",
+    "AffiliateProgram",
+    "AdCreative",
+    "ArticleAdSlot",
+    "PublishJob",
+    "ProductionVerification"
+  ]
+}

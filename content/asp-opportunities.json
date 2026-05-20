@@ -1,0 +1,334 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-20T00:07:01.585Z",
+  "source": "scripts/sync-asp-opportunities.mjs",
+  "opportunities": [
+    {
+      "id": "dtm-headphones-guide-affiliate-search",
+      "articleSlug": "dtm-headphones-guide",
+      "articleTitle": "DTM初心者のヘッドホン選びで失敗しない考え方",
+      "category": "dtm",
+      "priority": 100,
+      "status": "open",
+      "primaryAsp": "moshimo",
+      "asps": [
+        "moshimo",
+        "a8",
+        "valuecommerce"
+      ],
+      "searchTerms": [
+        "モニターヘッドホン",
+        "DTM ヘッドホン",
+        "SONY MDR-CD900ST",
+        "音楽制作 ヘッドホン",
+        "DTM",
+        "音楽制作",
+        "宅録",
+        "楽器",
+        "ヘッドホン",
+        "オーディオインターフェース"
+      ],
+      "productAngle": "モニターヘッドホン、楽器通販、DTM機材ショップ",
+      "requiredEvidence": [
+        "ASP名",
+        "プログラム名",
+        "提携状態",
+        "報酬条件または成果条件",
+        "取得日時",
+        "広告素材URLまたは商品リンクURL",
+        "対象記事との適合メモ"
+      ],
+      "nextAction": "ChromeでASP管理画面を開き、searchTermsで検索して候補をcontent/affiliate-program-snapshots.jsonへ記録する。"
+    },
+    {
+      "id": "dtm-home-studio-setup-affiliate-search",
+      "articleSlug": "dtm-home-studio-setup",
+      "articleTitle": "DTM初心者のホームスタジオ作り｜最初にそろえる機材と配線",
+      "category": "dtm",
+      "priority": 100,
+      "status": "open",
+      "primaryAsp": "moshimo",
+      "asps": [
+        "moshimo",
+        "a8",
+        "valuecommerce"
+      ],
+      "searchTerms": [
+        "DTM スターターセット",
+        "宅録 機材",
+        "DTM機材",
+        "防音 吸音材",
+        "DTM",
+        "音楽制作",
+        "宅録",
+        "楽器",
+        "ヘッドホン",
+        "オーディオインターフェース"
+      ],
+      "productAngle": "DTM機材セット、吸音材、楽器通販、オーディオ周辺機器",
+      "requiredEvidence": [
+        "ASP名",
+        "プログラム名",
+        "提携状態",
+        "報酬条件または成果条件",
+        "取得日時",
+        "広告素材URLまたは商品リンクURL",
+        "対象記事との適合メモ"
+      ],
+      "nextAction": "ChromeでASP管理画面を開き、searchTermsで検索して候補をcontent/affiliate-program-snapshots.jsonへ記録する。"
+    },
+    {
+      "id": "dtm-plugin-priority-affiliate-search",
+      "articleSlug": "dtm-plugin-priority",
+      "articleTitle": "DTM初心者がプラグインを買う前に確認すること",
+      "category": "dtm",
+      "priority": 100,
+      "status": "open",
+      "primaryAsp": "moshimo",
+      "asps": [
+        "moshimo",
+        "a8",
+        "valuecommerce"
+      ],
+      "searchTerms": [
+        "DTM プラグイン",
+        "作曲 ソフト",
+        "DAW プラグイン",
+        "音源 プラグイン",
+        "DTM",
+        "音楽制作",
+        "宅録",
+        "楽器",
+        "ヘッドホン",
+        "オーディオインターフェース"
+      ],
+      "productAngle": "DAW、音源、プラグイン販売、作曲学習サービス",
+      "requiredEvidence": [
+        "ASP名",
+        "プログラム名",
+        "提携状態",
+        "報酬条件または成果条件",
+        "取得日時",
+        "広告素材URLまたは商品リンクURL",
+        "対象記事との適合メモ"
+      ],
+      "nextAction": "ChromeでASP管理画面を開き、searchTermsで検索して候補をcontent/affiliate-program-snapshots.jsonへ記録する。"
+    },
+    {
+      "id": "instrument-adult-piano-start-affiliate-search",
+      "articleSlug": "instrument-adult-piano-start",
+      "articleTitle": "大人からピアノを始めたい人の最初の練習ロードマップ",
+      "category": "instrument-player",
+      "priority": 100,
+      "status": "open",
+      "primaryAsp": "moshimo",
+      "asps": [
+        "moshimo",
+        "a8",
+        "valuecommerce"
+      ],
+      "searchTerms": [
+        "ピアノ教室",
+        "オンラインピアノ",
+        "電子ピアノ",
+        "大人 ピアノ",
+        "楽器",
+        "ピアノ",
+        "ギター",
+        "音楽教室",
+        "防音"
+      ],
+      "productAngle": "オンライン音楽教室、電子ピアノ、楽譜アプリ",
+      "requiredEvidence": [
+        "ASP名",
+        "プログラム名",
+        "提携状態",
+        "報酬条件または成果条件",
+        "取得日時",
+        "広告素材URLまたは商品リンクURL",
+        "対象記事との適合メモ"
+      ],
+      "nextAction": "ChromeでASP管理画面を開き、searchTermsで検索して候補をcontent/affiliate-program-snapshots.jsonへ記録する。"
+    },
+    {
+      "id": "instrument-guitar-first-month-affiliate-search",
+      "articleSlug": "instrument-guitar-first-month",
+      "articleTitle": "ギター初心者の最初の1ヶ月練習メニュー｜毎日15分で挫折しない始め方",
+      "category": "instrument-player",
+      "priority": 100,
+      "status": "open",
+      "primaryAsp": "moshimo",
+      "asps": [
+        "moshimo",
+        "a8",
+        "valuecommerce"
+      ],
+      "searchTerms": [
+        "ギター 初心者セット",
+        "オンラインギター教室",
+        "ギター 教室",
+        "チューナー",
+        "楽器",
+        "ピアノ",
+        "ギター",
+        "音楽教室",
+        "防音",
+        "電子ピアノ"
+      ],
+      "productAngle": "ギター初心者セット、オンラインレッスン、チューナー、教則教材",
+      "requiredEvidence": [
+        "ASP名",
+        "プログラム名",
+        "提携状態",
+        "報酬条件または成果条件",
+        "取得日時",
+        "広告素材URLまたは商品リンクURL",
+        "対象記事との適合メモ"
+      ],
+      "nextAction": "ChromeでASP管理画面を開き、searchTermsで検索して候補をcontent/affiliate-program-snapshots.jsonへ記録する。"
+    },
+    {
+      "id": "instrument-practice-room-setup-affiliate-search",
+      "articleSlug": "instrument-practice-room-setup",
+      "articleTitle": "楽器練習を続けるための部屋づくりと防音の考え方",
+      "category": "instrument-player",
+      "priority": 100,
+      "status": "open",
+      "primaryAsp": "moshimo",
+      "asps": [
+        "moshimo",
+        "a8",
+        "valuecommerce"
+      ],
+      "searchTerms": [
+        "防音室",
+        "吸音材",
+        "楽器 防音",
+        "防音マット",
+        "楽器",
+        "ピアノ",
+        "ギター",
+        "音楽教室",
+        "防音",
+        "電子ピアノ"
+      ],
+      "productAngle": "防音材、吸音材、簡易防音室、練習環境づくり",
+      "requiredEvidence": [
+        "ASP名",
+        "プログラム名",
+        "提携状態",
+        "報酬条件または成果条件",
+        "取得日時",
+        "広告素材URLまたは商品リンクURL",
+        "対象記事との適合メモ"
+      ],
+      "nextAction": "ChromeでASP管理画面を開き、searchTermsで検索して候補をcontent/affiliate-program-snapshots.jsonへ記録する。"
+    },
+    {
+      "id": "video-edit-cut-telop-first-affiliate-search",
+      "articleSlug": "video-edit-cut-telop-first",
+      "articleTitle": "動画編集初心者が最初に覚えるカットとテロップ｜Premiere Proで迷わない入口",
+      "category": "video-creator",
+      "priority": 100,
+      "status": "open",
+      "primaryAsp": "a8",
+      "asps": [
+        "a8",
+        "valuecommerce",
+        "moshimo"
+      ],
+      "searchTerms": [
+        "動画編集 スクール",
+        "Premiere Pro 講座",
+        "動画編集 講座",
+        "テロップ 講座",
+        "動画編集",
+        "Premiere Pro",
+        "動画編集スクール",
+        "クリエイターPC",
+        "教材"
+      ],
+      "productAngle": "動画編集スクール、Premiere Pro講座、案件獲得講座",
+      "requiredEvidence": [
+        "ASP名",
+        "プログラム名",
+        "提携状態",
+        "報酬条件または成果条件",
+        "取得日時",
+        "広告素材URLまたは商品リンクURL",
+        "対象記事との適合メモ"
+      ],
+      "nextAction": "ChromeでASP管理画面を開き、searchTermsで検索して候補をcontent/affiliate-program-snapshots.jsonへ記録する。"
+    },
+    {
+      "id": "video-editing-pc-spec-guide-affiliate-search",
+      "articleSlug": "video-editing-pc-spec-guide",
+      "articleTitle": "動画編集用PCはどれくらい必要？初心者が買う前に見るスペックと判断基準",
+      "category": "video-creator",
+      "priority": 100,
+      "status": "open",
+      "primaryAsp": "a8",
+      "asps": [
+        "a8",
+        "valuecommerce",
+        "moshimo"
+      ],
+      "searchTerms": [
+        "動画編集 PC",
+        "クリエイターPC",
+        "BTO PC 動画編集",
+        "Premiere Pro PC",
+        "動画編集",
+        "Premiere Pro",
+        "動画編集スクール",
+        "教材"
+      ],
+      "productAngle": "クリエイターPC、BTOパソコン、動画編集向けPC",
+      "requiredEvidence": [
+        "ASP名",
+        "プログラム名",
+        "提携状態",
+        "報酬条件または成果条件",
+        "取得日時",
+        "広告素材URLまたは商品リンクURL",
+        "対象記事との適合メモ"
+      ],
+      "nextAction": "ChromeでASP管理画面を開き、searchTermsで検索して候補をcontent/affiliate-program-snapshots.jsonへ記録する。"
+    },
+    {
+      "id": "vrchat-avatar-commission-checklist-affiliate-search",
+      "articleSlug": "vrchat-avatar-commission-checklist",
+      "articleTitle": "VRChatアバター依頼で失敗しないためのチェックリスト",
+      "category": "vr-creator",
+      "priority": 100,
+      "status": "open",
+      "primaryAsp": "moshimo",
+      "asps": [
+        "moshimo",
+        "valuecommerce",
+        "a8"
+      ],
+      "searchTerms": [
+        "VRChat アバター",
+        "3Dモデル",
+        "アバター制作",
+        "Unity アバター",
+        "VRChat",
+        "アバター",
+        "ゲーミングPC",
+        "Unity"
+      ],
+      "productAngle": "3Dモデル販売、アバター制作サービス、Unity学習、VRChat関連ツール",
+      "requiredEvidence": [
+        "ASP名",
+        "プログラム名",
+        "提携状態",
+        "報酬条件または成果条件",
+        "取得日時",
+        "広告素材URLまたは商品リンクURL",
+        "対象記事との適合メモ"
+      ],
+      "nextAction": "ChromeでASP管理画面を開き、searchTermsで検索して候補をcontent/affiliate-program-snapshots.jsonへ記録する。"
+    }
+  ]
+}

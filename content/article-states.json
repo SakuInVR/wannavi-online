@@ -1,0 +1,523 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-20T00:07:01.602Z",
+  "source": "scripts/sync-article-states.mjs",
+  "states": [
+    {
+      "slug": "ai-engineer-ai-editor-guide",
+      "title": "AIエンジニアになりたい人のAIエディタ選び｜最初に見るべき機能",
+      "category": "ai-engineer",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/ai-engineer-ai-editor-guide.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
+      ],
+      "nextActions": [
+        "Acquire approved image ad creative and place ProductAd."
+      ]
+    },
+    {
+      "slug": "ai-engineer-api-cost-guide",
+      "title": "AIアプリ開発でAPI料金が怖い人のための最初のコスト管理",
+      "category": "ai-engineer",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/ai-engineer-api-cost-guide.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
+      ],
+      "nextActions": [
+        "Acquire approved image ad creative and place ProductAd."
+      ]
+    },
+    {
+      "slug": "ai-engineer-first-month",
+      "title": "AIエンジニアになりたい人の最初の1ヶ月ロードマップ",
+      "category": "ai-engineer",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/ai-engineer-first-month.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
+      ],
+      "nextActions": [
+        "Acquire approved image ad creative and place ProductAd."
+      ]
+    },
+    {
+      "slug": "ai-engineer-local-ai-pc-guide",
+      "title": "AI開発用PCは必要？ローカルAIとクラウドAPIの使い分け",
+      "category": "ai-engineer",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/ai-engineer-local-ai-pc-guide.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
+      ],
+      "nextActions": [
+        "Acquire approved image ad creative and place ProductAd."
+      ]
+    },
+    {
+      "slug": "ai-engineer-portfolio-ideas",
+      "title": "AIエンジニアになりたい人のポートフォリオ案5選",
+      "category": "ai-engineer",
+      "affiliateIntent": "medium",
+      "mdxPath": "content/articles/ai-engineer-portfolio-ideas.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    },
+    {
+      "slug": "ai-engineer-study-log",
+      "title": "AIエンジニア学習ログを収益記事に変える書き方",
+      "category": "ai-engineer",
+      "affiliateIntent": "medium",
+      "mdxPath": "content/articles/ai-engineer-study-log.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    },
+    {
+      "slug": "ai-engineer-tools-first",
+      "title": "AIエンジニアになりたい人が最初に入れる開発ツール",
+      "category": "ai-engineer",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/ai-engineer-tools-first.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
+      ],
+      "nextActions": [
+        "Acquire approved image ad creative and place ProductAd."
+      ]
+    },
+    {
+      "slug": "dtm-audio-interface-first",
+      "title": "DTM初心者にオーディオインターフェースは必要？買う前の判断基準",
+      "category": "dtm",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/dtm-audio-interface-first.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
+      ],
+      "nextActions": [
+        "Acquire approved image ad creative and place ProductAd."
+      ]
+    },
+    {
+      "slug": "dtm-first-loop",
+      "title": "DTMerになりたい人は最初に4小節ループを作ろう",
+      "category": "dtm",
+      "affiliateIntent": "medium",
+      "mdxPath": "content/articles/dtm-first-loop.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    },
+    {
+      "slug": "dtm-first-tools",
+      "title": "DTMerになりたい人が最初に買うもの、まだ買わなくていいもの",
+      "category": "dtm",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/dtm-first-tools.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
+      ],
+      "nextActions": [
+        "Acquire approved image ad creative and place ProductAd."
+      ]
+    },
+    {
+      "slug": "dtm-headphones-guide",
+      "title": "DTM初心者のヘッドホン選びで失敗しない考え方",
+      "category": "dtm",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/dtm-headphones-guide.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "reviewed",
+      "blockers": [
+        "High-intent article has no affiliate product mapping."
+      ],
+      "warnings": [],
+      "nextActions": [
+        "Find a matching ASP program and add a product mapping."
+      ]
+    },
+    {
+      "slug": "dtm-home-studio-setup",
+      "title": "DTM初心者のホームスタジオ作り｜最初にそろえる機材と配線",
+      "category": "dtm",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/dtm-home-studio-setup.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "reviewed",
+      "blockers": [
+        "High-intent article has no affiliate product mapping."
+      ],
+      "warnings": [],
+      "nextActions": [
+        "Find a matching ASP program and add a product mapping."
+      ]
+    },
+    {
+      "slug": "dtm-plugin-priority",
+      "title": "DTM初心者がプラグインを買う前に確認すること",
+      "category": "dtm",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/dtm-plugin-priority.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "reviewed",
+      "blockers": [
+        "High-intent article has no affiliate product mapping."
+      ],
+      "warnings": [],
+      "nextActions": [
+        "Find a matching ASP program and add a product mapping."
+      ]
+    },
+    {
+      "slug": "instrument-adult-piano-practice-routine",
+      "title": "大人のピアノ練習時間を作る方法｜毎日10分から2時間までの現実的な組み方",
+      "category": "instrument-player",
+      "affiliateIntent": "medium",
+      "mdxPath": "content/articles/instrument-adult-piano-practice-routine.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    },
+    {
+      "slug": "instrument-adult-piano-start",
+      "title": "大人からピアノを始めたい人の最初の練習ロードマップ",
+      "category": "instrument-player",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/instrument-adult-piano-start.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "reviewed",
+      "blockers": [
+        "High-intent article has no affiliate product mapping."
+      ],
+      "warnings": [],
+      "nextActions": [
+        "Find a matching ASP program and add a product mapping."
+      ]
+    },
+    {
+      "slug": "instrument-digital-piano-guide",
+      "title": "大人のピアノ初心者に電子ピアノはどれがいい？買う前の判断基準",
+      "category": "instrument-player",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/instrument-digital-piano-guide.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
+      ],
+      "nextActions": [
+        "Acquire approved image ad creative and place ProductAd."
+      ]
+    },
+    {
+      "slug": "instrument-first-instrument-guide",
+      "title": "最初の楽器選びで失敗しないための判断基準",
+      "category": "instrument-player",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/instrument-first-instrument-guide.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
+      ],
+      "nextActions": [
+        "Acquire approved image ad creative and place ProductAd."
+      ]
+    },
+    {
+      "slug": "instrument-guitar-first-month",
+      "title": "ギター初心者の最初の1ヶ月練習メニュー｜毎日15分で挫折しない始め方",
+      "category": "instrument-player",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/instrument-guitar-first-month.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "reviewed",
+      "blockers": [
+        "High-intent article has no affiliate product mapping."
+      ],
+      "warnings": [],
+      "nextActions": [
+        "Find a matching ASP program and add a product mapping."
+      ]
+    },
+    {
+      "slug": "instrument-music-theory-first",
+      "title": "楽器初心者が音楽理論で最初に覚えること",
+      "category": "instrument-player",
+      "affiliateIntent": "medium",
+      "mdxPath": "content/articles/instrument-music-theory-first.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    },
+    {
+      "slug": "instrument-piano-classic-step-up",
+      "title": "大人からクラシックピアノ曲に挑戦したい人のステップアップ計画",
+      "category": "instrument-player",
+      "affiliateIntent": "medium",
+      "mdxPath": "content/articles/instrument-piano-classic-step-up.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    },
+    {
+      "slug": "instrument-player-first-month",
+      "title": "楽器演奏者になりたい人の最初の1ヶ月ロードマップ",
+      "category": "instrument-player",
+      "affiliateIntent": "medium",
+      "mdxPath": "content/articles/instrument-player-first-month.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    },
+    {
+      "slug": "instrument-practice-room-setup",
+      "title": "楽器練習を続けるための部屋づくりと防音の考え方",
+      "category": "instrument-player",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/instrument-practice-room-setup.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "reviewed",
+      "blockers": [
+        "High-intent article has no affiliate product mapping."
+      ],
+      "warnings": [],
+      "nextActions": [
+        "Find a matching ASP program and add a product mapping."
+      ]
+    },
+    {
+      "slug": "screen-recording-tutorial-video",
+      "title": "解説動画を作るための画面録画入門｜OBSで失敗しない設定と撮り方",
+      "category": "video-creator",
+      "affiliateIntent": "medium",
+      "mdxPath": "content/articles/screen-recording-tutorial-video.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    },
+    {
+      "slug": "video-edit-cut-telop-first",
+      "title": "動画編集初心者が最初に覚えるカットとテロップ｜Premiere Proで迷わない入口",
+      "category": "video-creator",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/video-edit-cut-telop-first.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "reviewed",
+      "blockers": [
+        "High-intent article has no affiliate product mapping."
+      ],
+      "warnings": [],
+      "nextActions": [
+        "Find a matching ASP program and add a product mapping."
+      ]
+    },
+    {
+      "slug": "video-editing-pc-spec-guide",
+      "title": "動画編集用PCはどれくらい必要？初心者が買う前に見るスペックと判断基準",
+      "category": "video-creator",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/video-editing-pc-spec-guide.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "reviewed",
+      "blockers": [
+        "High-intent article has no affiliate product mapping."
+      ],
+      "warnings": [],
+      "nextActions": [
+        "Find a matching ASP program and add a product mapping."
+      ]
+    },
+    {
+      "slug": "video-editor-training-start",
+      "title": "動画教材エディターになりたい人の始め方｜講座を選ぶ前に見るポイント",
+      "category": "video-creator",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/video-editor-training-start.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
+      ],
+      "nextActions": [
+        "Acquire approved image ad creative and place ProductAd."
+      ]
+    },
+    {
+      "slug": "vrchat-avatar-backup",
+      "title": "VRChatアバター改変の前に必ずバックアップを作る理由",
+      "category": "vr-creator",
+      "affiliateIntent": "medium",
+      "mdxPath": "content/articles/vrchat-avatar-backup.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    },
+    {
+      "slug": "vrchat-avatar-commission-checklist",
+      "title": "VRChatアバター依頼で失敗しないためのチェックリスト",
+      "category": "vr-creator",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/vrchat-avatar-commission-checklist.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "reviewed",
+      "blockers": [
+        "High-intent article has no affiliate product mapping."
+      ],
+      "warnings": [],
+      "nextActions": [
+        "Find a matching ASP program and add a product mapping."
+      ]
+    },
+    {
+      "slug": "vrchat-pc-spec-guide",
+      "title": "VRChat用PCはどれくらい必要？初心者のためのスペック選び",
+      "category": "vr-creator",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/vrchat-pc-spec-guide.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    },
+    {
+      "slug": "vrchat-quest-avatar",
+      "title": "VRChatアバターをQuest対応したい人のつまずきナビ",
+      "category": "vr-creator",
+      "affiliateIntent": "medium",
+      "mdxPath": "content/articles/vrchat-quest-avatar.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    },
+    {
+      "slug": "vrchat-shader-basics",
+      "title": "VRChat初心者がシェーダーでつまずく理由",
+      "category": "vr-creator",
+      "affiliateIntent": "medium",
+      "mdxPath": "content/articles/vrchat-shader-basics.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    },
+    {
+      "slug": "vrchat-starter-gear-guide",
+      "title": "VRChatを始めたい人の最初の機材と買う順番",
+      "category": "vr-creator",
+      "affiliateIntent": "high",
+      "mdxPath": "content/articles/vrchat-starter-gear-guide.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "monetized",
+      "blockers": [],
+      "warnings": [
+        "High-intent article has no approved image ad creative."
+      ],
+      "nextActions": [
+        "Acquire approved image ad creative and place ProductAd."
+      ]
+    },
+    {
+      "slug": "vrchat-world-first-step",
+      "title": "VRChatワールドを作りたい人の最初の一歩",
+      "category": "vr-creator",
+      "affiliateIntent": "medium",
+      "mdxPath": "content/articles/vrchat-world-first-step.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    },
+    {
+      "slug": "youtube-thumbnail-canva-first",
+      "title": "YouTubeサムネイルをCanvaで作る最初の手順｜初心者が白紙で止まらない方法",
+      "category": "video-creator",
+      "affiliateIntent": "medium",
+      "mdxPath": "content/articles/youtube-thumbnail-canva-first.mdx",
+      "sourceVideoCount": 3,
+      "pipelineState": "published",
+      "blockers": [],
+      "warnings": [],
+      "nextActions": [
+        "Verify deployment and collect post-publish performance data."
+      ]
+    }
+  ]
+}

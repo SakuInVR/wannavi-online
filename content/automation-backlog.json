@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "goal": "この改善点を順番にクリアしていく",
+  "principle": "記事数を増やす前に、品質ゲート、状態管理、収益導線、公開検証、自動改善ループを順番に固める。",
+  "items": [
+    {
+      "id": "asset-health-gate",
+      "order": 1,
+      "status": "in_progress",
+      "title": "文字化けと公開品質の全検出",
+      "risk": "文字化け、内部メモ、未検証の断定が公開面に混ざると、読者信頼とSEO評価を同時に落とす。",
+      "doneWhen": [
+        "公開ページ、MDX、広告JSON、カテゴリ定義、主要ドキュメントを監査できる",
+        "mojibake、内部メタデータ漏れ、動画研究プロセスの不自然な露出を検出できる",
+        "ブロッカーがある場合はpublish前に止められる"
+      ],
+      "commands": ["npm run automation:audit"]
+    },
+    {
+      "id": "pipeline-state-model",
+      "order": 2,
+      "status": "in_progress",
+      "title": "記事生成から改善までの状態機械",
+      "risk": "MDXファイルだけを真実にすると、どの記事が研究済み・収益化済み・本番検証済みなのか復元できなくなる。",
+      "doneWhen": [
+        "idea -> researched -> drafted -> reviewed -> monetized -> ready -> published -> verified -> improving を定義する",
+        "既存記事を状態別に分類できる",
+        "状態ごとの次アクションを出せる"
+      ],
+      "commands": ["npm run pipeline:state"]
+    },
+    {
+      "id": "research-evidence-layer",
+      "order": 3,
+      "status": "pending",
+      "title": "Research/Claim/Evidence の分離",
+      "risk": "YouTube 3本の要約だけでは一次情報にならず、AI記事らしさが残る。",
+      "doneWhen": [
+        "ArticleResearch、Claim、Evidence、BuyerDecision を構造化する",
+        "公式情報、動画、独自検証、ASP商品の実条件を分けて保存する",
+        "未検証の断定をpublish前に検出する"
+      ],
+      "commands": []
+    },
+    {
+      "id": "affiliate-audit-trail",
+      "order": 4,
+      "status": "in_progress",
+      "title": "ASP提携と広告素材の証跡管理",
+      "risk": "ブラウザ操作だけだと、申請済み・承認済み・素材取得済みの根拠が消える。",
+      "doneWhen": [
+        "ASP名、プログラム名、提携状態、取得日時、クリックURL、画像URL、対象記事を保存する",
+        "スクリーンショットまたはHTML抜粋の保存先を持つ",
+        "高収益記事の未提携/未素材取得を改善キューに出す"
+      ],
+      "commands": ["npm run report:improvements"]
+    },
+    {
+      "id": "eeat-category-focus",
+      "order": 5,
+      "status": "pending",
+      "title": "E-E-A-T強化カテゴリの選定",
+      "risk": "AI、DTM、VR、楽器、動画編集を同時に広げると専門性が分散する。",
+      "doneWhen": [
+        "主戦場カテゴリを1つ決める",
+        "各記事に自分の検証、失敗例、比較表、購入しない条件を入れる",
+        "reviewedBy、testedBy、lastVerifiedAt を持たせる"
+      ],
+      "commands": []
+    },
+    {
+      "id": "deploy-job-verification",
+      "order": 6,
+      "status": "pending",
+      "title": "Git push と本番公開を分離する",
+      "risk": "push済みでもVercel未反映なら公開完了ではない。rate limit 時に中途半端な状態が起きる。",
+      "doneWhen": [
+        "deploy job を queued/deploying/succeeded/failed/rate_limited で扱う",
+        "production verify が通ったときだけ公開完了にする",
+        "重複Vercelプロジェクトの扱いを決める"
+      ],
+      "commands": ["npm run production:verify"]
+    },
+    {
+      "id": "supabase-control-plane",
+      "order": 7,
+      "status": "in_progress",
+      "title": "Supabaseを中核に置くか確定する",
+      "risk": "DBを使うと言いながら依存関係にも状態にも存在しないと、自動化システムではなくファイル運用で止まる。",
+      "doneWhen": [
+        "短期はJSON制御、中期はSupabase制御と決める",
+        "topics/articles/research_sources/ai_runs/quality_reviews/affiliate_programs/ad_creatives/publish_jobs/deployment_checks の移行方針を作る",
+        "MDXを最終成果物として扱う"
+      ],
+      "commands": []
+    }
+  ]
+}

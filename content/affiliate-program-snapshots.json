@@ -1,0 +1,25 @@
+[
+  {
+    "id": "moshimo-gp-zero-2026-05-19",
+    "asp": "moshimo",
+    "programName": "GP-ZERO｜中古ゲーミングPC専門店での商品購入",
+    "status": "approved",
+    "capturedAt": "2026-05-19",
+    "evidenceType": "browser-session",
+    "evidenceNote": "Moshimo管理画面で審査なし、即広告掲載可、商品購入5%のプログラムとして確認。原稿取得画面から600x600画像素材とクリックURLを取得。",
+    "targetArticleSlugs": ["vrchat-pc-spec-guide"],
+    "creativeIds": ["gaming-pc-vrchat-banner"],
+    "programConditions": [
+      "中古ゲーミングPC専門店",
+      "商品購入成果",
+      "報酬率5%",
+      "審査なしで広告掲載可"
+    ],
+    "capturedUrls": [
+      "https://af.moshimo.com/af/c/click?a_id=5575341&p_id=4608&pc_id=12072&pl_id=61653",
+      "https://image.moshimo.com/af-img/4202/000000061653.jpg",
+      "https://i.moshimo.com/af/i/impression?a_id=5575341&p_id=4608&pc_id=12072&pl_id=61653"
+    ],
+    "nextReviewAt": "2026-08-19"
+  }
+]

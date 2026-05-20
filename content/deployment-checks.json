@@ -1,0 +1,235 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-20T00:07:13.647Z",
+  "source": "scripts/sync-deployment-checks.mjs",
+  "publishJob": {
+    "id": "ae2fa28f81c0-production",
+    "commitSha": "ae2fa28f81c0265cc48faea7ead27c06938c4b7b",
+    "branch": "main",
+    "remoteUrl": "https://github.com/SakuInVR/wannavi-online.git",
+    "baseUrl": "https://www.wannavi.online",
+    "status": "failed",
+    "checkedAt": "2026-05-20T00:07:13.736Z"
+  },
+  "checks": [
+    {
+      "checkName": "build-info",
+      "targetUrl": "https://www.wannavi.online/build-info",
+      "status": "failed",
+      "details": {
+        "statusCode": 200,
+        "expectedSha": "ae2fa28f81c0265cc48faea7ead27c06938c4b7b",
+        "productionSha": "18405b15fda01291a1a46adc256900a4413f253f",
+        "deploymentUrl": "wannavionline-cbcirzx05-sakuinvrs-projects.vercel.app",
+        "environment": "production",
+        "status": "failed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.120Z"
+    },
+    {
+      "checkName": "home",
+      "targetUrl": "https://www.wannavi.online",
+      "status": "passed",
+      "details": {
+        "statusCode": 200,
+        "hasSiteName": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.415Z"
+    },
+    {
+      "checkName": "sitemap",
+      "targetUrl": "https://www.wannavi.online/sitemap.xml",
+      "status": "passed",
+      "details": {
+        "statusCode": 200,
+        "articleCount": 14,
+        "missingArticles": [],
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.432Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/ai-engineer-portfolio-ideas",
+      "status": "passed",
+      "details": {
+        "slug": "ai-engineer-portfolio-ideas",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.448Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/ai-engineer-study-log",
+      "status": "passed",
+      "details": {
+        "slug": "ai-engineer-study-log",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.461Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/dtm-first-loop",
+      "status": "passed",
+      "details": {
+        "slug": "dtm-first-loop",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.480Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/instrument-adult-piano-practice-routine",
+      "status": "passed",
+      "details": {
+        "slug": "instrument-adult-piano-practice-routine",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.493Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/instrument-music-theory-first",
+      "status": "passed",
+      "details": {
+        "slug": "instrument-music-theory-first",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.508Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/instrument-piano-classic-step-up",
+      "status": "passed",
+      "details": {
+        "slug": "instrument-piano-classic-step-up",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.522Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/instrument-player-first-month",
+      "status": "passed",
+      "details": {
+        "slug": "instrument-player-first-month",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.535Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/screen-recording-tutorial-video",
+      "status": "passed",
+      "details": {
+        "slug": "screen-recording-tutorial-video",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.547Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/vrchat-avatar-backup",
+      "status": "passed",
+      "details": {
+        "slug": "vrchat-avatar-backup",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.562Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/vrchat-pc-spec-guide",
+      "status": "passed",
+      "details": {
+        "slug": "vrchat-pc-spec-guide",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.581Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/vrchat-quest-avatar",
+      "status": "passed",
+      "details": {
+        "slug": "vrchat-quest-avatar",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.596Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/vrchat-shader-basics",
+      "status": "passed",
+      "details": {
+        "slug": "vrchat-shader-basics",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.611Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/vrchat-world-first-step",
+      "status": "passed",
+      "details": {
+        "slug": "vrchat-world-first-step",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.622Z"
+    },
+    {
+      "checkName": "article-page",
+      "targetUrl": "https://www.wannavi.online/articles/youtube-thumbnail-canva-first",
+      "status": "passed",
+      "details": {
+        "slug": "youtube-thumbnail-canva-first",
+        "statusCode": 200,
+        "hasTitle": true,
+        "hasAdsenseMeta": true,
+        "status": "passed"
+      },
+      "checkedAt": "2026-05-20T00:07:13.635Z"
+    }
+  ]
+}
