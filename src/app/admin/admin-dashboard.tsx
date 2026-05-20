@@ -46,7 +46,7 @@ export interface Stats {
   materials: number;
 }
 
-type Tab = "overview" | "new-article" | "asp-materials" | "categories" | "review";
+type Tab = "overview" | "new-article" | "video-research" | "asp-materials" | "categories" | "review";
 
 /* ------------------------------------------------------------------ */
 /* Dashboard                                                          */
@@ -105,6 +105,7 @@ export function AdminDashboard({
   const tabs: { key: Tab; label: string; emoji: string }[] = [
     { key: "overview", label: "概要", emoji: "📊" },
     { key: "new-article", label: "記事生成", emoji: "✍️" },
+    { key: "video-research", label: "動画リサーチ", emoji: "🎬" },
     { key: "asp-materials", label: "ASP素材", emoji: "🔗" },
     { key: "categories", label: "カテゴリ", emoji: "📁" },
     { key: "review", label: "レビュー待ち", emoji: "⏳" },
@@ -141,6 +142,15 @@ export function AdminDashboard({
         {tab === "new-article" && (
           <NewArticleTab
             categories={categories}
+            aspMaterials={aspMaterials}
+            onGenerated={() => {
+              refreshPending();
+              setTab("review");
+            }}
+          />
+        )}
+        {tab === "video-research" && (
+          <VideoResearchTab
             aspMaterials={aspMaterials}
             onGenerated={() => {
               refreshPending();
@@ -828,6 +838,220 @@ function CategoriesTab({
             </li>
           ))}
         </ul>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Tab: Video Research (Gemini分析 → DeepSeek記事生成)                */
+/* ------------------------------------------------------------------ */
+
+function VideoResearchTab({
+  aspMaterials,
+  onGenerated,
+}: {
+  aspMaterials: AspMaterial[];
+  onGenerated: () => void;
+}) {
+  const [step, setStep] = useState<1 | 2>(1);
+  const [articleTitle, setArticleTitle] = useState("");
+  const [videoAUrl, setVideoAUrl] = useState("");
+  const [videoBUrl, setVideoBUrl] = useState("");
+  const [videoCUrl, setVideoCUrl] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<{
+    filename: string; videoCount: number;
+  } | null>(null);
+  const [category, setCategory] = useState("");
+  const [researchFile, setResearchFile] = useState("");
+  const [researchFiles, setResearchFiles] = useState<
+    Array<{ filename: string; title: string; videoCount: number; generatedAt: string }>
+  >([]);
+  const [selectedAsps, setSelectedAsps] = useState<string[]>([]);
+  const [extraInstructions, setExtraInstructions] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [result, setResult] = useState<{
+    type: "success" | "error"; text: string; articleId?: string;
+  } | null>(null);
+
+  const allCategories = [
+    { slug: "ai-engineer", title: "AIエンジニアになりたい" },
+    { slug: "dtm", title: "DTMerになりたい" },
+    { slug: "vr-creator", title: "VRクリエイターになりたい" },
+    { slug: "instrument-player", title: "楽器演奏者になりたい" },
+    { slug: "video-creator", title: "動画クリエイターになりたい" },
+  ];
+
+  async function loadResearchFiles() {
+    const res = await fetch("/api/admin/research-files");
+    if (res.ok) setResearchFiles(await res.json());
+  }
+
+  async function handleAnalyze() {
+    if (!articleTitle.trim() || !videoAUrl.trim()) {
+      setResult({ type: "error", text: "タイトルと動画Aは必須です" });
+      return;
+    }
+    setAnalyzing(true); setResult(null);
+    const videos = [];
+    if (videoAUrl.trim()) videos.push({ url: videoAUrl.trim(), role: "a" as const });
+    if (videoBUrl.trim()) videos.push({ url: videoBUrl.trim(), role: "b" as const });
+    if (videoCUrl.trim()) videos.push({ url: videoCUrl.trim(), role: "c" as const });
+
+    try {
+      const res = await fetch("/api/admin/analyze-videos", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: articleTitle.trim(), videos }),
+      });
+      const json = await res.json();
+      if (!res.ok) { setResult({ type: "error", text: json.error ?? "分析失敗" }); return; }
+      setAnalysisResult({ filename: json.filename, videoCount: json.videoCount });
+      setResearchFile(json.filename);
+      await loadResearchFiles();
+      setStep(2);
+      setResult({ type: "success", text: `✅ Geminiで${json.videoCount}件の動画を分析しました` });
+    } catch { setResult({ type: "error", text: "ネットワークエラー" }); }
+    finally { setAnalyzing(false); }
+  }
+
+  async function handleGenerate() {
+    if (!category || !researchFile) {
+      setResult({ type: "error", text: "カテゴリとリサーチファイルを選択してください" });
+      return;
+    }
+    setGenerating(true); setResult(null);
+    try {
+      const res = await fetch("/api/admin/articles/generate-from-research", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: articleTitle.trim(), category, research_filename: researchFile,
+          asp_material_ids: selectedAsps,
+          extra_instructions: extraInstructions.trim() || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) { setResult({ type: "error", text: json.error ?? "生成失敗" }); return; }
+      setResult({ type: "success", text: `✅ 記事生成完了 (${json.tokens_used ?? "?"} tokens)`, articleId: json.article_id });
+      setArticleTitle(""); setVideoAUrl(""); setVideoBUrl(""); setVideoCUrl("");
+      setExtraInstructions(""); setSelectedAsps([]); setStep(1);
+      onGenerated();
+    } catch { setResult({ type: "error", text: "ネットワークエラー" }); }
+    finally { setGenerating(false); }
+  }
+
+  function toggleAsp(id: string) {
+    setSelectedAsps((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  }
+
+  const usageLabels: Record<string, string> = {
+    recommendation: "おすすめ", comparison: "比較用", tool_intro: "道具紹介",
+    budget_option: "予算別", step_up: "次のステップ",
+  };
+
+  return (
+    <div>
+      <h2 className="mb-4 text-lg font-semibold text-gray-900">🎬 動画リサーチ → 記事生成</h2>
+
+      {/* Step indicator */}
+      <div className="mb-6 flex items-center gap-2">
+        <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${step === 1 ? "bg-purple-600 text-white" : "bg-green-600 text-white"}`}>1</div>
+        <div className={`h-0.5 flex-1 ${step === 2 ? "bg-green-600" : "bg-gray-300"}`} />
+        <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${step === 2 ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-500"}`}>2</div>
+        <span className="ml-2 text-xs text-gray-500">{step === 1 ? "Gemini動画分析" : "DeepSeek記事生成"}</span>
+      </div>
+
+      {/* Step 1 */}
+      {step === 1 && (
+        <div className="space-y-4 rounded-lg border border-purple-200 bg-purple-50 p-4 sm:p-6">
+          <h3 className="text-sm font-semibold text-purple-900">📹 ステップ1: YouTube動画をGeminiで分析</h3>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">記事タイトル <span className="text-red-500">*</span></label>
+            <input type="text" value={articleTitle} onChange={(e) => setArticleTitle(e.target.value)}
+              placeholder="例：大人のピアノ練習法" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">動画A（初心者がぶつかる壁） <span className="text-red-500">*</span></label>
+            <input type="url" value={videoAUrl} onChange={(e) => setVideoAUrl(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..." className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">動画B（上級者の練習ロジック）</label>
+            <input type="url" value={videoBUrl} onChange={(e) => setVideoBUrl(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..." className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">動画C（機材・デバイスレビュー）</label>
+            <input type="url" value={videoCUrl} onChange={(e) => setVideoCUrl(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..." className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+          </div>
+          <p className="text-xs text-gray-400">
+            Geminiが動画タイトル・URL・一般知識から内容を推測分析します。正確な分析には <code>npm run analyze:youtube</code> を推奨。
+          </p>
+          <button onClick={handleAnalyze} disabled={analyzing}
+            className="w-full rounded-md bg-purple-600 px-4 py-3 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50">
+            {analyzing ? "🔍 Geminiで分析中..." : "🔍 Geminiで動画を分析する"}
+          </button>
+        </div>
+      )}
+
+      {/* Step 2 */}
+      {step === 2 && (
+        <div className="space-y-4 rounded-lg border border-green-200 bg-green-50 p-4 sm:p-6">
+          <h3 className="text-sm font-semibold text-green-900">✍️ ステップ2: DeepSeekで3動画統合記事を生成</h3>
+          {analysisResult && (
+            <div className="rounded bg-white px-3 py-2 text-sm text-green-700">
+              📁 <code>{analysisResult.filename}</code>（{analysisResult.videoCount}動画分析済み）
+              <button onClick={() => setStep(1)} className="ml-3 text-xs text-blue-600 underline">← 戻る</button>
+            </div>
+          )}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">カテゴリ <span className="text-red-500">*</span></label>
+            <select value={category} onChange={(e) => setCategory(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+              <option value="">選択してください</option>
+              {allCategories.map((c) => (<option key={c.slug} value={c.slug}>{c.title}</option>))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">リサーチファイル</label>
+            <select value={researchFile} onChange={(e) => setResearchFile(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+              {researchFiles.map((f) => (<option key={f.filename} value={f.filename}>{f.title} ({f.videoCount}動画)</option>))}
+            </select>
+            <button onClick={loadResearchFiles} className="mt-1 text-xs text-blue-600 underline">🔄 更新</button>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">含めるASP素材</label>
+            <div className="max-h-32 space-y-1 overflow-y-auto rounded-md border border-gray-200 p-2">
+              {aspMaterials.map((m) => (
+                <label key={m.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-gray-50">
+                  <input type="checkbox" checked={selectedAsps.includes(m.id)} onChange={() => toggleAsp(m.id)}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600" />
+                  <span className="font-medium truncate">{m.name}</span>
+                  <span className="text-xs text-gray-400">[{usageLabels[m.usage_type]}]</span>
+                  {m.price_note && <span className="text-xs text-green-600">{m.price_note}</span>}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">追加指示</label>
+            <textarea value={extraInstructions} onChange={(e) => setExtraInstructions(e.target.value)}
+              rows={2} placeholder="例：機材比較表を充実させて" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+          </div>
+          <button onClick={handleGenerate} disabled={generating}
+            className="w-full rounded-md bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+            {generating ? "🚀 DeepSeekで生成中..." : "🚀 DeepSeekで3動画統合記事を生成する"}
+          </button>
+        </div>
+      )}
+
+      {result && (
+        <div className={`mt-4 rounded-md px-4 py-3 text-sm ${result.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+          {result.text}
+          {result.articleId && <a href={`/admin/review/${result.articleId}`} className="ml-3 font-medium underline">レビューする →</a>}
+        </div>
       )}
     </div>
   );

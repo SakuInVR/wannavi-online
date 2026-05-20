@@ -214,3 +214,111 @@ export function buildArticleUserPrompt(params: {
     "- 指定された素材は必ず指定された形式で挿入する",
   ].join("\n");
 }
+
+/* ------------------------------------------------------------------ */
+/* 3-Video Synthesis Mode                                             */
+/* ------------------------------------------------------------------ */
+
+export interface VideoAnalysis {
+  url: string;
+  analysis: string;
+}
+
+export interface ThreeVideoArticleInput {
+  title: string;
+  category: string;
+  videoA: VideoAnalysis;
+  videoB: VideoAnalysis;
+  videoC: VideoAnalysis;
+  aspMaterials: AspMaterialForPrompt[];
+  extraInstructions?: string;
+  feedbackSuffix: string;
+}
+
+/**
+ * Build system prompt for the 3-video synthesis article mode.
+ * Uses the exact structure requested:
+ *   導入 → 3つの視点の統合 → ロードマップ → 機材比較表 → まとめ
+ */
+export function buildThreeVideoSystemPrompt(params: ThreeVideoArticleInput): string {
+  const parts: string[] = [
+    "あなたは「〇〇になりたい！」という読者の夢を応援する特化型ブログ「Wannavi」のプロフェッショナルライター兼メンターです。",
+    "",
+    `今回は「${params.title}」という読者に向けて記事を書きます。`,
+    "",
+    "【ミッション】",
+    "提供される3つの動画分析情報を統合・比較し、読者が「今日から何をすべきか」「どの機材を買うべきか」が明確にわかるロードマップ記事をMarkdown形式で作成してください。",
+    "",
+    "【記事構成と執筆ルール】",
+    "1. 導入：読者の「なりたい！」という熱量を肯定し、この記事で何が解決するかを提示する。",
+    "2. 3つの視点の統合：動画A, B, Cの共通点と、意見が分かれている部分を独自の視点で比較・考察する。単なる動画の要約は絶対に禁止。",
+    "3. ロードマップ：初心者が毎日継続して上達するための具体的なステップを示す。",
+    "4. 機材比較表（最重要）：動画Cを参考に、「初期費用を抑えたい人向け」と「本気で環境を整えたい人向け」の機材比較表をMarkdownで作成する。",
+    "   ※機材名（例: YAMAHA P-125）は正確に記載すること。後続のシステムがこの文字列を検知してリンクを挿入します。",
+    "5. まとめ：読者の背中を押すポジティブな言葉で締める。",
+    "",
+    "【文体・フォーマット】",
+    "・読者に寄り添う、熱量のある「です・ます」調。",
+    "・見出し（##, ###）、箇条書き、太字を適切に使用し、スマートフォンでも読みやすく構造化すること。",
+    "・機材比較表はMarkdownテーブルで作成すること。",
+    "・文字数は2500〜3500文字程度。",
+  ];
+
+  // ASP material instructions
+  if (params.aspMaterials.length > 0) {
+    const instructions = params.aspMaterials.map((m, i) =>
+      buildMaterialInstruction(m, i)
+    );
+    parts.push(
+      "",
+      "【必ず含めるアフィリエイト素材と挿入方法】",
+      "以下の商品/サービスを必ず記事内で紹介してください。特に機材比較表に該当する機材があれば、正確な商品名で掲載してください。",
+      ...instructions
+    );
+  }
+
+  // Extra instructions
+  if (params.extraInstructions) {
+    parts.push("", "【追加指示】", params.extraInstructions);
+  }
+
+  // Feedback injection
+  if (params.feedbackSuffix) {
+    parts.push(params.feedbackSuffix);
+  }
+
+  // Affiliate link rules
+  parts.push(
+    "",
+    "【アフィリエイトリンクの書き方ルール】",
+    "・リンクテキストは「[商品名]をチェック」「[商品名]の詳細を見る」のように自然に",
+    "・URLは Markdown リンク形式 [リンクテキスト](URL) で記述",
+    "・同じ商品のリンクは記事内で1〜2回まで",
+    "・読者にとって「このリンクを踏むとどうなるか」がわかる表現を添える"
+  );
+
+  return parts.join("\n");
+}
+
+/**
+ * Build user prompt containing the 3 video analyses.
+ */
+export function buildThreeVideoUserPrompt(params: ThreeVideoArticleInput): string {
+  return [
+    `以下の3つの動画分析を読み込み、記事を生成してください。`,
+    "",
+    `--- 動画A（初心者がぶつかる壁）---`,
+    `URL: ${params.videoA.url}`,
+    params.videoA.analysis,
+    "",
+    `--- 動画B（上級者の練習ロジック）---`,
+    `URL: ${params.videoB.url}`,
+    params.videoB.analysis,
+    "",
+    `--- 動画C（機材・デバイスのレビュー）---`,
+    `URL: ${params.videoC.url}`,
+    params.videoC.analysis,
+    "",
+    "以上の3つの動画分析に基づき、記事構成ルールに従ってMarkdown記事を生成してください。",
+  ].join("\n");
+}
