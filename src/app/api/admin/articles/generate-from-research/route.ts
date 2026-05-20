@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     const { data: materials } = await supabase
       .from("asp_materials")
       .select(
-        "name, description, affiliate_url, price_note, usage_type, display_style, placement_context, variation_label"
+        "name, description, affiliate_url, price_note, usage_type, display_style, placement_context, variation_label, material_type, banner_width, banner_height, image_url, text_content, link_normal, link_amp, link_nojs, disclosure_info"
       )
       .in("id", materialIds);
 
@@ -86,6 +86,15 @@ export async function POST(request: NextRequest) {
         displayStyle: m.display_style ?? "product_card",
         placementContext: m.placement_context,
         variationLabel: m.variation_label,
+        materialType: m.material_type ?? "banner",
+        bannerWidth: m.banner_width,
+        bannerHeight: m.banner_height,
+        imageUrl: m.image_url,
+        textContent: m.text_content,
+        linkNormal: m.link_normal,
+        linkAmp: m.link_amp,
+        linkNojs: m.link_nojs,
+        disclosureInfo: m.disclosure_info,
       })) ?? [];
   }
 

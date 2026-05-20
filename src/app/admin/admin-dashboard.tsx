@@ -35,6 +35,14 @@ export interface AspMaterial {
   display_style: string;
   placement_context: string | null;
   variation_label: string | null;
+  material_type: string;
+  banner_width: number | null;
+  banner_height: number | null;
+  text_content: string | null;
+  link_normal: string | null;
+  link_amp: string | null;
+  link_nojs: string | null;
+  disclosure_info: string | null;
   status: string;
   created_at: string;
 }
@@ -447,7 +455,7 @@ function NewArticleTab({
 }
 
 /* ------------------------------------------------------------------ */
-/* Tab: ASP Materials (bulk registration + smart fields)              */
+/* Tab: ASP Materials (redesigned: type/banner size/3 links/disclosure)*/
 /* ------------------------------------------------------------------ */
 
 function AspMaterialsTab({
@@ -457,127 +465,76 @@ function AspMaterialsTab({
   materials: AspMaterial[];
   onRefresh: () => void;
 }) {
-  const [mode, setMode] = useState<"single" | "bulk">("single");
   const [showForm, setShowForm] = useState(false);
-
-  // Single form
-  const [name, setName] = useState("");
-  const [aspName, setAspName] = useState("");
-  const [description, setDescription] = useState("");
-  const [affiliateUrl, setAffiliateUrl] = useState("");
-  const [priceNote, setPriceNote] = useState("");
-  const [usageType, setUsageType] = useState("recommendation");
-  const [displayStyle, setDisplayStyle] = useState("product_card");
-  const [variationLabel, setVariationLabel] = useState("");
-  const [placementContext, setPlacementContext] = useState("");
-
-  // Bulk form
-  const [bulkText, setBulkText] = useState("");
-
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
+  // Form fields
+  const [name, setName] = useState("");
+  const [aspName, setAspName] = useState("");
+  const [materialType, setMaterialType] = useState<"banner" | "text">("banner");
+  const [bannerWidth, setBannerWidth] = useState("");
+  const [bannerHeight, setBannerHeight] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [textContent, setTextContent] = useState("");
+  const [linkNormal, setLinkNormal] = useState("");
+  const [linkAmp, setLinkAmp] = useState("");
+  const [linkNojs, setLinkNojs] = useState("");
+  const [disclosureInfo, setDisclosureInfo] = useState("");
+  const [description, setDescription] = useState("");
+  const [priceNote, setPriceNote] = useState("");
+  const [usageType, setUsageType] = useState("recommendation");
+  const [displayStyle, setDisplayStyle] = useState("product_card");
+
   function resetForm() {
-    setName(""); setAspName(""); setDescription(""); setAffiliateUrl("");
-    setPriceNote(""); setUsageType("recommendation"); setDisplayStyle("product_card");
-    setVariationLabel(""); setPlacementContext("");
-    setBulkText("");
+    setName(""); setAspName(""); setMaterialType("banner"); setBannerWidth(""); setBannerHeight("");
+    setImageUrl(""); setTextContent(""); setLinkNormal(""); setLinkAmp(""); setLinkNojs("");
+    setDisclosureInfo(""); setDescription(""); setPriceNote("");
+    setUsageType("recommendation"); setDisplayStyle("product_card");
   }
 
-  async function handleAddSingle() {
-    if (!name.trim() || !aspName.trim()) {
-      setMsg("名前とASP名は必須です");
-      return;
-    }
-    setSaving(true); setMsg(null);
+  async function handleSave() {
+    if (!name.trim() || !aspName.trim()) { setMsg("タイトルとASP名は必須"); return; }
+    if (materialType === "banner" && !linkNormal.trim()) { setMsg("標準リンクは必須"); return; }
+    if (materialType === "text" && !textContent.trim()) { setMsg("テキスト内容は必須"); return; }
 
+    setSaving(true); setMsg(null);
     const res = await fetch("/api/admin/asp-materials", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: name.trim(),
-        asp_name: aspName.trim(),
+        name: name.trim(), asp_name: aspName.trim(),
+        material_type: materialType,
+        banner_width: bannerWidth ? parseInt(bannerWidth) : null,
+        banner_height: bannerHeight ? parseInt(bannerHeight) : null,
+        image_url: imageUrl.trim() || null,
+        text_content: materialType === "text" ? textContent.trim() : null,
+        link_normal: linkNormal.trim() || null,
+        link_amp: linkAmp.trim() || null,
+        link_nojs: linkNojs.trim() || null,
+        disclosure_info: disclosureInfo.trim() || null,
         description: description.trim(),
-        affiliate_url: affiliateUrl.trim() || null,
         price_note: priceNote.trim() || null,
         usage_type: usageType,
         display_style: displayStyle,
-        variation_label: variationLabel.trim() || null,
-        placement_context: placementContext.trim() || null,
       }),
     });
-
     if (res.ok) { resetForm(); setShowForm(false); onRefresh(); }
-    else { const json = await res.json(); setMsg(json.error ?? "保存に失敗"); }
-    setSaving(false);
-  }
-
-  async function handleAddBulk() {
-    if (!bulkText.trim()) {
-      setMsg("1行1素材で入力してください");
-      return;
-    }
-
-    const lines = bulkText.trim().split("\n").filter(Boolean);
-    const materials = lines.map((line) => {
-      // Format: name | asp_name | price | usage_type | description
-      const parts = line.split("|").map((s) => s.trim());
-      return {
-        name: parts[0] ?? "",
-        asp_name: parts[1] ?? "",
-        price_note: parts[2] ?? "",
-        usage_type: parts[3] ?? "recommendation",
-        display_style: parts[4] ?? "product_card",
-        description: parts[5] ?? "",
-      };
-    }).filter((m) => m.name && m.asp_name);
-
-    if (materials.length === 0) {
-      setMsg("有効な素材がありません。フォーマット: 商品名 | ASP名 | 価格 | 用途");
-      return;
-    }
-
-    setSaving(true); setMsg(null);
-
-    const res = await fetch("/api/admin/asp-materials", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ materials }),
-    });
-
-    if (res.ok) {
-      const json = await res.json();
-      setMsg(`✅ ${json.count}件のASP素材を一括登録しました`);
-      resetForm(); setShowForm(false); onRefresh();
-    } else {
-      const json = await res.json();
-      setMsg(json.error ?? "保存に失敗");
-    }
+    else { const j = await res.json(); setMsg(j.error ?? "保存失敗"); }
     setSaving(false);
   }
 
   async function handleArchive(id: string) {
     await fetch("/api/admin/asp-materials", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status: "archived" }),
     });
     onRefresh();
   }
 
   const usageLabels: Record<string, string> = {
-    recommendation: "おすすめ",
-    comparison: "比較用",
-    tool_intro: "道具紹介",
-    budget_option: "予算別",
-    step_up: "次のステップ",
-  };
-
-  const displayLabels: Record<string, string> = {
-    inline_link: "文中リンク",
-    product_card: "商品カード",
-    comparison_row: "比較表の行",
-    cta_banner: "CTAバナー",
+    recommendation: "おすすめ", comparison: "比較用", tool_intro: "道具紹介",
+    budget_option: "予算別", step_up: "次のステップ",
   };
 
   return (
@@ -586,128 +543,101 @@ function AspMaterialsTab({
         <h2 className="text-lg font-semibold text-gray-900">
           🔗 ASP素材一覧 <span className="text-sm font-normal text-gray-400">({materials.length}件)</span>
         </h2>
-        <button
-          onClick={() => { setShowForm(!showForm); setMsg(null); }}
-          className="rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 sm:text-sm"
-        >
+        <button onClick={() => { setShowForm(!showForm); setMsg(null); }}
+          className="rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 sm:text-sm">
           ＋ 新規追加
         </button>
       </div>
 
-      {/* Add form */}
       {showForm && (
-        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
-          {/* Mode toggle */}
-          <div className="mb-3 flex gap-2">
-            <button
-              onClick={() => setMode("single")}
-              className={`rounded px-3 py-1 text-xs font-medium ${mode === "single" ? "bg-blue-600 text-white" : "bg-white text-gray-600"}`}
-            >
-              1件ずつ
-            </button>
-            <button
-              onClick={() => setMode("bulk")}
-              className={`rounded px-3 py-1 text-xs font-medium ${mode === "bulk" ? "bg-blue-600 text-white" : "bg-white text-gray-600"}`}
-            >
-              一括登録
-            </button>
+        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-3">
+          {/* Row 1: Title + ASP name + Material type */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)}
+              placeholder="タイトル *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+            <input type="text" value={aspName} onChange={(e) => setAspName(e.target.value)}
+              placeholder="ASP名 (A8.net等) *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+            <select value={materialType} onChange={(e) => setMaterialType(e.target.value as "banner" | "text")}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+              <option value="banner">バナー広告</option>
+              <option value="text">テキスト広告</option>
+            </select>
           </div>
 
-          {mode === "single" ? (
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-                  placeholder="商品/サービス名 *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-                <input type="text" value={aspName} onChange={(e) => setAspName(e.target.value)}
-                  placeholder="ASP名 (A8.net等) *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+          {/* Banner-specific */}
+          {materialType === "banner" && (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div>
+                <label className="mb-1 block text-xs text-gray-500">横幅 (px)</label>
+                <input type="number" value={bannerWidth} onChange={(e) => setBannerWidth(e.target.value)}
+                  placeholder="100" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
               </div>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)}
-                placeholder="商品説明・おすすめポイント" rows={2}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <input type="url" value={affiliateUrl} onChange={(e) => setAffiliateUrl(e.target.value)}
-                  placeholder="アフィリエイトURL" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-                <input type="text" value={priceNote} onChange={(e) => setPriceNote(e.target.value)}
-                  placeholder="価格帯 (例: ¥5,000〜)" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+              <div>
+                <label className="mb-1 block text-xs text-gray-500">高さ (px)</label>
+                <input type="number" value={bannerHeight} onChange={(e) => setBannerHeight(e.target.value)}
+                  placeholder="60" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
               </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-xs text-gray-500">用途タイプ</label>
-                  <select value={usageType} onChange={(e) => setUsageType(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
-                    <option value="recommendation">おすすめ紹介</option>
-                    <option value="comparison">比較表用</option>
-                    <option value="tool_intro">道具・機材紹介</option>
-                    <option value="budget_option">予算別選択肢</option>
-                    <option value="step_up">次のステップ</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs text-gray-500">表示スタイル</label>
-                  <select value={displayStyle} onChange={(e) => setDisplayStyle(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
-                    <option value="product_card">商品カード</option>
-                    <option value="inline_link">文中リンク</option>
-                    <option value="comparison_row">比較表の行</option>
-                    <option value="cta_banner">CTAバナー</option>
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <input type="text" value={variationLabel} onChange={(e) => setVariationLabel(e.target.value)}
-                  placeholder="バリエーション名 (例: 61鍵盤, 88鍵盤)" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-                <input type="text" value={placementContext} onChange={(e) => setPlacementContext(e.target.value)}
-                  placeholder="挿入文脈 (例: 初心者向け導入部分)" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-              </div>
-              <div className="flex gap-2">
-                <button onClick={handleAddSingle} disabled={saving}
-                  className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50">
-                  {saving ? "保存中..." : "保存"}
-                </button>
-                <button onClick={() => setShowForm(false)}
-                  className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300">
-                  キャンセル
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-xs text-gray-500">
-                1行1素材。フォーマット: <code>商品名 | ASP名 | 価格 | 用途 | 表示 | 説明</code><br />
-                用途: recommendation / comparison / tool_intro / budget_option / step_up<br />
-                表示: product_card / inline_link / comparison_row / cta_banner
-              </p>
-              <textarea
-                value={bulkText}
-                onChange={(e) => setBulkText(e.target.value)}
-                rows={8}
-                placeholder={`ローランド FP-30X | A8.net | ¥65,000〜 | recommendation | product_card | 初心者向け電子ピアノ
-KAWAI ES120 | A8.net | ¥70,000〜 | comparison | comparison_row | タッチが重め
-YAMAHA P-225 | もしも | ¥55,000〜 | budget_option | product_card | コスパ最強`}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono"
-              />
-              <div className="flex gap-2">
-                <button onClick={handleAddBulk} disabled={saving}
-                  className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50">
-                  {saving ? "登録中..." : `一括登録`}
-                </button>
-                <button onClick={() => setShowForm(false)}
-                  className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300">
-                  キャンセル
-                </button>
+              <div>
+                <label className="mb-1 block text-xs text-gray-500">画像URL</label>
+                <input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://..." className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
               </div>
             </div>
           )}
 
-          {msg && <p className={`text-sm ${msg.startsWith("✅") ? "text-green-600" : "text-red-600"}`}>{msg}</p>}
+          {/* Text-specific */}
+          {materialType === "text" && (
+            <textarea value={textContent} onChange={(e) => setTextContent(e.target.value)}
+              placeholder="テキスト広告の本文 *" rows={3}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+          )}
+
+          {/* Links (3 types) */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <input type="url" value={linkNormal} onChange={(e) => setLinkNormal(e.target.value)}
+              placeholder="標準リンク *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+            <input type="url" value={linkAmp} onChange={(e) => setLinkAmp(e.target.value)}
+              placeholder="AMP対応リンク" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+            <input type="url" value={linkNojs} onChange={(e) => setLinkNojs(e.target.value)}
+              placeholder="JS非対応リンク" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+          </div>
+
+          {/* Disclosure */}
+          <textarea value={disclosureInfo} onChange={(e) => setDisclosureInfo(e.target.value)}
+            placeholder="提携情報表示（例：当サイトはA8.netのアフィリエイトプログラムに参加しています）" rows={2}
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+
+          {/* Extra fields */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <input type="text" value={description} onChange={(e) => setDescription(e.target.value)}
+              placeholder="説明" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+            <input type="text" value={priceNote} onChange={(e) => setPriceNote(e.target.value)}
+              placeholder="価格帯" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+            <select value={usageType} onChange={(e) => setUsageType(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+              <option value="recommendation">おすすめ</option>
+              <option value="comparison">比較用</option>
+              <option value="tool_intro">道具紹介</option>
+              <option value="budget_option">予算別</option>
+              <option value="step_up">次のステップ</option>
+            </select>
+          </div>
+
+          <div className="flex gap-2">
+            <button onClick={handleSave} disabled={saving}
+              className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50">
+              {saving ? "保存中..." : "保存"}
+            </button>
+            <button onClick={() => setShowForm(false)}
+              className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300">キャンセル</button>
+          </div>
+          {msg && <p className="text-sm text-red-600">{msg}</p>}
         </div>
       )}
 
       {/* List */}
       {materials.length === 0 ? (
-        <p className="text-sm text-gray-500">
-          まだASP素材が登録されていません。「新規追加」から気に入ったASP素材を放り込んでください。
-        </p>
+        <p className="text-sm text-gray-500">ASP素材が未登録です。「新規追加」から登録してください。</p>
       ) : (
         <ul className="space-y-2">
           {materials.map((m) => (
@@ -716,31 +646,41 @@ YAMAHA P-225 | もしも | ¥55,000〜 | budget_option | product_card | コス�
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="font-semibold text-gray-900 truncate">{m.name}</span>
+                    <span className={`text-xs px-1.5 rounded shrink-0 ${m.material_type === "banner" ? "bg-purple-100 text-purple-700" : "bg-teal-100 text-teal-700"}`}>
+                      {m.material_type === "banner" ? `🖼 ${m.banner_width ?? "?"}×${m.banner_height ?? "?"}` : "📝 テキスト"}
+                    </span>
                     <span className="text-xs text-gray-400 shrink-0">[{m.asp_name}]</span>
-                    {m.variation_label && (
-                      <span className="text-xs bg-purple-100 text-purple-700 px-1.5 rounded shrink-0">{m.variation_label}</span>
-                    )}
                   </div>
                   <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                     <span className="text-xs bg-blue-100 text-blue-700 px-1 rounded">{usageLabels[m.usage_type]}</span>
-                    <span className="text-xs bg-gray-100 text-gray-600 px-1 rounded">{displayLabels[m.display_style]}</span>
                     {m.price_note && <span className="text-xs text-green-600">{m.price_note}</span>}
                   </div>
-                  {m.description && <p className="mt-1 text-xs text-gray-500 line-clamp-2">{m.description}</p>}
-                  {m.placement_context && (
-                    <p className="mt-0.5 text-xs text-gray-400 italic">📍 {m.placement_context}</p>
-                  )}
-                  {m.affiliate_url && (
-                    <a href={m.affiliate_url} target="_blank" rel="noopener noreferrer"
-                      className="mt-1 block truncate text-xs text-blue-500 underline">
-                      {m.affiliate_url}
-                    </a>
+                  {m.description && <p className="mt-1 text-xs text-gray-500 line-clamp-1">{m.description}</p>}
+
+                  {/* Links */}
+                  <div className="mt-1.5 flex flex-wrap gap-2 text-xs">
+                    {m.link_normal && (
+                      <span className="text-blue-600">
+                        <a href={m.link_normal} target="_blank" rel="noopener noreferrer" className="underline">標準</a>
+                      </span>
+                    )}
+                    {m.link_amp && (
+                      <span className="text-orange-600">
+                        <a href={m.link_amp} target="_blank" rel="noopener noreferrer" className="underline">AMP</a>
+                      </span>
+                    )}
+                    {m.link_nojs && (
+                      <span className="text-gray-500">
+                        <a href={m.link_nojs} target="_blank" rel="noopener noreferrer" className="underline">noJS</a>
+                      </span>
+                    )}
+                  </div>
+
+                  {m.disclosure_info && (
+                    <p className="mt-1 text-xs text-gray-400 italic line-clamp-1">ℹ️ {m.disclosure_info}</p>
                   )}
                 </div>
-                <button onClick={() => handleArchive(m.id)}
-                  className="shrink-0 text-xs text-red-500 hover:underline">
-                  削除
-                </button>
+                <button onClick={() => handleArchive(m.id)} className="shrink-0 text-xs text-red-500 hover:underline">削除</button>
               </div>
             </li>
           ))}

@@ -59,6 +59,15 @@ export interface AspMaterialForPrompt {
   displayStyle: string;
   placementContext: string | null;
   variationLabel: string | null;
+  materialType: string;
+  bannerWidth: number | null;
+  bannerHeight: number | null;
+  imageUrl: string | null;
+  textContent: string | null;
+  linkNormal: string | null;
+  linkAmp: string | null;
+  linkNojs: string | null;
+  disclosureInfo: string | null;
 }
 
 /**
