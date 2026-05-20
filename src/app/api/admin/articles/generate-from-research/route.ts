@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
     .insert({
       title,
       category,
-      asp_material_ids: materialIds,
+      asp_material_ids: materialIds.filter(id => id && id !== ""),
       extra_instructions: extra_instructions ?? null,
       status: "running",
     })
@@ -181,8 +181,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: articleError.message }, { status: 500 });
     }
 
-    if (materialIds.length > 0 && article) {
-      const rows = materialIds.map((mid) => ({
+    const validMaterialIds = materialIds.filter(id => id && id !== "");
+    if (validMaterialIds.length > 0 && article) {
+      const rows = validMaterialIds.map((mid) => ({
         article_id: article.id,
         asp_material_id: mid,
       }));
