@@ -78,7 +78,6 @@ export function AdminDashboard({
   const [pending, setPending] = useState<Article[]>(initialPending);
   const [categories, setCategories] = useState<UserCategory[]>(initialCategories);
   const [aspMaterials, setAspMaterials] = useState<AspMaterial[]>(initialAspMaterials);
-  const [, setStats] = useState(initialStats);
 
   async function refreshPending() {
     const res = await fetch("/api/admin/articles/pending");
@@ -95,6 +94,7 @@ export function AdminDashboard({
 
   useEffect(() => {
     if (!supabaseConfigured) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetchers on mount
     refreshPending();
     refreshCategories();
     refreshAspMaterials();
@@ -773,6 +773,7 @@ function CategoriesTab({
 /* Tab: Video Research (Gemini分析 → DeepSeek記事生成)                */
 /* ------------------------------------------------------------------ */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- prepared for future admin tab
 function VideoResearchTab({
   aspMaterials,
   onGenerated,

@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const ADMIN_ID = process.env.ADMIN_BASIC_AUTH_ID ?? "sakuinvr@gmail.com";
-const ADMIN_PW = process.env.ADMIN_BASIC_AUTH_PW ?? "J8rzuSseR9-F";
+const ADMIN_ID = process.env.ADMIN_BASIC_AUTH_ID;
+const ADMIN_PW = process.env.ADMIN_BASIC_AUTH_PW;
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Only protect /admin routes
   const { pathname } = request.nextUrl;
   if (!pathname.startsWith("/admin")) {
     return NextResponse.next();
+  }
+
+  // If credentials are not configured, block all admin access
+  if (!ADMIN_ID || !ADMIN_PW) {
+    return new NextResponse("Admin access not configured", { status: 503 });
   }
 
   const authHeader = request.headers.get("authorization");

@@ -10,7 +10,7 @@ export default async function AdminPage() {
   let pendingArticles: Article[] = [];
   let categories: UserCategory[] = [];
   let aspMaterials: AspMaterial[] = [];
-  let stats: Stats = { pending: 0, approved: 0, rejected: 0, materials: 0 };
+  const stats: Stats = { pending: 0, approved: 0, rejected: 0, materials: 0 };
 
   if (supabase) {
     const [pendingRes, catRes, aspRes, statsRes] = await Promise.all([
