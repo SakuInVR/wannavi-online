@@ -1,11 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
-import matter from "gray-matter";
 import readingTime from "reading-time";
-
 import { getCategory } from "@/lib/site";
-
-const articlesDirectory = path.join(process.cwd(), "content", "articles");
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 export type ArticleFrontmatter = {
   title: string;
@@ -52,49 +47,92 @@ function getHeadings(content: string): ArticleHeading[] {
   });
 }
 
-function getArticleFilenames() {
-  if (!fs.existsSync(articlesDirectory)) {
+export async function getAllArticles(): Promise<Article[]> {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
     return [];
   }
 
-  return fs
-    .readdirSync(articlesDirectory)
-    .filter((filename) => filename.endsWith(".mdx"));
+  const { data: dbArticles, error } = await supabase
+    .from("articles")
+    .select("*, research_sources(url)")
+    .eq("review_status", "approved")
+    .eq("pipeline_state", "published")
+    .order("published_at", { ascending: false });
+
+  if (error || !dbArticles) {
+    console.error("Error fetching articles from Supabase:", error);
+    return [];
+  }
+
+  return dbArticles.map((dbArticle) => {
+    const sourceVideos = (dbArticle.research_sources || []).map((source: { url: string }) => source.url);
+    const category = getCategory(dbArticle.category);
+
+    return {
+      slug: dbArticle.slug,
+      title: dbArticle.title,
+      description: dbArticle.description,
+      category: dbArticle.category,
+      publishedAt: dbArticle.published_at,
+      updatedAt: dbArticle.updated_at || undefined,
+      tags: dbArticle.tags || [],
+      sourceVideos,
+      affiliateIntent: dbArticle.affiliate_intent as "low" | "medium" | "high",
+      draft: false,
+      body: dbArticle.body || "",
+      readingMinutes: readingTime(dbArticle.body || "").text,
+      categoryTitle: category?.title ?? dbArticle.category,
+      headings: getHeadings(dbArticle.body || ""),
+    };
+  });
 }
 
-export function getAllArticles(): Article[] {
-  return getArticleFilenames()
-    .map((filename) => getArticleBySlug(filename.replace(/\.mdx$/, "")))
-    .filter((article) => !article.draft)
-    .sort(
-      (a, b) =>
-        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
-    );
-}
+export async function getArticleBySlug(slug: string): Promise<Article> {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
+    throw new Error("Supabase client is not configured");
+  }
 
-export function getArticleBySlug(slug: string): Article {
-  const filePath = path.join(articlesDirectory, `${slug}.mdx`);
-  const source = fs.readFileSync(filePath, "utf8");
-  const { content, data } = matter(source);
-  const frontmatter = data as ArticleFrontmatter;
-  const category = getCategory(frontmatter.category);
+  const { data: dbArticle, error } = await supabase
+    .from("articles")
+    .select("*, research_sources(url)")
+    .eq("slug", slug)
+    .single();
+
+  if (error || !dbArticle) {
+    throw new Error(`Article not found with slug: ${slug}`);
+  }
+
+  const sourceVideos = (dbArticle.research_sources || []).map((source: { url: string }) => source.url);
+  const category = getCategory(dbArticle.category);
 
   return {
-    ...frontmatter,
-    slug,
-    body: content,
-    readingMinutes: readingTime(content).text,
-    categoryTitle: category?.title ?? frontmatter.category,
-    headings: getHeadings(content),
+    slug: dbArticle.slug,
+    title: dbArticle.title,
+    description: dbArticle.description,
+    category: dbArticle.category,
+    publishedAt: dbArticle.published_at,
+    updatedAt: dbArticle.updated_at || undefined,
+    tags: dbArticle.tags || [],
+    sourceVideos,
+    affiliateIntent: dbArticle.affiliate_intent as "low" | "medium" | "high",
+    draft: dbArticle.review_status !== "approved" || dbArticle.pipeline_state !== "published",
+    body: dbArticle.body || "",
+    readingMinutes: readingTime(dbArticle.body || "").text,
+    categoryTitle: category?.title ?? dbArticle.category,
+    headings: getHeadings(dbArticle.body || ""),
   };
 }
 
-export function getArticlesByCategory(categorySlug: string) {
-  return getAllArticles().filter((article) => article.category === categorySlug);
+export async function getArticlesByCategory(categorySlug: string): Promise<Article[]> {
+  const articles = await getAllArticles();
+  return articles.filter((article) => article.category === categorySlug);
 }
 
-export function getRelatedArticles(article: Article, limit = 3) {
-  return getAllArticles()
+export async function getRelatedArticles(article: Article, limit = 3): Promise<Article[]> {
+  const articles = await getAllArticles();
+  return articles
     .filter(
       (candidate) =>
         candidate.slug !== article.slug && candidate.category === article.category,
@@ -102,10 +140,11 @@ export function getRelatedArticles(article: Article, limit = 3) {
     .slice(0, limit);
 }
 
-export function getAllTags() {
+export async function getAllTags(): Promise<string[]> {
+  const articles = await getAllArticles();
   const tagSet = new Set<string>();
 
-  for (const article of getAllArticles()) {
+  for (const article of articles) {
     for (const tag of article.tags ?? []) {
       tagSet.add(tag);
     }
@@ -114,6 +153,7 @@ export function getAllTags() {
   return Array.from(tagSet).sort((a, b) => a.localeCompare(b, "ja"));
 }
 
-export function getArticlesByTag(tag: string) {
-  return getAllArticles().filter((article) => article.tags?.includes(tag));
+export async function getArticlesByTag(tag: string): Promise<Article[]> {
+  const articles = await getAllArticles();
+  return articles.filter((article) => article.tags?.includes(tag));
 }

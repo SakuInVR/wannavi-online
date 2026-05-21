@@ -28,11 +28,12 @@ type ArticlePageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return getAllArticles().map((article) => ({ slug: article.slug }));
+export async function generateStaticParams() {
+  const articles = await getAllArticles();
+  return articles.map((article) => ({ slug: article.slug }));
 }
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateMetadata({
   params,
@@ -40,7 +41,7 @@ export async function generateMetadata({
   const { slug } = await params;
 
   try {
-    const article = getArticleBySlug(slug);
+    const article = await getArticleBySlug(slug);
 
     if (article.draft) {
       return {};
@@ -71,7 +72,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   let article;
 
   try {
-    article = getArticleBySlug(slug);
+    article = await getArticleBySlug(slug);
   } catch {
     notFound();
   }
@@ -113,7 +114,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       },
     },
   });
-  const relatedArticles = getRelatedArticles(article);
+  const relatedArticles = await getRelatedArticles(article);
   const breadcrumbs = breadcrumbJsonLd([
     { name: siteConfig.name, href: "/" },
     { name: article.categoryTitle, href: `/categories/${article.category}` },

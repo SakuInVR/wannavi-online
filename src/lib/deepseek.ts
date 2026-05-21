@@ -76,18 +76,17 @@ export interface AspMaterialForPrompt {
 function buildMaterialInstruction(m: AspMaterialForPrompt, index: number): string {
   const priceStr = m.priceNote ? `（価格: ${m.priceNote}）` : "";
   const descStr = m.description ? ` - ${m.description}` : "";
-  const urlStr = m.affiliateUrl ? `\n   アフィリエイトリンク: ${m.affiliateUrl}` : "";
   const ctxStr = m.placementContext ? `\n   推奨挿入箇所: ${m.placementContext}` : "";
 
   const displayHints: Record<string, string> = {
     product_card:
-      "商品カード形式で紹介してください。商品名・説明・価格・リンクを含め、読者がクリックしたくなる自然な紹介文を書いてください。",
-    inline_link:
-      "文中で自然にリンクとして埋め込んでください。押し売り感のない、文脈に沿った紹介にしてください。",
-    comparison_row:
-      "比較表の1行として掲載してください。他の選択肢と並べて、この商品の強みが際立つように書いてください。",
+      `【表示形式：商品カード (JSXコンポーネント)】\n   必ず以下のJSXコンポーネントをそのまま（前後に空行を挟んで単独で）本文に記述してください。属性値は変えないでください。\n   <ToolRecommendation\n     name="${m.name}"\n     reason="[ここにこの商品を選ぶべき具体的な理由や読者へのメリットを、記事の文脈に合わせて2〜3文で記述してください。主観ではなく読者目線で書くこと。必ず具体的な日本語の文章を入れてください。]"\n     priceHint="${m.priceNote ?? "まずは無料または低予算から"}"\n     href="${m.affiliateUrl ?? "#"}"\n   />`,
     cta_banner:
-      "記事の結論部分でCTA（コールトゥアクション）として目立つ形で紹介してください。「今すぐチェック」「詳細を見る」などの行動を促す表現を使ってください。",
+      `【表示形式：CTAバナー (JSXコンポーネント)】\n   必ず以下のJSXコンポーネントをそのまま（前後に空行を挟んで単独で）本文に記述してください。属性値は変えないでください。\n   <AffiliateCTA\n     title="${m.name}"\n     description="[ここにこの案件・サービスを選ぶべき理由やメリットを、押し売り感なく、読者目線で2〜3文で記述してください。必ず具体的な日本語の文章を入れてください。]"\n     label="詳細をチェック"\n     href="${m.affiliateUrl ?? "#"}"\n   />`,
+    inline_link:
+      `【表示形式：文中リンク (Markdown)】\n   文脈に合わせて、Markdownリンク \`[${m.name}](${m.affiliateUrl ?? "#"})\` または \`[自然な紹介テキスト](${m.affiliateUrl ?? "#"})\` を自然に文中へ挿入してください。`,
+    comparison_row:
+      `【表示形式：比較表の行 (Markdown)】\n   比較表の1つの行としてこの商品を掲載し、リンクを \`[詳細](${m.affiliateUrl ?? "#"})\` または \`[${m.name}](${m.affiliateUrl ?? "#"})\` のように記述してください。`,
   };
 
   const usageHints: Record<string, string> = {
@@ -109,7 +108,7 @@ function buildMaterialInstruction(m: AspMaterialForPrompt, index: number): strin
   return [
     `${index + 1}. 【${m.name}】${m.variationLabel ? ` (${m.variationLabel})` : ""}${priceStr}${descStr}`,
     `   用途: ${usage}`,
-    `   表示: ${hint}${urlStr}${ctxStr}`,
+    `   表示指示: ${hint}${ctxStr}`,
   ].join("\n");
 }
 
@@ -189,11 +188,13 @@ export function buildArticleSystemPrompt(params: {
 
   parts.push(
     "",
-    "【アフィリエイトリンクの書き方ルール】",
-    "・リンクテキストは「[商品名]をチェック」「[商品名]の詳細を見る」のように自然に",
-    "・URLは Markdown リンク形式 [リンクテキスト](URL) で記述",
-    "・同じ商品のリンクは記事内で1〜2回まで",
-    "・読者にとって「このリンクを踏むとどうなるか」がわかる表現を添える"
+    "【アフィリエイト・リンク記述の重要ルール】",
+    "・表示指示が『商品カード（JSXコンポーネント）』または『CTAバナー（JSXコンポーネント）』に指定されている場合、Markdownリンクではなく、指定されたJSXタグ（`<ToolRecommendation ... />` または `<AffiliateCTA ... />`）を正確に出力してください。",
+    "  - JSXタグの前後には必ず空行を入れてください。",
+    "  - props（name, title, reason, description, href, priceHint など）の二重引用符（\"）や中括弧（{}）の対応を絶対に崩さないでください。閉じタグも忘れずに記述してください。",
+    "・表示指示が『文中リンク』や『比較表の行』として指定されている場合は、Markdownの `[リンクテキスト](URL)` 形式で記述してください。",
+    "・同じ商品のリンク/コンポーネントは、記事全体で1〜2回までに抑えてください。",
+    "・押し売り感を避け、読者が納得して次の一歩を踏み出せる有益な情報・文脈を添えてください。"
   );
 
   return parts.join("\n");
@@ -299,11 +300,13 @@ export function buildThreeVideoSystemPrompt(params: ThreeVideoArticleInput): str
   // Affiliate link rules
   parts.push(
     "",
-    "【アフィリエイトリンクの書き方ルール】",
-    "・リンクテキストは「[商品名]をチェック」「[商品名]の詳細を見る」のように自然に",
-    "・URLは Markdown リンク形式 [リンクテキスト](URL) で記述",
-    "・同じ商品のリンクは記事内で1〜2回まで",
-    "・読者にとって「このリンクを踏むとどうなるか」がわかる表現を添える"
+    "【アフィリエイト・リンク記述の重要ルール】",
+    "・表示指示が『商品カード（JSXコンポーネント）』または『CTAバナー（JSXコンポーネント）』に指定されている場合、Markdownリンクではなく、指定されたJSXタグ（`<ToolRecommendation ... />` または `<AffiliateCTA ... />`）を正確に出力してください。",
+    "  - JSXタグの前後には必ず空行を入れてください。",
+    "  - props（name, title, reason, description, href, priceHint など）の二重引用符（\"）や中括弧（{}）の対応を絶対に崩さないでください。閉じタグも忘れずに記述してください。",
+    "・表示指示が『文中リンク』や『比較表の行』として指定されている場合は、Markdownの `[リンクテキスト](URL)` 形式で記述してください。",
+    "・同じ商品のリンク/コンポーネントは、記事全体で1〜2回までに抑えてください。",
+    "・押し売り感を避け、読者が納得して次の一歩を踏み出せる有益な情報・文脈を添えてください。"
   );
 
   return parts.join("\n");

@@ -3,17 +3,19 @@ import type { MetadataRoute } from "next";
 import { getAllArticles, getAllTags } from "@/lib/articles";
 import { categories, siteConfig, staticPages } from "@/lib/site";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const categoryRoutes = categories.map((category) => ({
     url: `${siteConfig.url}/categories/${category.slug}`,
     lastModified: now,
   }));
-  const articleRoutes = getAllArticles().map((article) => ({
+  const articles = await getAllArticles();
+  const articleRoutes = articles.map((article) => ({
     url: `${siteConfig.url}/articles/${article.slug}`,
     lastModified: new Date(article.updatedAt ?? article.publishedAt),
   }));
-  const tagRoutes = getAllTags().map((tag) => ({
+  const tags = await getAllTags();
+  const tagRoutes = tags.map((tag) => ({
     url: `${siteConfig.url}/tags/${encodeURIComponent(tag)}`,
     lastModified: now,
   }));

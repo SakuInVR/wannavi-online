@@ -18,8 +18,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function TagsPage() {
-  const tags = getAllTags();
+export default async function TagsPage() {
+  const tags = await getAllTags();
+  const tagsWithCounts = await Promise.all(
+    tags.map(async (tag) => {
+      const articles = await getArticlesByTag(tag);
+      return { tag, count: articles.length };
+    })
+  );
 
   return (
     <main className="px-5 py-14">
@@ -43,14 +49,14 @@ export default function TagsPage() {
           気になるテーマから、なりたい自分へのロードマップを探せます。
         </p>
         <div className="mt-10 flex flex-wrap gap-3">
-          {tags.map((tag) => (
+          {tagsWithCounts.map(({ tag, count }) => (
             <Link
               key={tag}
               href={`/tags/${encodeURIComponent(tag)}`}
               className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:border-sky-300 hover:text-sky-700"
             >
               {tag}
-              <span className="ml-2 text-slate-400">{getArticlesByTag(tag).length}</span>
+              <span className="ml-2 text-slate-400">{count}</span>
             </Link>
           ))}
         </div>

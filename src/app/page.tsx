@@ -4,8 +4,8 @@ import { ArticleCard } from "@/components/ArticleCard";
 import { getAllArticles } from "@/lib/articles";
 import { categories } from "@/lib/site";
 
-export default function Home() {
-  const articles = getAllArticles();
+export default async function Home() {
+  const articles = await getAllArticles();
 
   return (
     <main>

@@ -16,7 +16,7 @@ type OpenGraphImageProps = {
 
 export default async function Image({ params }: OpenGraphImageProps) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
 
   return new ImageResponse(
     (

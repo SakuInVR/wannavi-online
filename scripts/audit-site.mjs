@@ -130,7 +130,7 @@ assert(articlePage.includes("AdSlot"), "Article page does not auto-render ad slo
 assert(articlePage.includes("articleJsonLd"), "Article page does not render Article JSON-LD", failures);
 assert(articlePage.includes("breadcrumbJsonLd"), "Article page does not render breadcrumb JSON-LD", failures);
 assert(articlePage.includes("/tags/"), "Article page does not link article tags to tag pages", failures);
-assert(articlePage.includes("dynamicParams = false"), "Article page may allow non-generated draft routes", failures);
+assert(articlePage.includes("dynamicParams = true"), "Article page must allow dynamic parameters for DB publishing", failures);
 assert(articlePage.includes("article.draft"), "Article page does not block direct draft access", failures);
 
 const articleCard = read("src/components/ArticleCard.tsx");

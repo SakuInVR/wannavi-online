@@ -204,6 +204,20 @@ export async function POST(request: NextRequest) {
       await supabase.from("article_asp_materials").insert(rows);
     }
 
+    // Save video sources to research_sources table
+    if (article && videos.length > 0) {
+      const sourceRows = videos
+        .filter((vs) => vs.url && vs.url.startsWith("http"))
+        .map((vs) => ({
+          article_id: article.id,
+          source_type: "youtube",
+          url: vs.url,
+        }));
+      if (sourceRows.length > 0) {
+        await supabase.from("research_sources").insert(sourceRows);
+      }
+    }
+
     await supabase
       .from("article_generation_jobs")
       .update({

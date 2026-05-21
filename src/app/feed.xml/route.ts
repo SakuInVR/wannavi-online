@@ -10,8 +10,8 @@ function escapeXml(value: string) {
     .replaceAll("'", "&apos;");
 }
 
-export function GET() {
-  const articles = getAllArticles();
+export async function GET() {
+  const articles = await getAllArticles();
   const items = articles
     .map((article) => {
       const url = `${siteConfig.url}/articles/${article.slug}`;

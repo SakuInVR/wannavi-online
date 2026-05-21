@@ -48,7 +48,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
-  const articles = getArticlesByCategory(category.slug);
+  const articles = await getArticlesByCategory(category.slug);
   const collectionJsonLd = collectionPageJsonLd(category.slug);
   const breadcrumbs = breadcrumbJsonLd([
     { name: siteConfig.name, href: "/" },

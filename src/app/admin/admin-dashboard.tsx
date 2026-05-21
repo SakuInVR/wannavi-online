@@ -160,6 +160,7 @@ export function AdminDashboard({
         {tab === "asp-materials" && (
           <AspMaterialsTab
             materials={aspMaterials}
+            categories={categories}
             onRefresh={refreshAspMaterials}
           />
         )}
@@ -347,19 +348,27 @@ function NewArticleTab({
           </label>
           {aspMaterials.length === 0 ? (
             <p className="text-xs text-gray-400">ASP素材未登録のため、Amazon商品名が本文に含まれます（レビュー時にリンク注入してください）</p>
-          ) : (
-            <div className="max-h-40 space-y-1 overflow-y-auto rounded-md border border-gray-200 p-2">
-              {aspMaterials.map((m) => (
-                <label key={m.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-gray-50">
-                  <input type="checkbox" checked={selectedAsps.includes(m.id)} onChange={() => toggleAsp(m.id)}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600" />
-                  <span className="font-medium truncate">{m.name}</span>
-                  <span className="text-xs text-gray-400">[{usageLabels[m.usage_type]}]</span>
-                  {m.price_note && <span className="text-xs text-green-600">{m.price_note}</span>}
-                </label>
-              ))}
-            </div>
-          )}
+          ) : (() => {
+            const filteredAsps = aspMaterials
+              .filter((m) => !m.parent_id)
+              .filter((m) => !category || !m.category_hint || m.category_hint === category);
+            if (filteredAsps.length === 0) {
+              return <p className="text-xs text-gray-400">このカテゴリに適合する登録済みのASP素材はありません。</p>;
+            }
+            return (
+              <div className="max-h-40 space-y-1 overflow-y-auto rounded-md border border-gray-200 p-2">
+                {filteredAsps.map((m) => (
+                  <label key={m.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-gray-50">
+                    <input type="checkbox" checked={selectedAsps.includes(m.id)} onChange={() => toggleAsp(m.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600" />
+                    <span className="font-medium truncate">{m.name}</span>
+                    <span className="text-xs text-gray-400">[{usageLabels[m.usage_type]}]</span>
+                    {m.price_note && <span className="text-xs text-green-600">{m.price_note}</span>}
+                  </label>
+                ))}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Extra instructions */}
@@ -417,9 +426,11 @@ interface VariationRow {
 
 function AspMaterialsTab({
   materials,
+  categories,
   onRefresh,
 }: {
   materials: AspMaterial[];
+  categories: UserCategory[];
   onRefresh: () => void;
 }) {
   const [showForm, setShowForm] = useState(false);
@@ -433,6 +444,7 @@ function AspMaterialsTab({
   const [priceNote, setPriceNote] = useState("");
   const [usageType, setUsageType] = useState("recommendation");
   const [disclosureInfo, setDisclosureInfo] = useState("");
+  const [categoryHint, setCategoryHint] = useState("");
 
   // Variations
   const [variations, setVariations] = useState<VariationRow[]>([
@@ -452,7 +464,7 @@ function AspMaterialsTab({
 
   function resetForm() {
     setName(""); setAspName(""); setDescription(""); setPriceNote("");
-    setUsageType("recommendation"); setDisclosureInfo("");
+    setUsageType("recommendation"); setDisclosureInfo(""); setCategoryHint("");
     setVariations([{ materialType: "banner", bannerWidth: "", bannerHeight: "", imageUrl: "", textContent: "", linkNormal: "", linkAmp: "", linkNojs: "", label: "" }]);
   }
 
@@ -468,6 +480,7 @@ function AspMaterialsTab({
           name: name.trim(), asp_name: aspName.trim(), description: description.trim(),
           price_note: priceNote.trim() || null, usage_type: usageType,
           disclosure_info: disclosureInfo.trim() || null,
+          category_hint: categoryHint.trim() || null,
         },
         variations: variations.map((v) => ({
           material_type: v.materialType,
@@ -544,10 +557,16 @@ function AspMaterialsTab({
               <input type="text" value={aspName} onChange={(e) => setAspName(e.target.value)} placeholder="ASP名 *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
               <input type="text" value={priceNote} onChange={(e) => setPriceNote(e.target.value)} placeholder="価格帯" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
             </div>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="説明" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
               <select value={usageType} onChange={(e) => setUsageType(e.target.value)} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
                 <option value="recommendation">おすすめ</option><option value="comparison">比較用</option><option value="tool_intro">道具紹介</option><option value="budget_option">予算別</option><option value="step_up">次のステップ</option>
+              </select>
+              <select value={categoryHint} onChange={(e) => setCategoryHint(e.target.value)} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                <option value="">カテゴリ: 共通 / 未分類</option>
+                {categories.map((c) => (
+                  <option key={c.slug} value={c.slug}>{c.title}</option>
+                ))}
               </select>
             </div>
             <input type="text" value={disclosureInfo} onChange={(e) => setDisclosureInfo(e.target.value)} placeholder="提携情報表示（任意）" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
@@ -624,6 +643,11 @@ function AspMaterialsTab({
                     <span className="font-semibold text-gray-900 text-sm">{parent.name}</span>
                     <span className="text-xs text-gray-400">[{parent.asp_name}]</span>
                     <span className="text-xs bg-blue-100 text-blue-700 px-1.5 rounded">{usageLabels[parent.usage_type]}</span>
+                    {parent.category_hint && (
+                      <span className="text-xs bg-slate-100 text-slate-700 px-1.5 rounded">
+                        🏷️ {categories.find((c) => c.slug === parent.category_hint)?.title ?? parent.category_hint}
+                      </span>
+                    )}
                     {parent.price_note && <span className="text-xs text-green-600">{parent.price_note}</span>}
                   </div>
                   <div className="flex items-center gap-2">

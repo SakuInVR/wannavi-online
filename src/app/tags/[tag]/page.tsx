@@ -11,8 +11,9 @@ type TagPageProps = {
   params: Promise<{ tag: string }>;
 };
 
-export function generateStaticParams() {
-  return getAllTags().map((tag) => ({ tag }));
+export async function generateStaticParams() {
+  const tags = await getAllTags();
+  return tags.map((tag) => ({ tag }));
 }
 
 export async function generateMetadata({ params }: TagPageProps): Promise<Metadata> {
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: TagPageProps): Promise<Metada
 export default async function TagPage({ params }: TagPageProps) {
   const { tag } = await params;
   const decodedTag = decodeURIComponent(tag);
-  const articles = getArticlesByTag(decodedTag);
+  const articles = await getArticlesByTag(decodedTag);
 
   if (!articles.length) {
     notFound();

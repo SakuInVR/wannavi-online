@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
       description: m.description ?? "",
       asp_name: m.asp_name ?? m.aspName ?? "",
       price_note: m.price_note ?? m.priceNote ?? null,
+      category_hint: m.category_hint ?? m.categoryHint ?? null,
       usage_type: m.usage_type ?? m.usageType ?? "recommendation",
       display_style: m.display_style ?? m.displayStyle ?? "product_card",
       variation_label: m.variation_label ?? m.variationLabel ?? null,
@@ -171,7 +172,7 @@ export async function PATCH(request: NextRequest) {
 
   const allowed = ["material_type","banner_width","banner_height","image_url","text_content",
     "link_normal","link_amp","link_nojs","disclosure_info","usage_type","display_style",
-    "placement_context","variation_label"];
+    "placement_context","variation_label","category_hint"];
   for (const f of allowed) { if (fields[f] !== undefined) updateData[f] = fields[f]; }
 
   const { data, error } = await supabase.from("asp_materials").update(updateData).eq("id", id).select().single();

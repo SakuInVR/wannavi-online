@@ -18,8 +18,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ArticlesPage() {
-  const articles = getAllArticles();
+export default async function ArticlesPage() {
+  const articles = await getAllArticles();
 
   return (
     <main className="px-5 py-14">
