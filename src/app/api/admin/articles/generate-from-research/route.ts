@@ -9,6 +9,7 @@ import {
   extractTags,
 } from "@/lib/deepseek";
 import type { AspMaterialForPrompt, VideoAnalysis } from "@/lib/deepseek";
+import { enrichArticleWithSearchLinks } from "@/lib/amazon";
 import { buildFeedbackInjection, fetchCategoryFeedback } from "@/lib/feedback";
 
 export async function POST(request: NextRequest) {
@@ -171,7 +172,10 @@ export async function POST(request: NextRequest) {
       { role: "user", content: userPrompt },
     ]);
 
-    const { cleanBody, tags } = extractTags(result.content);
+    const { cleanBody: rawBody, tags } = extractTags(result.content);
+
+    // Auto-enrich: **商品名** → Amazon 検索アフィリエイトリンク
+    const cleanBody = enrichArticleWithSearchLinks(rawBody);
     const description = cleanBody.slice(0, 200).replace(/\n/g, " ");
 
     const { data: article, error: articleError } = await supabase

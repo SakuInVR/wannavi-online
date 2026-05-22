@@ -10,6 +10,7 @@ import {
 } from "@/lib/deepseek";
 import type { AspMaterialForPrompt, VideoAnalysis } from "@/lib/deepseek";
 import { buildFeedbackInjection, fetchCategoryFeedback } from "@/lib/feedback";
+import { enrichArticleWithSearchLinks } from "@/lib/amazon";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
@@ -318,7 +319,10 @@ export async function POST(request: NextRequest) {
       { role: "user", content: userPrompt },
     ]);
 
-    const { cleanBody, tags } = extractTags(result.content);
+    const { cleanBody: rawBody, tags } = extractTags(result.content);
+
+    // Auto-enrich: **商品名** → Amazon 検索アフィリエイトリンク
+    const cleanBody = enrichArticleWithSearchLinks(rawBody);
     const description = cleanBody.slice(0, 200).replace(/\n/g, " ");
 
     const { data: article, error: articleError } = await supabase
