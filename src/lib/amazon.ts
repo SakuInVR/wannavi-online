@@ -336,42 +336,174 @@ export function buildAmazonSearchUrl(keyword: string): string {
 /* ------------------------------------------------------------------ */
 
 /**
- * 記事本文から商品名らしきキーワードを抽出して
- * Amazon 検索アフィリエイトリンクを自動挿入する。
- *
- * ※ PA-API 呼び出しは行わず、キーワードベースの検索リンクを生成。
- *    API 呼び出しが必要な場合は `enrichArticleWithApi` を使用。
+ * 商品・機材に関連するセクションの見出しキーワード。
+ * これらのキーワードを含む ## 見出しのセクション内でのみ、
+ * **太字** → Amazon 検索リンクの変換を行う。
  */
-export function enrichArticleWithSearchLinks(body: string): string {
-  // **太字** の商品名を検出して Amazon 検索リンクに変換
-  // ただし既にリンク `[text](url)` になっているものはスキップ
-  let result = body;
+const PRODUCT_SECTION_KEYWORDS = [
+  "機材", "道具", "必要なもの", "比較", "おすすめ", "選び方",
+  "スペック", "モデル", "購入", "価格", "予算", "ヘッドホン",
+  "インターフェース", "マイク", "キーボード", "スピーカー",
+  "PC", "パソコン", "デバイス", "機種", "製品", "商品",
+  "買う", "選ぶ", "一式", "セット", "備品", "用品",
+  "ソフト", "アプリ", "ツール", "環境", "用意",
+  "イヤホン", "ケーブル", "スタンド", "モニター",
+  "オーディオ", "MIDI", "DAW", "プラグイン", "音源",
+  "楽器", "ギター", "ピアノ", "ドラム", "ベース",
+  "アバター", "VR", "HMD", "トラッキング", "センサー",
+  "カメラ", "録画", "編集", "配信", "キャプチャー",
+];
 
+/**
+ * 見出しが商品・機材関連セクションかどうかを判定する。
+ */
+function isProductSectionHeading(heading: string): boolean {
+  return PRODUCT_SECTION_KEYWORDS.some((kw) => heading.includes(kw));
+}
+
+/**
+ * **太字** を Amazon 検索リンクに変換する（単一置換用ヘルパー）。
+ * URL やコードブロックはスキップ。
+ */
+function boldToAmazonLink(_fullMatch: string, productName: string): string {
+  const name = productName.trim();
+  if (name.includes("http") || name.includes("```")) {
+    return `**${name}**`;
+  }
+  const searchUrl = buildAmazonSearchUrl(name);
+  return `[**${name}**](${searchUrl})`;
+}
+
+/**
+ * 指定されたテキスト片に対して、**太字** → Amazon 検索リンク変換を適用する。
+ * （既存リンクの保護→変換→復元 の一連の流れ）
+ */
+function applyBoldToLinkConversion(text: string): string {
   // 既存のリンクを保護（プレースホルダーに置換）
   const existingLinks: string[] = [];
-  result = result.replace(/\[([^\]]+)\]\([^)]+\)/g, (match, text) => {
+  let result = text.replace(/\[([^\]]+)\]\([^)]+\)/g, (match) => {
     existingLinks.push(match);
     return `__LINK_${existingLinks.length - 1}__`;
   });
 
-  // **商品名** を Amazon 検索リンクに変換（2〜50文字の太字）
-  result = result.replace(
-    /\*\*(.{2,50}?)\*\*/g,
-    (_, productName: string) => {
-      const name = productName.trim();
-      // URL やコードブロックはスキップ
-      if (name.includes("http") || name.includes("```")) {
-        return `**${name}**`;
-      }
-      const searchUrl = buildAmazonSearchUrl(name);
-      return `[**${name}**](${searchUrl})`;
-    }
-  );
+  // **太字** を Amazon 検索リンクに変換（2〜50文字）
+  result = result.replace(/\*\*(.{2,50}?)\*\*/g, boldToAmazonLink);
 
   // 保護した既存リンクを復元
   result = result.replace(/__LINK_(\d+)__/g, (_, i) => existingLinks[parseInt(i)]);
 
   return result;
+}
+
+/**
+ * 記事本文から商品名らしきキーワードを抽出して
+ * Amazon 検索アフィリエイトリンクを自動挿入する。
+ *
+ * ## ルール（重要）
+ * - **太字** のうち、商品・機材関連セクション（下記キーワードを含む見出し）内のものだけリンク化する
+ * - `<ToolRecommendation>` / `<AffiliateCTA>` コンポーネントの前後にある太字もリンク化対象
+ * - それ以外のセクション（練習方法、考え方、手順など）の太字はそのまま維持
+ *
+ * ※ PA-API 呼び出しは行わず、キーワードベースの検索リンクを生成。
+ *    API 呼び出しが必要な場合は `enrichArticleWithApi` を使用。
+ */
+export function enrichArticleWithSearchLinks(body: string): string {
+  // 記事を ## 見出しでセクション分割
+  // パターン: 行頭の ## で始まる行（見出し）を区切りとする
+  const sectionRegex = /^(##\s+.+)$/gm;
+
+  // 見出しの位置をすべて取得
+  const headingMatches: { index: number; heading: string; end: number }[] = [];
+  for (const m of body.matchAll(sectionRegex)) {
+    headingMatches.push({
+      index: m.index!,
+      heading: m[0],
+      end: m.index! + m[0].length,
+    });
+  }
+
+  // 見出しがない場合は記事全体を非商品セクション扱い（リンク変換しない）
+  if (headingMatches.length === 0) {
+    // ただし JSX コンポーネント周辺だけは処理
+    return convertNearJsxComponents(body);
+  }
+
+  // セクションごとに処理
+  const parts: string[] = [];
+  let cursor = 0;
+
+  for (let i = 0; i < headingMatches.length; i++) {
+    const current = headingMatches[i];
+    const next = headingMatches[i + 1];
+
+    // 見出し行の前のテキスト（最初の見出しより前のリード文）
+    if (cursor < current.index) {
+      const beforeText = body.slice(cursor, current.index);
+      // リード文は非商品セクション扱い（変換しない）
+      // ただし JSX コンポーネント周辺だけは処理
+      parts.push(convertNearJsxComponents(beforeText));
+    }
+
+    // 見出し行
+    const headingLine = body.slice(current.index, current.end);
+
+    // セクション本文（見出し行の後〜次の見出しの前、または末尾まで）
+    const sectionStart = current.end;
+    const sectionEnd = next ? next.index : body.length;
+    let sectionBody = body.slice(sectionStart, sectionEnd);
+
+    // 商品関連セクションかどうか判定
+    const headingText = current.heading.replace(/^##\s+/, "").trim();
+    if (isProductSectionHeading(headingText)) {
+      // 商品セクション：**太字** をリンク化
+      sectionBody = applyBoldToLinkConversion(sectionBody);
+    } else {
+      // 非商品セクション：JSX コンポーネント近傍の太字のみリンク化
+      sectionBody = convertNearJsxComponents(sectionBody);
+    }
+
+    parts.push(headingLine + sectionBody);
+    cursor = sectionEnd;
+  }
+
+  // 最後の見出しより後ろの残りテキスト
+  if (cursor < body.length) {
+    const tail = body.slice(cursor);
+    parts.push(convertNearJsxComponents(tail));
+  }
+
+  return parts.join("");
+}
+
+/**
+ * JSX コンポーネント（<ToolRecommendation> / <AffiliateCTA>）の
+ * 前後 300 文字以内にある **太字** を Amazon 検索リンクに変換する。
+ * （コンポーネント周辺は商品紹介文脈である可能性が高いため）
+ */
+function convertNearJsxComponents(text: string): string {
+  // JSX コンポーネントの位置を検出
+  const jsxRegex = /<(?:ToolRecommendation|AffiliateCTA)\s[^>]*\/>/g;
+  const jsxPositions: number[] = [];
+  for (const m of text.matchAll(jsxRegex)) {
+    jsxPositions.push(m.index!);
+  }
+
+  if (jsxPositions.length === 0) return text;
+
+  // 変換対象の太字範囲をマーク
+  const CONTEXT_RANGE = 300; // コンポーネントの前後 300 文字
+  const boldRegex = /\*\*(.{2,50}?)\*\*/g;
+
+  // 各太字が JSX コンポーネントの近傍かチェック
+  return text.replace(boldRegex, (match, name, offset) => {
+    const isNearJsx = jsxPositions.some(
+      (pos) => Math.abs(offset - pos) <= CONTEXT_RANGE
+    );
+    if (isNearJsx) {
+      return boldToAmazonLink(match, name);
+    }
+    return match;
+  });
 }
 
 /**
@@ -413,8 +545,10 @@ export interface EnrichResult {
  * 記事本文内の商品名を検出し、PA-API で実商品を検索して
  * アフィリエイトリンクを自動挿入する（高精度版）。
  *
- * ## 見出しと **太字** から商品名候補を抽出 → PA-API 検索 →
+ * ## 商品関連セクションの見出しと **太字** から商品名候補を抽出 → PA-API 検索 →
  * ヒットした商品のアフィリエイトURLをリンクとして挿入。
+ *
+ * ※ 商品関連セクション以外の太字は候補から除外される。
  */
 export async function enrichArticleWithApi(
   body: string,
@@ -433,7 +567,7 @@ export async function enrichArticleWithApi(
     };
   }
 
-  // 商品名候補を抽出
+  // 商品名候補を抽出（商品関連セクションのみ）
   const candidates = extractProductCandidates(body);
 
   // 候補ごとに PA-API 検索（最大 maxProducts 件まで）
@@ -448,24 +582,20 @@ export async function enrichArticleWithApi(
     }
   }
 
-  // 記事本文にリンクを挿入
+  // 記事本文にリンクを挿入（商品関連セクション内のみ）
+  // 本文をセクション分割し、商品セクション内でのみ置換を行う
   let enrichedBody = body;
   let replaced = 0;
 
   for (const product of products) {
-    const name = product.title.length > 40
-      ? product.title.slice(0, 40) + "..."
-      : product.title;
-
-    // ## 見出しまたは太字で登場する商品名を置換
-    // 簡易マッチ: 商品タイトルの主要部分が本文に含まれていれば置換
     const keywords = product.title.split(/\s+/).filter((w) => w.length >= 2);
     for (const kw of keywords.slice(0, 3)) {
       const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const regex = new RegExp(`(?<!\\[)(${escaped})(?!\\]\\()`, "gi");
-      const before = enrichedBody;
-      enrichedBody = enrichedBody.replace(regex, `[$1](${product.affiliateUrl})`);
-      if (enrichedBody !== before) {
+
+      // 商品セクション内のマッチのみ置換
+      enrichedBody = replaceInProductSections(enrichedBody, regex, `[$1](${product.affiliateUrl})`);
+      if (enrichedBody !== body) {
         replaced++;
         break; // 1商品につき1回だけ置換
       }
@@ -475,38 +605,138 @@ export async function enrichArticleWithApi(
   return { body: enrichedBody, products, replaced };
 }
 
+/**
+ * 商品関連セクション内でのみ正規表現置換を行う。
+ * 非商品セクションのテキストはそのまま保持する。
+ */
+function replaceInProductSections(
+  body: string,
+  regex: RegExp,
+  replacement: string
+): string {
+  const sectionRegex = /^(##\s+.+)$/gm;
+  const headingMatches: { index: number; heading: string; end: number }[] = [];
+  for (const m of body.matchAll(sectionRegex)) {
+    headingMatches.push({
+      index: m.index!,
+      heading: m[0],
+      end: m.index! + m[0].length,
+    });
+  }
+
+  if (headingMatches.length === 0) return body;
+
+  const parts: string[] = [];
+  let cursor = 0;
+
+  for (let i = 0; i < headingMatches.length; i++) {
+    const current = headingMatches[i];
+    const next = headingMatches[i + 1];
+
+    if (cursor < current.index) {
+      parts.push(body.slice(cursor, current.index));
+    }
+
+    const headingLine = body.slice(current.index, current.end);
+    const sectionStart = current.end;
+    const sectionEnd = next ? next.index : body.length;
+    let sectionBody = body.slice(sectionStart, sectionEnd);
+
+    const headingText = current.heading.replace(/^##\s+/, "").trim();
+    if (isProductSectionHeading(headingText)) {
+      sectionBody = sectionBody.replace(regex, replacement);
+    }
+
+    parts.push(headingLine + sectionBody);
+    cursor = sectionEnd;
+  }
+
+  if (cursor < body.length) {
+    parts.push(body.slice(cursor));
+  }
+
+  return parts.join("");
+}
+
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 
 /**
- * 記事本文から商品名候補を抽出
- * - ## 見出し
- * - **太字**（2〜50文字）
- * - 箇条書きの先頭アイテム
+ * 記事本文から商品名候補を抽出（商品関連セクションのみ対象）。
+ * - ## 見出し（商品関連セクションのみ）
+ * - **太字**（商品関連セクション内のみ、2〜50文字）
+ * - 箇条書き（商品関連セクション内のみ）
  */
 function extractProductCandidates(body: string): string[] {
   const candidates = new Set<string>();
 
-  // ## 見出し
-  for (const m of body.matchAll(/^##\s+(.+)$/gm)) {
-    const t = m[1].trim();
-    if (t.length >= 3 && t.length <= 60) candidates.add(t);
+  // 記事を ## 見出しでセクション分割
+  const sectionRegex = /^(##\s+.+)$/gm;
+  const sections: { heading: string; body: string; isProduct: boolean }[] = [];
+
+  const headingMatches: { index: number; heading: string; end: number }[] = [];
+  for (const m of body.matchAll(sectionRegex)) {
+    headingMatches.push({
+      index: m.index!,
+      heading: m[0],
+      end: m.index! + m[0].length,
+    });
   }
 
-  // **太字**
-  for (const m of body.matchAll(/\*\*(.{2,50}?)\*\*/g)) {
-    const t = m[1].trim();
-    if (!t.includes("http") && !t.includes("```") && t.length >= 2) {
-      candidates.add(t);
+  for (let i = 0; i < headingMatches.length; i++) {
+    const current = headingMatches[i];
+    const next = headingMatches[i + 1];
+    const sectionBody = body.slice(current.end, next ? next.index : body.length);
+    const headingText = current.heading.replace(/^##\s+/, "").trim();
+    sections.push({
+      heading: headingText,
+      body: sectionBody,
+      isProduct: isProductSectionHeading(headingText),
+    });
+  }
+
+  for (const section of sections) {
+    // ## 見出し（商品セクションのみ）
+    if (section.isProduct && section.heading.length >= 3 && section.heading.length <= 60) {
+      candidates.add(section.heading);
+    }
+
+    if (!section.isProduct) continue;
+
+    // **太字**（商品セクション内のみ）
+    for (const m of section.body.matchAll(/\*\*(.{2,50}?)\*\*/g)) {
+      const t = m[1].trim();
+      if (!t.includes("http") && !t.includes("```") && t.length >= 2) {
+        candidates.add(t);
+      }
+    }
+
+    // 箇条書き（商品セクション内のみ）
+    for (const m of section.body.matchAll(/^[-*]\s+(.+)$/gm)) {
+      const t = m[1].trim();
+      if (t.length >= 3 && t.length <= 60 && !t.includes("http")) {
+        candidates.add(t);
+      }
     }
   }
 
-  // 箇条書き（- または * で始まる行の最初の単語群）
-  for (const m of body.matchAll(/^[-*]\s+(.+)$/gm)) {
-    const t = m[1].trim();
-    if (t.length >= 3 && t.length <= 60 && !t.includes("http")) {
-      candidates.add(t);
+  // JSX コンポーネント近傍の太字も候補に追加
+  const jsxRegex = /<(?:ToolRecommendation|AffiliateCTA)\s[^>]*\/>/g;
+  const CONTEXT_RANGE = 300;
+  const jsxPositions: number[] = [];
+  for (const m of body.matchAll(jsxRegex)) {
+    jsxPositions.push(m.index!);
+  }
+  for (const m of body.matchAll(/\*\*(.{2,50}?)\*\*/g)) {
+    const isNearJsx = jsxPositions.some(
+      (pos) => Math.abs(m.index! - pos) <= CONTEXT_RANGE
+    );
+    if (isNearJsx) {
+      const t = m[1].trim();
+      if (!t.includes("http") && !t.includes("```") && t.length >= 2) {
+        candidates.add(t);
+      }
     }
   }
 

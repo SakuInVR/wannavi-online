@@ -69,7 +69,18 @@ export interface Stats {
   materials: number;
 }
 
-type Tab = "overview" | "new-article" | "asp-materials" | "categories" | "review" | "published";
+export interface CommentRow {
+  id: string;
+  article_id: string;
+  article_slug: string;
+  article_title: string;
+  author_name: string | null;
+  body: string;
+  is_anonymous: boolean;
+  created_at: string;
+}
+
+type Tab = "overview" | "new-article" | "asp-materials" | "categories" | "review" | "published" | "comments";
 
 /* ------------------------------------------------------------------ */
 /* Dashboard                                                          */
@@ -140,6 +151,7 @@ export function AdminDashboard({
     { key: "categories", label: "カテゴリ", emoji: "📁" },
     { key: "review", label: "レビュー待ち", emoji: "⏳" },
     { key: "published", label: "公開済み", emoji: "📰" },
+    { key: "comments", label: "コメント", emoji: "💬" },
   ];
 
   return (
@@ -207,6 +219,7 @@ export function AdminDashboard({
             }}
           />
         )}
+        {tab === "comments" && <CommentsTab />}
       </div>
     </main>
   );
@@ -1427,6 +1440,90 @@ function PublishedTab({
                   </span>
                 </div>
               </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Tab: Comments                                                      */
+/* ------------------------------------------------------------------ */
+
+function CommentsTab() {
+  const [comments, setComments] = useState<CommentRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  async function fetchComments() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/comments");
+      if (res.ok) {
+        const json = await res.json();
+        setComments(json.comments ?? []);
+        setTotal(json.total ?? 0);
+      }
+    } catch {
+      // silent
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchComments();
+  }, []);
+
+  function formatDate(iso: string) {
+    return new Date(iso).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });
+  }
+
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-900">
+          💬 コメント一覧 <span className="text-sm font-normal text-gray-400">({total}件)</span>
+        </h2>
+        <button onClick={fetchComments}
+          className="rounded-md bg-gray-100 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-200">
+          🔄 更新
+        </button>
+      </div>
+
+      {loading ? (
+        <p className="text-sm text-gray-400">読み込み中...</p>
+      ) : comments.length === 0 ? (
+        <p className="text-sm text-gray-500">まだコメントはありません。</p>
+      ) : (
+        <ul className="space-y-3">
+          {comments.map((c) => (
+            <li key={c.id} className="rounded-lg border border-gray-200 bg-white p-4">
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-sm font-semibold text-gray-900">
+                      {c.is_anonymous ? "🕶️ 匿名" : c.author_name ?? "名無し"}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {formatDate(c.created_at)}
+                    </span>
+                  </div>
+                  <a
+                    href={`/articles/${c.article_slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 underline hover:text-blue-800"
+                  >
+                    📄 {c.article_title}
+                  </a>
+                </div>
+              </div>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
+                {c.body}
+              </p>
             </li>
           ))}
         </ul>

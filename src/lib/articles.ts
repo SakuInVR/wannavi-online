@@ -16,6 +16,7 @@ export type ArticleFrontmatter = {
 };
 
 export type Article = ArticleFrontmatter & {
+  id: string;
   slug: string;
   body: string;
   readingMinutes: string;
@@ -70,6 +71,7 @@ export async function getAllArticles(): Promise<Article[]> {
     const category = getCategory(dbArticle.category);
 
     return {
+      id: dbArticle.id,
       slug: dbArticle.slug,
       title: dbArticle.title,
       description: dbArticle.description,
@@ -108,6 +110,7 @@ export async function getArticleBySlug(slug: string): Promise<Article> {
   const category = getCategory(dbArticle.category);
 
   return {
+    id: dbArticle.id,
     slug: dbArticle.slug,
     title: dbArticle.title,
     description: dbArticle.description,

@@ -9,6 +9,7 @@ import remarkGfm from "remark-gfm";
 
 import { AdSlot } from "@/components/AdSlot";
 import { AffiliateCTA } from "@/components/AffiliateCTA";
+import { CommentSection } from "@/components/CommentSection";
 import { JsonLd } from "@/components/JsonLd";
 import { MonetizationPanel } from "@/components/MonetizationPanel";
 import { ProductAd } from "@/components/ProductAd";
@@ -165,6 +166,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <div className="article-body mt-10">{content}</div>
         <MonetizationPanel category={article.category} />
         <AdSlot slotName={`${article.slug}-bottom`} />
+        <CommentSection articleId={article.id} />
       </article>
       <div className="mx-auto max-w-6xl">
         <RelatedArticles articles={relatedArticles} />
