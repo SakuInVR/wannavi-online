@@ -194,7 +194,14 @@ export function buildArticleSystemPrompt(params: {
     "  - props（name, title, reason, description, href, priceHint など）の二重引用符（\"）や中括弧（{}）の対応を絶対に崩さないでください。閉じタグも忘れずに記述してください。",
     "・表示指示が『文中リンク』や『比較表の行』として指定されている場合は、Markdownの `[リンクテキスト](URL)` 形式で記述してください。",
     "・同じ商品のリンク/コンポーネントは、記事全体で1〜2回までに抑えてください。",
-    "・押し売り感を避け、読者が納得して次の一歩を踏み出せる有益な情報・文脈を添えてください。"
+    "・押し売り感を避け、読者が納得して次の一歩を踏み出せる有益な情報・文脈を添えてください。",
+    "",
+    "【タグ出力ルール】",
+    "・記事本文の最後に必ず以下の形式で5〜8個のタグ（日本語キーワード）を出力してください。",
+    "・タグは記事の主要トピックを表すキーワードで、カンマ区切り、各タグは1〜10文字程度。",
+    "・形式: `<!-- TAGS: タグ1, タグ2, タグ3, ... -->`",
+    "・この行は必ず記事本文の一番最後に単独行で出力してください。",
+    "・例: `<!-- TAGS: ピアノ練習, 初心者, 電子ピアノ, 楽譜, 毎日の練習, 大人の習い事 -->`"
   );
 
   return parts.join("\n");
@@ -306,7 +313,14 @@ export function buildThreeVideoSystemPrompt(params: ThreeVideoArticleInput): str
     "  - props（name, title, reason, description, href, priceHint など）の二重引用符（\"）や中括弧（{}）の対応を絶対に崩さないでください。閉じタグも忘れずに記述してください。",
     "・表示指示が『文中リンク』や『比較表の行』として指定されている場合は、Markdownの `[リンクテキスト](URL)` 形式で記述してください。",
     "・同じ商品のリンク/コンポーネントは、記事全体で1〜2回までに抑えてください。",
-    "・押し売り感を避け、読者が納得して次の一歩を踏み出せる有益な情報・文脈を添えてください。"
+    "・押し売り感を避け、読者が納得して次の一歩を踏み出せる有益な情報・文脈を添えてください。",
+    "",
+    "【タグ出力ルール】",
+    "・記事本文の最後に必ず以下の形式で5〜8個のタグ（日本語キーワード）を出力してください。",
+    "・タグは記事の主要トピックを表すキーワードで、カンマ区切り、各タグは1〜10文字程度。",
+    "・形式: `<!-- TAGS: タグ1, タグ2, タグ3, ... -->`",
+    "・この行は必ず記事本文の一番最後に単独行で出力してください。",
+    "・例: `<!-- TAGS: ピアノ練習, 初心者, 電子ピアノ, 楽譜, 毎日の練習, 大人の習い事 -->`"
   );
 
   return parts.join("\n");
@@ -333,4 +347,30 @@ export function buildThreeVideoUserPrompt(params: ThreeVideoArticleInput): strin
     "",
     "以上の3つの動画分析に基づき、記事構成ルールに従ってMarkdown記事を生成してください。",
   ].join("\n");
+}
+
+/* ------------------------------------------------------------------ */
+/* Tag extraction                                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Extract tags from article body (format: <!-- TAGS: tag1, tag2, ... -->).
+ * Returns { cleanBody, tags } where cleanBody has the tag comment removed.
+ */
+export function extractTags(body: string): { cleanBody: string; tags: string[] } {
+  const tagRegex = /<!--\s*TAGS:\s*(.+?)\s*-->/i;
+  const match = body.match(tagRegex);
+
+  if (!match || !match[1]) {
+    return { cleanBody: body, tags: [] };
+  }
+
+  const tags = match[1]
+    .split(/[,、]/)
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0 && t.length <= 30);
+
+  const cleanBody = body.replace(tagRegex, "").trim();
+
+  return { cleanBody, tags };
 }
