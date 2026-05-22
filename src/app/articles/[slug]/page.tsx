@@ -24,6 +24,9 @@ import { getMonetizationOffer } from "@/lib/monetization";
 import { siteConfig } from "@/lib/site";
 import { articleJsonLd, breadcrumbJsonLd } from "@/lib/structured-data";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
 };
