@@ -11,7 +11,6 @@ import { AdSlot } from "@/components/AdSlot";
 import { AffiliateCTA } from "@/components/AffiliateCTA";
 import { CommentSection } from "@/components/CommentSection";
 import { JsonLd } from "@/components/JsonLd";
-import { MonetizationPanel } from "@/components/MonetizationPanel";
 import { ProductAd } from "@/components/ProductAd";
 import { RelatedArticles } from "@/components/RelatedArticles";
 import { TableOfContents } from "@/components/TableOfContents";
@@ -21,7 +20,6 @@ import {
   getArticleBySlug,
   getRelatedArticles,
 } from "@/lib/articles";
-import { getMonetizationOffer } from "@/lib/monetization";
 import { siteConfig } from "@/lib/site";
 import { articleJsonLd, breadcrumbJsonLd } from "@/lib/structured-data";
 
@@ -84,8 +82,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   if (article.draft) {
     notFound();
   }
-
-  const offer = getMonetizationOffer(article.category);
 
   // Amazon アフィリエイト検索 URL を動的生成（title から検索キーワードを抽出）
   const amazonSearchUrl = (title: string) =>
@@ -164,8 +160,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         ) : null}
         <TableOfContents headings={article.headings} />
         <div className="article-body mt-10">{content}</div>
-        <MonetizationPanel category={article.category} />
-        <AdSlot slotName={`${article.slug}-bottom`} />
         <CommentSection articleId={article.id} />
       </article>
       <div className="mx-auto max-w-6xl">
