@@ -15,7 +15,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
 
   const { data: article, error } = await supabase
     .from("articles")
-    .select("id, title, description, category, review_status, body, created_at")
+    .select("id, title, description, category, review_status, body, created_at, retake_instructions, previous_body, tags")
     .eq("id", id)
     .single();
 
@@ -24,7 +24,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
   // Linked ASP materials
   const { data: asps } = await supabase
     .from("article_asp_materials")
-    .select("asp_material_id, asp_materials(name, asp_name, affiliate_url)")
+    .select("asp_material_id, asp_materials(name, asp_name, affiliate_url, price_note, usage_type, description)")
     .eq("article_id", id);
 
   const linkedAsps =
@@ -32,7 +32,10 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
       ?.map((row: unknown) => {
         const r = row as {
           asp_material_id: string;
-          asp_materials: { name: string; asp_name: string; affiliate_url: string | null } | null;
+          asp_materials: {
+            name: string; asp_name: string; affiliate_url: string | null;
+            price_note: string | null; usage_type: string | null; description: string | null;
+          } | null;
         };
         return r.asp_materials;
       })
@@ -51,9 +54,8 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
       article={article}
       linkedAsps={
         linkedAsps as Array<{
-          name: string;
-          asp_name: string;
-          affiliate_url: string | null;
+          name: string; asp_name: string; affiliate_url: string | null;
+          price_note: string | null; usage_type: string | null; description: string | null;
         }>
       }
       pastFeedback={

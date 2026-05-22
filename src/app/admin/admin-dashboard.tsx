@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                              */
@@ -8,10 +8,24 @@ import { useState, useEffect } from "react";
 
 export interface Article {
   id: string;
+  slug: string;
   title: string;
   category: string;
   review_status: string;
   created_at: string;
+  retake_instructions?: string | null;
+  tags?: string[] | null;
+  linked_asps?: LinkedAspInfo[];
+  body?: string | null;
+}
+
+export interface LinkedAspInfo {
+  name: string;
+  asp_name: string;
+  affiliate_url: string | null;
+  price_note: string | null;
+  usage_type: string;
+  description: string | null;
 }
 
 export interface UserCategory {
@@ -55,7 +69,7 @@ export interface Stats {
   materials: number;
 }
 
-type Tab = "overview" | "new-article" | "asp-materials" | "categories" | "review";
+type Tab = "overview" | "new-article" | "asp-materials" | "categories" | "review" | "published";
 
 /* ------------------------------------------------------------------ */
 /* Dashboard                                                          */
@@ -63,12 +77,14 @@ type Tab = "overview" | "new-article" | "asp-materials" | "categories" | "review
 
 export function AdminDashboard({
   initialPending,
+  initialPublished,
   initialCategories,
   initialAspMaterials,
   initialStats,
   supabaseConfigured,
 }: {
   initialPending: Article[];
+  initialPublished: Article[];
   initialCategories: UserCategory[];
   initialAspMaterials: AspMaterial[];
   initialStats: Stats;
@@ -76,12 +92,17 @@ export function AdminDashboard({
 }) {
   const [tab, setTab] = useState<Tab>("overview");
   const [pending, setPending] = useState<Article[]>(initialPending);
+  const [published, setPublished] = useState<Article[]>(initialPublished);
   const [categories, setCategories] = useState<UserCategory[]>(initialCategories);
   const [aspMaterials, setAspMaterials] = useState<AspMaterial[]>(initialAspMaterials);
 
   async function refreshPending() {
     const res = await fetch("/api/admin/articles/pending");
     if (res.ok) setPending(await res.json());
+  }
+  async function refreshPublished() {
+    const res = await fetch("/api/admin/articles/pending?status=approved");
+    if (res.ok) setPublished(await res.json());
   }
   async function refreshCategories() {
     const res = await fetch("/api/admin/categories");
@@ -96,6 +117,7 @@ export function AdminDashboard({
     if (!supabaseConfigured) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetchers on mount
     refreshPending();
+    refreshPublished();
     refreshCategories();
     refreshAspMaterials();
   }, [tab, supabaseConfigured]);
@@ -117,6 +139,7 @@ export function AdminDashboard({
     { key: "asp-materials", label: "ASP素材", emoji: "🔗" },
     { key: "categories", label: "カテゴリ", emoji: "📁" },
     { key: "review", label: "レビュー待ち", emoji: "⏳" },
+    { key: "published", label: "公開済み", emoji: "📰" },
   ];
 
   return (
@@ -172,6 +195,17 @@ export function AdminDashboard({
         )}
         {tab === "review" && (
           <ReviewTab articles={pending} onRefresh={refreshPending} />
+        )}
+        {tab === "published" && (
+          <PublishedTab
+            articles={published}
+            aspMaterials={aspMaterials}
+            onRefresh={refreshPublished}
+            onRetakeComplete={() => {
+              refreshPublished();
+              refreshPending();
+            }}
+          />
         )}
       </div>
     </main>
@@ -1019,6 +1053,11 @@ function ReviewTab({
   articles: Article[];
   onRefresh: () => void;
 }) {
+  const usageLabels: Record<string, string> = {
+    recommendation: "おすすめ", comparison: "比較用", tool_intro: "道具紹介",
+    budget_option: "予算別", step_up: "次のステップ",
+  };
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
@@ -1032,21 +1071,362 @@ function ReviewTab({
       </div>
 
       {articles.length === 0 ? (
-        <p className="text-sm text-gray-500">レビュー待ちの記事はありません。</p>
+        <div>
+          <p className="text-sm text-gray-500">レビュー待ちの記事はありません。</p>
+          <p className="mt-2 text-xs text-gray-400">
+            💡 「記事生成」タブで作成した記事はここに表示され、承認するとサイトに公開されます。
+          </p>
+        </div>
       ) : (
         <ul className="space-y-2">
           {articles.map((a) => (
             <li key={a.id}>
               <a href={`/admin/review/${a.id}`}
-                className="flex flex-col gap-1 rounded-lg border border-gray-200 bg-white p-3 shadow-sm hover:border-yellow-400 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <span className="text-sm font-medium text-gray-900">{a.title}</span>
-                  <span className="ml-2 text-xs text-gray-500">[{a.category}]</span>
+                className="block rounded-lg border border-gray-200 bg-white p-3 shadow-sm hover:border-yellow-400">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-sm font-medium text-gray-900">{a.title}</span>
+                      <span className="text-xs text-gray-500">[{a.category}]</span>
+                      {a.retake_instructions && (
+                        <span className="rounded bg-orange-100 px-1.5 py-0.5 text-xs font-medium text-orange-700" title={a.retake_instructions}>
+                          🔄 リテイク中
+                        </span>
+                      )}
+                    </div>
+                    {/* Linked ASP materials */}
+                    {a.linked_asps && a.linked_asps.length > 0 && (
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {a.linked_asps.map((asp, i) => (
+                          <span key={i} className="inline-flex items-center gap-0.5 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700" title={`${asp.asp_name} / ${asp.usage_type ? usageLabels[asp.usage_type] ?? asp.usage_type : ""}${asp.price_note ? ` (${asp.price_note})` : ""}`}>
+                            🔗 {asp.name}
+                            {asp.price_note && <span className="text-green-600 ml-0.5">{asp.price_note}</span>}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {(!a.linked_asps || a.linked_asps.length === 0) && (
+                      <p className="mt-1 text-xs text-gray-400">📌 アフィリエイト未設定</p>
+                    )}
+                    {/* Tags */}
+                    {a.tags && a.tags.length > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-0.5">
+                        {a.tags.map((tag, i) => (
+                          <span key={i} className="rounded-full bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <span className="shrink-0 text-xs text-gray-400">
+                    {new Date(a.created_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
+                  </span>
                 </div>
-                <span className="text-xs text-gray-400">
-                  {new Date(a.created_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
-                </span>
               </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Tab: Published Articles (with retake support)                      */
+/* ------------------------------------------------------------------ */
+
+function PublishedTab({
+  articles,
+  aspMaterials,
+  onRefresh,
+  onRetakeComplete,
+}: {
+  articles: Article[];
+  aspMaterials: AspMaterial[];
+  onRefresh: () => void;
+  onRetakeComplete: () => void;
+}) {
+  const [retakeTarget, setRetakeTarget] = useState<string | null>(null);
+  const [retakeInstructions, setRetakeInstructions] = useState("");
+  const [retakeGenerating, setRetakeGenerating] = useState(false);
+  const [retakeMsg, setRetakeMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Tag filter
+  const [filterTags, setFilterTags] = useState<string[]>([]);
+
+  // Scroll ref for retake modal
+  const retakeModalRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to retake modal when opened
+  useEffect(() => {
+    if (retakeTarget && retakeModalRef.current) {
+      retakeModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [retakeTarget]);
+
+  const usageLabels: Record<string, string> = {
+    recommendation: "おすすめ", comparison: "比較用", tool_intro: "道具紹介",
+    budget_option: "予算別", step_up: "次のステップ",
+  };
+
+  // Collect all unique tags from articles
+  const allTags = useMemo(() => {
+    const s = new Set<string>();
+    for (const a of articles) {
+      if (a.tags) for (const t of a.tags) s.add(t);
+    }
+    return Array.from(s).sort();
+  }, [articles]);
+
+  // Filter articles by selected tags (AND logic: article must have ALL selected tags)
+  const filteredArticles = useMemo(() => {
+    if (filterTags.length === 0) return articles;
+    return articles.filter((a) => {
+      if (!a.tags || a.tags.length === 0) return false;
+      return filterTags.every((ft) => a.tags!.includes(ft));
+    });
+  }, [articles, filterTags]);
+
+  function toggleFilterTag(tag: string) {
+    setFilterTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  }
+
+  async function handleRetake(articleId: string) {
+    if (!retakeInstructions.trim()) {
+      setRetakeMsg({ type: "error", text: "修正指示を入力してください" });
+      return;
+    }
+    setRetakeGenerating(true);
+    setRetakeMsg(null);
+
+    try {
+      const res = await fetch(`/api/admin/articles/${articleId}/retake`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          retake_instructions: retakeInstructions.trim(),
+          auto_regenerate: true,
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        setRetakeMsg({ type: "error", text: json.error ?? "リテイク失敗" });
+        return;
+      }
+
+      if (json.regenerated) {
+        setRetakeMsg({ type: "success", text: `✅ リテイク記事を再生成しました (${json.tokens_used ?? "?"} tokens)` });
+      } else {
+        setRetakeMsg({ type: "success", text: `✅ リテイク指示を保存しました${json.warning ? "（" + json.warning + "）" : ""}` });
+      }
+
+      setRetakeTarget(null);
+      setRetakeInstructions("");
+      onRetakeComplete();
+    } catch {
+      setRetakeMsg({ type: "error", text: "ネットワークエラー" });
+    } finally {
+      setRetakeGenerating(false);
+    }
+  }
+
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-900">
+          📰 公開済み記事 <span className="text-sm font-normal text-gray-400">({articles.length}件{filterTags.length > 0 ? ` / ${filteredArticles.length}件表示` : ""})</span>
+        </h2>
+        <button onClick={onRefresh}
+          className="rounded-md bg-gray-100 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-200">
+          🔄 更新
+        </button>
+      </div>
+
+      {/* Tag filter chips */}
+      {allTags.length > 0 && (
+        <div className="mb-4 rounded-lg border border-gray-200 bg-white p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-medium text-gray-500">🏷️ タグで絞り込み</span>
+            {filterTags.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setFilterTags([])}
+                className="text-xs text-blue-600 underline hover:text-blue-800"
+              >
+                クリア
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {allTags.map((tag) => {
+              const active = filterTags.includes(tag);
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => toggleFilterTag(tag)}
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
+                    active
+                      ? "bg-sky-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {tag}
+                  {active && <span className="ml-1">×</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Retake dialog modal */}
+      {retakeTarget && (
+        <div ref={retakeModalRef} className="mb-4 rounded-lg border border-orange-300 bg-orange-50 p-4">
+          <h3 className="mb-2 text-sm font-semibold text-orange-900">🔄 リテイク指示</h3>
+          <p className="mb-2 text-xs text-orange-700">
+            修正してほしい内容を具体的に指示してください。AIが元の記事をベースに修正します。
+          </p>
+
+          {/* Show current article body for reference */}
+          {(() => {
+            const targetArticle = articles.find((a) => a.id === retakeTarget);
+            if (targetArticle?.body) {
+              return (
+                <details className="mb-3 rounded border border-orange-200 bg-white">
+                  <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-orange-700 hover:bg-orange-50">
+                    📄 現在の記事本文を表示（修正依頼の参考に）
+                  </summary>
+                  <div className="max-h-60 overflow-y-auto border-t border-orange-200 px-3 py-2">
+                    <div className="prose prose-sm max-w-none whitespace-pre-wrap text-xs text-gray-700">
+                      {targetArticle.body.slice(0, 3000)}
+                      {targetArticle.body.length > 3000 && (
+                        <p className="mt-1 text-gray-400">...（続きは省略 / 全文はレビュー画面で確認できます）</p>
+                      )}
+                    </div>
+                  </div>
+                </details>
+              );
+            }
+            return null;
+          })()}
+
+          <textarea
+            value={retakeInstructions}
+            onChange={(e) => setRetakeInstructions(e.target.value)}
+            rows={4}
+            placeholder="例：導入文が長すぎるので半分に縮めてください / 機材比較表にYAMAHA P-225を追加してください / もっと初心者目線のやさしい表現にしてください / アフィリエイトリンクをもっと自然に文中に織り込んでください"
+            className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+          />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => handleRetake(retakeTarget)}
+              disabled={retakeGenerating}
+              className="rounded-md bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700 disabled:opacity-50"
+            >
+              {retakeGenerating ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  AIで再生成中...
+                </span>
+              ) : (
+                "🚀 リテイク記事をAIで再生成"
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setRetakeTarget(null); setRetakeInstructions(""); setRetakeMsg(null); }}
+              className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300"
+            >
+              キャンセル
+            </button>
+          </div>
+          {retakeMsg && (
+            <div className={`mt-3 rounded-md px-3 py-2 text-sm ${retakeMsg.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+              {retakeMsg.text}
+            </div>
+          )}
+        </div>
+      )}
+
+      {filteredArticles.length === 0 ? (
+        <p className="text-sm text-gray-500">
+          {filterTags.length > 0 ? "選択したタグに一致する記事はありません。" : "公開済みの記事はありません。"}
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {filteredArticles.map((a) => (
+            <li key={a.id}>
+              <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                      <span className="text-sm font-medium text-gray-900">{a.title}</span>
+                      <span className="text-xs text-gray-500">[{a.category}]</span>
+                      <span className="rounded bg-green-100 px-1.5 py-0.5 text-xs font-medium text-green-700">✅ 公開中</span>
+                    </div>
+
+                    {/* Target affiliate info */}
+                    {a.linked_asps && a.linked_asps.length > 0 ? (
+                      <div className="mb-1.5 flex flex-wrap gap-1">
+                        {a.linked_asps.map((asp, i) => (
+                          <span key={i} className="inline-flex items-center gap-0.5 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700" title={`${asp.asp_name} / ${asp.usage_type ? usageLabels[asp.usage_type] ?? asp.usage_type : "おすすめ"} / ${asp.description ?? ""}`}>
+                            🔗 {asp.name}
+                            <span className="text-gray-400">[{asp.asp_name}]</span>
+                            {asp.price_note && <span className="text-green-600 font-medium">{asp.price_note}</span>}
+                            <span className="text-gray-400 ml-0.5">({usageLabels[asp.usage_type] ?? asp.usage_type})</span>
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mb-1 text-xs text-gray-400">📌 アフィリエイト未設定 — 広告収益化の機会損失</p>
+                    )}
+                    {/* Tags */}
+                    {a.tags && a.tags.length > 0 && (
+                      <div className="mb-1.5 flex flex-wrap gap-0.5">
+                        {a.tags.map((tag, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => toggleFilterTag(tag)}
+                            className={`rounded-full px-1.5 py-0.5 text-xs font-medium transition-colors ${
+                              filterTags.includes(tag)
+                                ? "bg-sky-100 text-sky-700 hover:bg-sky-200"
+                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                            }`}
+                            title="クリックで絞り込み"
+                          >
+                            {tag}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <a href={`/articles/${a.slug}`} target="_blank" rel="noopener noreferrer"
+                        className="text-xs text-blue-600 underline hover:text-blue-800">記事を見る →</a>
+                      <a href={`/admin/review/${a.id}`}
+                        className="text-xs text-gray-500 underline hover:text-gray-700">レビュー画面</a>
+                      <button
+                        type="button"
+                        onClick={() => { setRetakeTarget(a.id); setRetakeInstructions(a.retake_instructions ?? ""); setRetakeMsg(null); }}
+                        className="rounded bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700 hover:bg-orange-200"
+                      >
+                        🔄 リテイク指示
+                      </button>
+                    </div>
+                  </div>
+                  <span className="shrink-0 text-xs text-gray-400">
+                    {new Date(a.created_at).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}
+                  </span>
+                </div>
+              </div>
             </li>
           ))}
         </ul>
