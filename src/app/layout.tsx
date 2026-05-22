@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AdSenseScript } from "@/components/AdSenseScript";
 import { AnalyticsScript } from "@/components/AnalyticsScript";
-import { siteConfig, staticPages } from "@/lib/site";
+import { HeaderNav } from "@/components/HeaderNav";
+import { siteConfig, staticPages, categories } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -47,6 +48,13 @@ export const metadata: Metadata = {
   },
 };
 
+// Default categories to pass to client header nav
+const defaultNavCategories = categories.map((c) => ({
+  slug: c.slug,
+  title: c.title,
+  accent: c.accent,
+}));
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -62,29 +70,7 @@ export default function RootLayout({
             <Link href="/" className="text-lg font-black tracking-tight text-slate-950">
               Wanna Navi
             </Link>
-            <nav className="flex flex-wrap items-center gap-4 text-sm font-bold text-slate-600">
-              <Link href="/articles" className="hover:text-slate-950">
-                Articles
-              </Link>
-              <Link href="/categories" className="hover:text-slate-950">
-                Categories
-              </Link>
-              <Link href="/tags" className="hover:text-slate-950">
-                Tags
-              </Link>
-              <Link href="/categories/ai-engineer" className="hover:text-slate-950">
-                AI
-              </Link>
-              <Link href="/categories/dtm" className="hover:text-slate-950">
-                DTM
-              </Link>
-              <Link href="/categories/vr-creator" className="hover:text-slate-950">
-                VR
-              </Link>
-              <Link href="/categories/instrument-player" className="hover:text-slate-950">
-                Music
-              </Link>
-            </nav>
+            <HeaderNav defaultCategories={defaultNavCategories} />
           </div>
         </header>
         {children}

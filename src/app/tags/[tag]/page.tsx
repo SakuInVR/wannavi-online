@@ -7,6 +7,8 @@ import { JsonLd } from "@/components/JsonLd";
 import { getAllTags, getArticlesByTag } from "@/lib/articles";
 import { siteConfig } from "@/lib/site";
 
+export const dynamic = "force-dynamic";
+
 type TagPageProps = {
   params: Promise<{ tag: string }>;
 };

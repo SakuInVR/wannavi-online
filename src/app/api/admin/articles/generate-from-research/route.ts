@@ -6,6 +6,7 @@ import {
   callDeepSeek,
   buildThreeVideoSystemPrompt,
   buildThreeVideoUserPrompt,
+  extractTags,
 } from "@/lib/deepseek";
 import type { AspMaterialForPrompt, VideoAnalysis } from "@/lib/deepseek";
 import { buildFeedbackInjection, fetchCategoryFeedback } from "@/lib/feedback";
@@ -170,7 +171,8 @@ export async function POST(request: NextRequest) {
       { role: "user", content: userPrompt },
     ]);
 
-    const description = result.content.slice(0, 200).replace(/\n/g, " ");
+    const { cleanBody, tags } = extractTags(result.content);
+    const description = cleanBody.slice(0, 200).replace(/\n/g, " ");
 
     const { data: article, error: articleError } = await supabase
       .from("articles")
@@ -179,7 +181,8 @@ export async function POST(request: NextRequest) {
         title,
         description,
         category,
-        body: result.content,
+        body: cleanBody,
+        tags,
         review_status: "pending",
         pipeline_state: "drafted",
         generation_job_id: job.id,
@@ -222,7 +225,7 @@ export async function POST(request: NextRequest) {
       .from("article_generation_jobs")
       .update({
         status: "completed",
-        result_body: result.content,
+        result_body: cleanBody,
         deepseek_tokens: result.tokensUsed,
         article_id: article.id,
         finished_at: new Date().toISOString(),
@@ -234,7 +237,8 @@ export async function POST(request: NextRequest) {
       article_id: article?.id,
       job_id: job.id,
       tokens_used: result.tokensUsed,
-      body_preview: result.content.slice(0, 300),
+      tags_generated: tags.length,
+      body_preview: cleanBody.slice(0, 300),
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
