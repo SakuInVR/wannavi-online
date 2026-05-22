@@ -85,12 +85,17 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const offer = getMonetizationOffer(article.category);
+
+  // Amazon アフィリエイト検索 URL を動的生成（title から検索キーワードを抽出）
+  const amazonSearchUrl = (title: string) =>
+    `https://www.amazon.co.jp/s?k=${encodeURIComponent(title)}&tag=wannanavi-22`;
+
   const mdxComponents = {
     AdSlot,
     AffiliateCTA: (props: ComponentProps<typeof AffiliateCTA>) => (
       <AffiliateCTA
         {...props}
-        href={props.href ?? offer?.href}
+        href={props.href ?? amazonSearchUrl(props.title)}
         trackingLabel={props.trackingLabel ?? `inline:${article.slug}`}
       />
     ),
@@ -98,7 +103,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     ToolRecommendation: (props: ComponentProps<typeof ToolRecommendation>) => (
       <ToolRecommendation
         {...props}
-        href={props.href ?? offer?.href}
+        href={props.href ?? amazonSearchUrl(props.name)}
         trackingLabel={props.trackingLabel ?? `tool:${article.slug}`}
       />
     ),
