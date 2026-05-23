@@ -9,6 +9,7 @@ import {
 import type { AspMaterialForPrompt } from "@/lib/deepseek";
 import { buildFeedbackInjection, fetchCategoryFeedback } from "@/lib/feedback";
 import { enrichArticleWithSearchLinks } from "@/lib/amazon";
+import { enrichArticleWithProductSearch } from "@/lib/product-search";
 
 export async function POST(
   request: NextRequest,
@@ -159,7 +160,10 @@ export async function POST(
       const { cleanBody: rawBody, tags } = extractTags(result.content);
 
       // Auto-enrich: **商品名** → Amazon 検索アフィリエイトリンク
-      const cleanBody = enrichArticleWithSearchLinks(rawBody);
+      let cleanBody = enrichArticleWithSearchLinks(rawBody);
+      // Product enrichment: ToolRecommendation → ProductRecommendation (Amazon+楽天)
+      const enriched = await enrichArticleWithProductSearch(cleanBody);
+      cleanBody = enriched.body;
       const description = cleanBody.slice(0, 200).replace(/\n/g, " ");
       await supabase
         .from("articles")

@@ -12,6 +12,7 @@ import { AffiliateCTA } from "@/components/AffiliateCTA";
 import { CommentSection } from "@/components/CommentSection";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductAd } from "@/components/ProductAd";
+import { ProductRecommendation } from "@/components/ProductRecommendation";
 import { RelatedArticles } from "@/components/RelatedArticles";
 import { TableOfContents } from "@/components/TableOfContents";
 import { ToolRecommendation } from "@/components/ToolRecommendation";
@@ -102,6 +103,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         {...props}
         href={props.href ?? amazonSearchUrl(props.name)}
         trackingLabel={props.trackingLabel ?? `tool:${article.slug}`}
+      />
+    ),
+    ProductRecommendation: (props: ComponentProps<typeof ProductRecommendation>) => (
+      <ProductRecommendation
+        {...props}
+        trackingLabel={props.trackingLabel ?? `product:${article.slug}`}
       />
     ),
   };
