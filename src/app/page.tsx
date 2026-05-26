@@ -13,7 +13,7 @@ export default async function Home() {
 
   // Fetch user-added categories from Supabase and merge with defaults
   const supabase = getSupabaseAdmin();
-  let allCategories = categories.map((c) => ({
+  const allCategories = categories.map((c) => ({
     slug: c.slug,
     title: c.title,
     description: c.description,

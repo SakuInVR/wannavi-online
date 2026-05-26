@@ -138,12 +138,19 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <JsonLd data={articleJsonLd(article)} />
       <JsonLd data={breadcrumbs} />
       <article className="mx-auto max-w-3xl">
-        <Link
-          href={`/categories/${article.category}`}
-          className="text-sm font-bold text-sky-700 hover:text-sky-900"
-        >
-          {article.categoryTitle}
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/categories/${article.category}`}
+            className="text-sm font-bold text-sky-700 hover:text-sky-900"
+          >
+            {article.categoryTitle}
+          </Link>
+          {article.tags?.includes("ユーザー投稿") && (
+            <span className="rounded bg-sky-100 border border-sky-200 px-2 py-0.5 text-[10px] font-black text-sky-700">
+              ユーザー投稿
+            </span>
+          )}
+        </div>
         <h1 className="mt-4 text-4xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl">
           {article.title}
         </h1>

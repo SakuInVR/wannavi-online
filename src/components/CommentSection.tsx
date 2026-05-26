@@ -47,7 +47,7 @@ export function CommentSection({ articleId }: { articleId: string }) {
   }, [articleId]);
 
   useEffect(() => {
-    fetchComments();
+    Promise.resolve().then(() => fetchComments());
   }, [fetchComments]);
 
   async function handleSubmit(e: React.FormEvent) {

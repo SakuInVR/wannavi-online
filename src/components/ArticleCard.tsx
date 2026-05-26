@@ -7,6 +7,11 @@ export function ArticleCard({ article }: { article: Article }) {
     <article className="group rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md">
       <div className="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-500">
         <span>{article.categoryTitle}</span>
+        {article.tags?.includes("ユーザー投稿") && (
+          <span className="rounded bg-sky-100 border border-sky-200 px-1.5 py-0.5 text-[10px] font-black text-sky-700">
+            ユーザー投稿
+          </span>
+        )}
         <span aria-hidden="true">/</span>
         <span>{article.readingMinutes}</span>
       </div>

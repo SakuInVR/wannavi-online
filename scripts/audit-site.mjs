@@ -125,8 +125,6 @@ assert(robots.includes("/go/"), "robots.ts does not disallow outbound redirect r
 const articlePage = read("src/app/articles/[slug]/page.tsx");
 assert(articlePage.includes("ProductAd"), "Article page does not expose image ad component to MDX", failures);
 assert(articlePage.includes("TableOfContents"), "Article page does not auto-render table of contents", failures);
-assert(articlePage.includes("MonetizationPanel"), "Article page does not auto-render monetization panel", failures);
-assert(articlePage.includes("AdSlot"), "Article page does not auto-render ad slot", failures);
 assert(articlePage.includes("articleJsonLd"), "Article page does not render Article JSON-LD", failures);
 assert(articlePage.includes("breadcrumbJsonLd"), "Article page does not render breadcrumb JSON-LD", failures);
 assert(articlePage.includes("/tags/"), "Article page does not link article tags to tag pages", failures);

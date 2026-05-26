@@ -1474,7 +1474,7 @@ function CommentsTab() {
   }
 
   useEffect(() => {
-    fetchComments();
+    Promise.resolve().then(() => fetchComments());
   }, []);
 
   function formatDate(iso: string) {
