@@ -3,6 +3,9 @@ import type { MetadataRoute } from "next";
 import { getAllArticles, getAllTags } from "@/lib/articles";
 import { categories, siteConfig, staticPages } from "@/lib/site";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const categoryRoutes = categories.map((category) => ({

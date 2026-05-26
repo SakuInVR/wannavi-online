@@ -8,18 +8,30 @@ const baseUrl = process.env.PRODUCTION_CONTENT_BASE_URL ?? siteUrl;
 const articlesDirectory = path.join(root, "content", "articles");
 const failures = [];
 
+const creativesPath = path.join(root, "content", "ad-creatives.json");
+const creatives = fs.existsSync(creativesPath) ? JSON.parse(fs.readFileSync(creativesPath, "utf8")) : [];
+const articlesWithApprovedCreatives = new Set(
+  creatives
+    .filter((c) => c.status === "approved")
+    .flatMap((c) => c.articleSlugs ?? [])
+);
+
 const articles = fs
   .readdirSync(articlesDirectory)
   .filter((filename) => filename.endsWith(".mdx"))
   .map((filename) => {
     const slug = filename.replace(/\.mdx$/, "");
     const source = fs.readFileSync(path.join(articlesDirectory, filename), "utf8");
-    const { data } = matter(source);
+    const { data, content } = matter(source);
+
+    const hasApprovedCreative = articlesWithApprovedCreatives.has(slug);
+    const requiresGoLink = source.includes("/go/") || (content.includes("ProductAd") && hasApprovedCreative);
 
     return {
       slug,
       title: String(data.title ?? ""),
       draft: Boolean(data.draft),
+      requiresGoLink,
     };
   })
   .filter((article) => !article.draft);
@@ -47,7 +59,7 @@ async function checkArticle(article) {
     failures.push(`${article.slug}: missing AdSense account meta on production page`);
   }
 
-  if (!body.includes("/go/")) {
+  if (article.requiresGoLink && !body.includes("/go/")) {
     failures.push(`${article.slug}: production page does not include a /go/ monetization link`);
   }
 }
