@@ -10,11 +10,6 @@ const failures = [];
 
 const creativesPath = path.join(root, "content", "ad-creatives.json");
 const creatives = fs.existsSync(creativesPath) ? JSON.parse(fs.readFileSync(creativesPath, "utf8")) : [];
-const articlesWithApprovedCreatives = new Set(
-  creatives
-    .filter((c) => c.status === "approved")
-    .flatMap((c) => c.articleSlugs ?? [])
-);
 
 const articles = fs
   .readdirSync(articlesDirectory)
@@ -24,8 +19,8 @@ const articles = fs
     const source = fs.readFileSync(path.join(articlesDirectory, filename), "utf8");
     const { data, content } = matter(source);
 
-    const hasApprovedCreative = articlesWithApprovedCreatives.has(slug);
-    const requiresGoLink = source.includes("/go/") || (content.includes("ProductAd") && hasApprovedCreative);
+    const approvedCreative = creatives.find((c) => c.status === "approved" && c.articleSlugs?.includes(slug));
+    const requiresGoLink = source.includes("/go/") || (content.includes("ProductAd") && approvedCreative && !approvedCreative.clickUrl);
 
     return {
       slug,
