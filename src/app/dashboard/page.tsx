@@ -30,6 +30,7 @@ export default function DashboardPage() {
   // Payment states
   const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [mockLoading, setMockLoading] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
 
   // Review / Preview / Retake states
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -160,7 +161,7 @@ export default function DashboardPage() {
 
 
   // Checkout Session
-  const handlePurchase = async () => {
+  const handlePurchase = async (credits: number = 10) => {
     if (!supabase || !user) return;
     setPurchaseLoading(true);
     setStatusMessage("");
@@ -173,6 +174,7 @@ export default function DashboardPage() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${session?.access_token}`,
         },
+        body: JSON.stringify({ credits }),
       });
 
       const data = await res.json();
@@ -325,11 +327,10 @@ export default function DashboardPage() {
                 <p className="text-3xl font-black text-sky-400 mt-1">{credits ?? 0} <span className="text-xs text-white">回分</span></p>
               </div>
               <button
-                onClick={handlePurchase}
-                disabled={purchaseLoading}
-                className="rounded-lg bg-sky-500 hover:bg-sky-600 transition text-xs font-black px-4 py-2 flex items-center justify-center gap-1 cursor-pointer self-center text-white disabled:opacity-50"
+                onClick={() => setPricingOpen(true)}
+                className="rounded-lg bg-sky-500 hover:bg-sky-600 transition text-xs font-black px-4 py-2 flex items-center justify-center gap-1 cursor-pointer self-center text-white"
               >
-                {purchaseLoading ? "処理中..." : "10回分購入 (1,000円)"}
+                追加チャージする
               </button>
             </div>
 
@@ -657,6 +658,112 @@ export default function DashboardPage() {
                 )}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Pricing Tier Modal ── */}
+      {pricingOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 px-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950 p-6 md:p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <button
+              onClick={() => setPricingOpen(false)}
+              className="absolute right-6 top-6 text-slate-400 hover:text-white text-xl font-black cursor-pointer transition"
+            >
+              ✕
+            </button>
+
+            <div className="text-center max-w-xl mx-auto mb-8">
+              <span className="rounded-full bg-sky-500/10 border border-sky-500/30 px-3 py-1 text-xs font-black text-sky-400 uppercase tracking-widest">
+                Credit Charge
+              </span>
+              <h3 className="text-2xl md:text-3xl font-black text-white mt-3 leading-snug">クレジットを追加チャージ</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
+                作成したロードマップの後半ステップを開示したり、内容に納得がいかない場合の「リテイク（修正指示）」を実行するためにクレジットをチャージできます。
+              </p>
+            </div>
+
+            {/* Pricing Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Tier 1: 1 Credit */}
+              <div className="relative rounded-2xl border border-white/5 bg-white/5 p-6 flex flex-col justify-between hover:border-white/10 transition">
+                <div>
+                  <span className="rounded bg-white/10 px-2.5 py-0.5 text-[10px] font-black text-slate-300">
+                    お試しプラン
+                  </span>
+                  <h4 className="text-lg font-black text-white mt-3">1 クレジット</h4>
+                  <p className="text-2xl font-black text-white mt-1">¥100</p>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                    ロードマップを1記事分だけ今すぐアンロックしてみたい方に最適なお試しプランです。
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setPricingOpen(false);
+                    handlePurchase(1);
+                  }}
+                  disabled={purchaseLoading}
+                  className="mt-6 w-full rounded-xl bg-white/10 hover:bg-white/20 text-white py-3 text-xs font-black transition cursor-pointer disabled:opacity-50"
+                >
+                  {purchaseLoading ? "処理中..." : "1回分購入する"}
+                </button>
+              </div>
+
+              {/* Tier 2: 10 Credits (Recommended) */}
+              <div className="relative rounded-2xl border-2 border-sky-500 bg-sky-500/5 p-6 flex flex-col justify-between hover:bg-sky-500/10 transition shadow-lg shadow-sky-500/10">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-sky-500 px-3 py-1 text-[9px] font-black text-white uppercase tracking-wider">
+                  人気No.1
+                </div>
+                <div>
+                  <div className="flex justify-between items-start mt-2">
+                    <span className="rounded bg-sky-500/20 px-2.5 py-0.5 text-[10px] font-black text-sky-400">
+                      標準パック
+                    </span>
+                  </div>
+                  <h4 className="text-lg font-black text-white mt-3">10 クレジット</h4>
+                  <p className="text-2xl font-black text-sky-400 mt-1">¥1,000</p>
+                  <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                    最も選ばれている標準パッケージです。複数のロードマップを比較・検証したい方におすすめ。
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setPricingOpen(false);
+                    handlePurchase(10);
+                  }}
+                  disabled={purchaseLoading}
+                  className="mt-6 w-full rounded-xl bg-sky-500 hover:bg-sky-600 text-white py-3 text-xs font-black transition cursor-pointer disabled:opacity-50 shadow-md shadow-sky-500/20"
+                >
+                  {purchaseLoading ? "処理中..." : "10回分購入する"}
+                </button>
+              </div>
+
+              {/* Tier 3: 30 Credits */}
+              <div className="relative rounded-2xl border border-white/5 bg-white/5 p-6 flex flex-col justify-between hover:border-white/10 transition">
+                <div>
+                  <span className="rounded bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-black text-emerald-400">
+                    500円分お得！
+                  </span>
+                  <h4 className="text-lg font-black text-white mt-3">30 クレジット</h4>
+                  <p className="text-2xl font-black text-white mt-1">¥2,500 <span className="text-xs text-slate-400 line-through font-normal ml-1">¥3,000</span></p>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                    本気で目標達成を目指し、多数のリテイクを繰り返して完璧なプランに作り込みたい方向けのプロパックです。
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setPricingOpen(false);
+                    handlePurchase(30);
+                  }}
+                  disabled={purchaseLoading}
+                  className="mt-6 w-full rounded-xl bg-white/10 hover:bg-white/20 text-white py-3 text-xs font-black transition cursor-pointer disabled:opacity-50"
+                >
+                  {purchaseLoading ? "処理中..." : "30回分購入する"}
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
       )}

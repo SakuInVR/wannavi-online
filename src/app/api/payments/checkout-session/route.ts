@@ -24,6 +24,30 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Read dynamic credits parameter from request body
+    const body = await req.json().catch(() => ({}));
+    const requestedCredits = Number(body.credits ?? 10);
+
+    let unitAmount = 1000;
+    let productName = "Wanna Navi 記事生成クレジット (10回分)";
+    let productDesc = "AI（Gemini & DeepSeek）を活用したロードマップ記事を10回アンロックできるクレジットです。";
+
+    if (requestedCredits === 1) {
+      unitAmount = 100;
+      productName = "Wanna Navi 記事生成クレジット (1回分)";
+      productDesc = "AI（Gemini & DeepSeek）を活用したロードマップ記事を1回アンロックできるお試しクレジットです。";
+    } else if (requestedCredits === 10) {
+      unitAmount = 1000;
+      productName = "Wanna Navi 記事生成クレジット (10回分)";
+      productDesc = "AI（Gemini & DeepSeek）を活用したロードマップ記事を10回アンロックできる標準クレジットです。";
+    } else if (requestedCredits === 30) {
+      unitAmount = 2500;
+      productName = "Wanna Navi 記事生成クレジット (30回分)";
+      productDesc = "AI（Gemini & DeepSeek）を活用したロードマップ記事を30回アンロックできる、500円お得なプロクレジットです。";
+    } else {
+      return NextResponse.json({ error: "無効なクレジット購入数が指定されました。" }, { status: 400 });
+    }
+
     // Determine request origin for redirection
     const origin = req.headers.get("origin") || new URL(req.url).origin;
 
@@ -34,10 +58,10 @@ export async function POST(req: NextRequest) {
           price_data: {
             currency: "jpy",
             product_data: {
-              name: "Wanna Navi 記事生成クレジット (10回分)",
-              description: "AI（Gemini & DeepSeek）を活用したアフィリエイト記事を10回生成できるクレジットです。",
+              name: productName,
+              description: productDesc,
             },
-            unit_amount: 1000,
+            unit_amount: unitAmount,
           },
           quantity: 1,
         },
@@ -47,6 +71,7 @@ export async function POST(req: NextRequest) {
       cancel_url: `${origin}/dashboard?payment=cancel`,
       metadata: {
         userId: user.id,
+        creditsAdded: String(requestedCredits),
       },
     });
 

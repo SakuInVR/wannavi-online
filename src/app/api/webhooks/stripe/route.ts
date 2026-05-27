@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
     const userId = session.metadata?.userId;
     const amountTotal = session.amount_total ?? 1000;
     const stripeSessionId = session.id;
+    const creditsAdded = Number(session.metadata?.creditsAdded ?? "10");
 
     if (!userId) {
       console.error(`Webhook error: userId not found in session metadata for session ${stripeSessionId}`);
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
         user_id: userId,
         stripe_session_id: stripeSessionId,
         amount_total: amountTotal,
-        credits_added: 10,
+        credits_added: creditsAdded,
         status: "completed",
       });
 
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
         // Continue anyway to try and credit the user if it's a db issue
       }
 
-      // 2. Read the user's current credits and increment by 10
+      // 2. Read the user's current credits and increment by creditsAdded
       const { data: profile, error: profileFetchError } = await supabase
         .from("profiles")
         .select("credits")
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "User profile not found" }, { status: 404 });
       }
 
-      const newCredits = (profile.credits ?? 0) + 10;
+      const newCredits = (profile.credits ?? 0) + creditsAdded;
 
       const { error: updateError } = await supabase
         .from("profiles")
@@ -88,7 +89,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Failed to update credits" }, { status: 500 });
       }
 
-      console.log(`Successfully added 10 credits to user ${userId} (Stripe session: ${stripeSessionId})`);
+      console.log(`Successfully added ${creditsAdded} credits to user ${userId} (Stripe session: ${stripeSessionId})`);
     } catch (dbErr: unknown) {
       console.error("Database error during Stripe webhook handling:", dbErr);
       return NextResponse.json({ error: "Database operation failed" }, { status: 500 });
