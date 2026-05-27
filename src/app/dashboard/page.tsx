@@ -38,6 +38,7 @@ export default function DashboardPage() {
   const [retakeInstructions, setRetakeInstructions] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [unlockedArticleIds, setUnlockedArticleIds] = useState<Set<string>>(new Set());
 
   const isDev = process.env.NODE_ENV === "development";
 
@@ -64,6 +65,16 @@ export default function DashboardPage() {
       
       if (profile) {
         setCredits(profile.credits);
+      }
+
+      // Fetch user unlocks
+      const { data: unlocks } = await supabase
+        .from("article_unlocks")
+        .select("article_id")
+        .eq("user_id", session.user.id);
+      
+      if (unlocks) {
+        setUnlockedArticleIds(new Set(unlocks.map((u: any) => u.article_id)));
       }
 
       // Fetch user articles
@@ -103,6 +114,12 @@ export default function DashboardPage() {
       .single();
     if (profile) setCredits(profile.credits);
 
+    const { data: unlocks } = await supabase
+      .from("article_unlocks")
+      .select("article_id")
+      .eq("user_id", uid);
+    if (unlocks) setUnlockedArticleIds(new Set(unlocks.map((u: any) => u.article_id)));
+
     const { data: userArticles } = await supabase
       .from("articles")
       .select("id, title, category, review_status, pipeline_state, slug, created_at, free_retake_used, body")
@@ -110,6 +127,37 @@ export default function DashboardPage() {
       .order("created_at", { ascending: false });
     if (userArticles) setArticles(userArticles);
   };
+
+  const handleUnlockArticle = async (articleId: string) => {
+    if (!supabase || !user) return;
+    setActionLoading(true);
+    setStatusMessage("");
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`/api/articles/${articleId}/unlock`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStatusMessage("ロードマップ全体をアンロックしました！");
+        await fetchUpdatedProfileAndArticles(user.id);
+      } else {
+        setStatusMessage(`アンロックエラー: ${data.error || "失敗しました"}`);
+      }
+    } catch (err) {
+      console.error(err);
+      setStatusMessage("アンロック処理中に通信エラーが発生しました。");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
 
   // Checkout Session
   const handlePurchase = async () => {
@@ -368,18 +416,29 @@ export default function DashboardPage() {
                         }}
                         className="rounded bg-white/10 hover:bg-white/20 px-3 py-1.5 text-xs font-black text-white cursor-pointer transition"
                       >
-                        プレビュー・公開
+                        {unlockedArticleIds.has(art.id) ? "プレビュー・公開" : "前半プレビューを確認"}
                       </button>
-                      <button
-                        onClick={() => {
-                          setSelectedArticle(art);
-                          setRetakeInstructions("");
-                          setRetakeOpen(true);
-                        }}
-                        className="rounded bg-sky-500/10 border border-sky-500/20 hover:bg-sky-500/20 px-3 py-1.5 text-xs font-black text-sky-400 cursor-pointer transition"
-                      >
-                        リテイク ({art.free_retake_used ? "有料" : "無料残1"})
-                      </button>
+                      
+                      {unlockedArticleIds.has(art.id) ? (
+                        <button
+                          onClick={() => {
+                            setSelectedArticle(art);
+                            setRetakeInstructions("");
+                            setRetakeOpen(true);
+                          }}
+                          className="rounded bg-sky-500/10 border border-sky-500/20 hover:bg-sky-500/20 px-3 py-1.5 text-xs font-black text-sky-400 cursor-pointer transition"
+                        >
+                          リテイク ({art.free_retake_used ? "有料" : "無料残1"})
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleUnlockArticle(art.id)}
+                          disabled={actionLoading}
+                          className="rounded bg-sky-500 hover:bg-sky-600 px-3 py-1.5 text-xs font-black text-white cursor-pointer transition flex items-center gap-1 disabled:opacity-50"
+                        >
+                          🔓 アンロック (1C)
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -455,10 +514,52 @@ export default function DashboardPage() {
 
             {/* Article Content Viewer */}
             <div className="flex-1 overflow-y-auto bg-slate-900 border border-white/5 rounded-xl p-4 md:p-6 text-sm text-slate-300 leading-relaxed font-sans prose prose-invert max-w-none">
-              <div className="mb-6 rounded-lg border border-sky-500/20 bg-sky-500/5 p-4 text-xs font-bold text-sky-300">
-                ※ アフィリエイト商品カードや文中リンク等の各種JSXコンポーネントを含めて下書き表示しています。公開すると自動的にブログシステムによってきれいにレンダリングされます。
-              </div>
-              <pre className="whitespace-pre-wrap font-sans text-sm">{selectedArticle.body || "（本文が空です）"}</pre>
+              {(() => {
+                const isUnlocked = unlockedArticleIds.has(selectedArticle.id);
+                const hasDelimiter = selectedArticle.body?.includes("<!-- PREMIUM_SECTION -->");
+                let displayBody = selectedArticle.body || "";
+
+                if (hasDelimiter && !isUnlocked) {
+                  displayBody = displayBody.split("<!-- PREMIUM_SECTION -->")[0] + "\n\n*(後半の計画はロックされています。以下からアンロックできます)*";
+                } else if (hasDelimiter) {
+                  displayBody = displayBody.replace("<!-- PREMIUM_SECTION -->", "\n\n--- [ここからプレミアム領域] ---\n\n");
+                }
+
+                return (
+                  <>
+                    <div className="mb-6 rounded-lg border border-sky-500/20 bg-sky-500/5 p-4 text-xs font-bold text-sky-300">
+                      ※ ロードマップの下書きプレビューを表示しています。
+                    </div>
+                    <pre className="whitespace-pre-wrap font-sans text-sm">{displayBody || "（本文が空です）"}</pre>
+                    
+                    {hasDelimiter && !isUnlocked && (
+                      <div className="mt-8 border-t border-white/10 pt-6 text-center">
+                        <p className="text-sm font-bold text-slate-300 mb-3">🔒 残りの50日間の詳細計画と対策はロックされています</p>
+                        <button
+                          onClick={async () => {
+                            await handleUnlockArticle(selectedArticle.id);
+                            // Refresh current modal content
+                            if (supabase) {
+                              const { data: updatedArt } = await supabase
+                                .from("articles")
+                                .select("body")
+                                .eq("id", selectedArticle.id)
+                                .single();
+                              if (updatedArt) {
+                                setSelectedArticle({ ...selectedArticle, body: updatedArt.body });
+                              }
+                            }
+                          }}
+                          disabled={actionLoading}
+                          className="rounded-lg bg-sky-500 hover:bg-sky-600 px-6 py-2.5 text-xs font-black text-white transition flex items-center justify-center gap-1.5 mx-auto disabled:opacity-50"
+                        >
+                          {actionLoading ? "処理中..." : "🔓 1クレジットで全体をアンロックする"}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
             {/* Actions Footer */}
@@ -468,18 +569,20 @@ export default function DashboardPage() {
               </div>
 
               <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setRetakeInstructions("");
-                    setRetakeOpen(true);
-                  }}
-                  className="rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-400 font-bold px-4 py-2 text-sm cursor-pointer hover:bg-sky-500/20 transition"
-                >
-                  リテイク (修正指示を送る)
-                </button>
+                {unlockedArticleIds.has(selectedArticle.id) && (
+                  <button
+                    onClick={() => {
+                      setRetakeInstructions("");
+                      setRetakeOpen(true);
+                    }}
+                    className="rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-400 font-bold px-4 py-2 text-sm cursor-pointer hover:bg-sky-500/20 transition"
+                  >
+                    リテイク (修正指示を送る)
+                  </button>
+                )}
                 <button
                   onClick={() => handlePublish(selectedArticle.id)}
-                  disabled={actionLoading}
+                  disabled={actionLoading || !unlockedArticleIds.has(selectedArticle.id)}
                   className="rounded-lg bg-emerald-500 text-white font-black px-6 py-2 text-sm cursor-pointer hover:bg-emerald-600 transition disabled:opacity-50 flex items-center gap-1.5"
                 >
                   {actionLoading ? (

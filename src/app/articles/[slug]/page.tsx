@@ -16,6 +16,7 @@ import { ProductRecommendation } from "@/components/ProductRecommendation";
 import { RelatedArticles } from "@/components/RelatedArticles";
 import { TableOfContents } from "@/components/TableOfContents";
 import { ToolRecommendation } from "@/components/ToolRecommendation";
+import { UnlockCard } from "@/components/UnlockCard";
 import {
   getAllArticles,
   getArticleBySlug,
@@ -23,6 +24,8 @@ import {
 } from "@/lib/articles";
 import { siteConfig } from "@/lib/site";
 import { articleJsonLd, breadcrumbJsonLd } from "@/lib/structured-data";
+import { getServerUser } from "@/lib/auth-helpers";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -84,6 +87,39 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
+  // Check Unlock status
+  const user = await getServerUser();
+  const supabase = getSupabaseAdmin();
+  let isUnlocked = false;
+
+  // If the article has no user_id, it is an official admin article (free/unlocked for everyone)
+  if (!article.userId) {
+    isUnlocked = true;
+  } else if (user && supabase) {
+    const { data: unlock } = await supabase
+      .from("article_unlocks")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("article_id", article.id)
+      .maybeSingle();
+    
+    if (unlock) {
+      isUnlocked = true;
+    }
+  }
+
+  // Split content based on lock status
+  const hasPremiumDelimiter = article.body.includes("<!-- PREMIUM_SECTION -->");
+  let mdxSource = article.body;
+
+  if (hasPremiumDelimiter && !isUnlocked) {
+    const parts = article.body.split("<!-- PREMIUM_SECTION -->");
+    mdxSource = parts[0] + "\n\n*(後半のロードマッププランと挫折防止対策はロックされています)*";
+  } else {
+    // Just remove delimiter if unlocked
+    mdxSource = article.body.replace("<!-- PREMIUM_SECTION -->", "");
+  }
+
   // Amazon アフィリエイト検索 URL を動的生成（title から検索キーワードを抽出）
   const amazonSearchUrl = (title: string) =>
     `https://www.amazon.co.jp/s?k=${encodeURIComponent(title)}&tag=wannanavi-22`;
@@ -114,7 +150,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   };
 
   const { content } = await compileMDX({
-    source: article.body,
+    source: mdxSource,
     components: mdxComponents,
     options: {
       mdxOptions: {
@@ -172,8 +208,17 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             ))}
           </div>
         ) : null}
-        <TableOfContents headings={article.headings} />
+        
+        {/* Table of contents only includes headings from the visible mdxSource */}
+        <TableOfContents headings={getHeadings(mdxSource)} />
+        
         <div className="article-body mt-10">{content}</div>
+        
+        {/* Render unlock card if not unlocked */}
+        {!isUnlocked && (
+          <UnlockCard articleId={article.id} slug={article.slug} />
+        )}
+
         <CommentSection articleId={article.id} />
       </article>
       <div className="mx-auto max-w-6xl">
@@ -182,3 +227,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     </main>
   );
 }
+
+// Inline helper for client heading extraction in this scope to prevent breaking dependencies
+function getHeadings(content: string) {
+  return Array.from(content.matchAll(/^##\s+(.+)$/gm)).map((match) => {
+    const text = match[1].trim();
+    return {
+      id: text.toLowerCase().trim().replace(/[^\p{L}\p{N}\s-]/gu, "").replace(/\s+/g, "-"),
+      text,
+    };
+  });
+}
+

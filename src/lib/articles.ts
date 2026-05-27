@@ -22,6 +22,7 @@ export type Article = ArticleFrontmatter & {
   readingMinutes: string;
   categoryTitle: string;
   headings: ArticleHeading[];
+  userId?: string | null;
 };
 
 export type ArticleHeading = {
@@ -86,6 +87,7 @@ export async function getAllArticles(): Promise<Article[]> {
       readingMinutes: readingTime(dbArticle.body || "").text,
       categoryTitle: category?.title ?? dbArticle.category,
       headings: getHeadings(dbArticle.body || ""),
+      userId: dbArticle.user_id,
     };
   });
 }
@@ -125,6 +127,7 @@ export async function getArticleBySlug(slug: string): Promise<Article> {
     readingMinutes: readingTime(dbArticle.body || "").text,
     categoryTitle: category?.title ?? dbArticle.category,
     headings: getHeadings(dbArticle.body || ""),
+    userId: dbArticle.user_id,
   };
 }
 

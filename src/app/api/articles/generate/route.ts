@@ -5,6 +5,8 @@ import {
   callDeepSeek,
   buildThreeVideoSystemPrompt,
   buildThreeVideoUserPrompt,
+  buildRoadmapSystemPrompt,
+  buildRoadmapUserPrompt,
   extractTags,
 } from "@/lib/deepseek";
 import type { AspMaterialForPrompt, VideoAnalysis } from "@/lib/deepseek";
@@ -121,117 +123,50 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Database client unavailable" }, { status: 500 });
     }
 
-    // 2. Check credit balance
-    const { data: profile, error: profileFetchError } = await supabase
-      .from("profiles")
-      .select("credits")
-      .eq("id", user.id)
-      .single();
-
-    if (profileFetchError || !profile) {
-      return NextResponse.json({ error: "User profile not found" }, { status: 404 });
-    }
-
-    if ((profile.credits ?? 0) <= 0) {
-      return NextResponse.json({ error: "クレジット残高がありません。追加購入してください。" }, { status: 402 });
-    }
-
     // Parse request body
     const body = await req.json();
-    const { title, category, youtubeUrls = [], affiliateIntent = "medium", extra_instructions } = body;
+    const { 
+      goal, 
+      category, 
+      currentSkill = "完全初心者", 
+      availableTime = "毎日1時間", 
+      budget = "できるだけ低予算", 
+      youtubeUrls = [], 
+      extra_instructions 
+    } = body;
 
-    if (!title || !category) {
-      return NextResponse.json({ error: "Title and Category are required" }, { status: 400 });
+    if (!goal || !category) {
+      return NextResponse.json({ error: "Goal and Category are required" }, { status: 400 });
     }
 
-    // 3. Deduct credit transactionally (deduct first to avoid double generation race conditions)
-    const newCredits = profile.credits - 1;
-    const { error: deductError } = await supabase
-      .from("profiles")
-      .update({ credits: newCredits, updated_at: new Date().toISOString() })
-      .eq("id", user.id);
-
-    if (deductError) {
-      console.error("Credit deduction failed:", deductError);
-      return NextResponse.json({ error: "Failed to deduct credit balance" }, { status: 500 });
+    // 2. Video research with Gemini (only if youtubeUrls are provided to save time/cost)
+    let videoSources: VideoSource[] = [];
+    if (youtubeUrls && youtubeUrls.length > 0) {
+      videoSources = await researchVideos(goal, category, youtubeUrls);
     }
 
-    // 4. Video research with Gemini
-    const videoSources = await researchVideos(title, category, youtubeUrls);
-    const videoA: VideoAnalysis = { url: videoSources[0]?.url || "", analysis: videoSources[0]?.analysis || "" };
-    const videoB: VideoAnalysis = { url: videoSources[1]?.url || "", analysis: videoSources[1]?.analysis || "" };
-    const videoC: VideoAnalysis = { url: videoSources[2]?.url || "", analysis: videoSources[2]?.analysis || "" };
-
-    // 5. ASP materials auto-selection
-    let aspMaterials: AspMaterialForPrompt[] = [];
-    const materialIds: string[] = [];
-
-    const { data: allMaterials } = await supabase
-      .from("asp_materials")
-      .select("*")
-      .eq("status", "active")
-      .is("parent_id", null)
-      .order("created_at", { ascending: false })
-      .limit(20);
-
-    if (allMaterials && allMaterials.length > 0) {
-      const matched = allMaterials.filter((m) => m.category_hint === category);
-      const fallback = allMaterials.filter((m) => !m.category_hint);
-      const selected = (matched.length > 0 ? matched : fallback).slice(0, 5);
-
-      for (const m of selected) {
-        materialIds.push(m.id);
-      }
-
-      aspMaterials = selected.map((m) => ({
-        name: m.name,
-        description: m.description,
-        affiliateUrl: m.affiliate_url,
-        priceNote: m.price_note,
-        usageType: m.usage_type ?? "recommendation",
-        displayStyle: m.display_style ?? "product_card",
-        placementContext: m.placement_context,
-        variationLabel: m.variation_label,
-        materialType: m.material_type ?? "banner",
-        bannerWidth: m.banner_width,
-        bannerHeight: m.banner_height,
-        imageUrl: m.image_url,
-        textContent: m.text_content,
-        linkNormal: m.link_normal,
-        linkAmp: m.link_amp,
-        linkNojs: m.link_nojs,
-        disclosureInfo: m.disclosure_info,
-      }));
-    }
-
-    // 6. Fetch past feedback learning loop
-    const feedbackEntries = await fetchCategoryFeedback(category);
-    const feedbackSuffix = buildFeedbackInjection(feedbackEntries);
-
-    // 7. Prompt building
-    const systemPrompt = buildThreeVideoSystemPrompt({
-      title,
+    // 3. Prompt building for Personalized Roadmap
+    // Note: We bypass all affiliate products logic here since this is a user-centric high-quality roadmap.
+    const systemPrompt = buildRoadmapSystemPrompt({
+      goal,
       category,
-      videoA,
-      videoB,
-      videoC,
-      aspMaterials,
+      currentSkill,
+      availableTime,
+      budget,
       extraInstructions: extra_instructions ?? undefined,
-      feedbackSuffix,
     });
 
-    const userPrompt = buildThreeVideoUserPrompt({
-      title,
+    const userPrompt = buildRoadmapUserPrompt({
+      goal,
       category,
-      videoA,
-      videoB,
-      videoC,
-      aspMaterials,
-      feedbackSuffix,
+      currentSkill,
+      availableTime,
+      budget,
+      extraInstructions: extra_instructions ?? undefined,
     });
 
-    // 8. Generate outline and slug
-    let baseSlug = title
+    // 4. Generate outline and slug
+    let baseSlug = goal
       .toLowerCase()
       .normalize("NFKD")
       .replace(/[^a-z0-9\s-]/g, "")
@@ -239,6 +174,7 @@ export async function POST(req: NextRequest) {
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
 
+    // Japanese or fallback slug handling
     if (!baseSlug || baseSlug.length < 3) {
       const randomSuffix = Math.random().toString(36).substring(2, 7);
       baseSlug = `${category}-${randomSuffix}`;
@@ -261,38 +197,33 @@ export async function POST(req: NextRequest) {
     const { data: job } = await supabase
       .from("article_generation_jobs")
       .insert({
-        title,
+        title: `「${goal}」の100日ロードマップ`,
         category,
-        asp_material_ids: materialIds.filter((id) => id && id !== ""),
+        asp_material_ids: [],
         extra_instructions: extra_instructions ?? null,
         status: "running",
       })
       .select("id")
       .single();
 
-    // 9. Call DeepSeek LLM
+    // 5. Call DeepSeek LLM
     const result = await callDeepSeek([
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ]);
 
-    const { cleanBody: rawBody, tags } = extractTags(result.content);
+    const { cleanBody, tags } = extractTags(result.content);
+    const description = cleanBody.slice(0, 200).replace(/\n/g, " ") + "...";
 
-    // Enrich body text with links
-    let cleanBody = enrichArticleWithSearchLinks(rawBody);
-    const enriched = await enrichArticleWithProductSearch(cleanBody);
-    cleanBody = enriched.body;
-    const description = cleanBody.slice(0, 200).replace(/\n/g, " ");
-
-    // Append "ユーザー投稿" automatically to the article tags
-    const finalTags = Array.from(new Set([...tags, "ユーザー投稿"]));
+    // Auto tags
+    const finalTags = Array.from(new Set([...tags, "ユーザー投稿", "ロードマップ"]));
 
     // Save article to DB under user_id
     const { data: article, error: articleError } = await supabase
       .from("articles")
       .insert({
         slug,
-        title,
+        title: `「${goal}」の100日ロードマップ`,
         description,
         category,
         body: cleanBody,
@@ -300,34 +231,24 @@ export async function POST(req: NextRequest) {
         review_status: "pending", // Draft review required by the user
         pipeline_state: "drafted",
         user_id: user.id, // Sets ownership
-        affiliate_intent: affiliateIntent,
         generation_job_id: job?.id || null,
+        generation_input: {
+          goal,
+          currentSkill,
+          availableTime,
+          budget,
+          extraInstructions: extra_instructions ?? null
+        }
       })
       .select("id, slug")
       .single();
 
     if (articleError) {
       console.error("Save article failed:", articleError);
-      // Try to refund the user credit if article save fails
-      await supabase
-        .from("profiles")
-        .update({ credits: profile.credits, updated_at: new Date().toISOString() })
-        .eq("id", user.id);
-
       return NextResponse.json({ error: `記事の保存に失敗しました: ${articleError.message}` }, { status: 500 });
     }
 
-    // Link ASP materials to article
-    const validMaterialIds = materialIds.filter((id) => id && id !== "");
-    if (validMaterialIds.length > 0 && article) {
-      const rows = validMaterialIds.map((mid) => ({
-        article_id: article.id,
-        asp_material_id: mid,
-      }));
-      await supabase.from("article_asp_materials").insert(rows);
-    }
-
-    // Link video sources to research_sources
+    // Link video sources to research_sources (if any)
     if (article && videoSources.length > 0) {
       const sourceRows = videoSources
         .filter((vs) => vs.url && vs.url.startsWith("http"))
@@ -355,11 +276,18 @@ export async function POST(req: NextRequest) {
         .eq("id", job.id);
     }
 
+    // Fetch updated credits info to return
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("credits")
+      .eq("id", user.id)
+      .single();
+
     return NextResponse.json({
       success: true,
       article_id: article.id,
       slug: article.slug,
-      credits_remaining: newCredits,
+      credits_remaining: profile?.credits ?? 0,
     });
   } catch (err: unknown) {
     console.error("Public generate error:", err);
