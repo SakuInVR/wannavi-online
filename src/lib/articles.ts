@@ -23,6 +23,7 @@ export type Article = ArticleFrontmatter & {
   categoryTitle: string;
   headings: ArticleHeading[];
   userId?: string | null;
+  isPrivate: boolean;
 };
 
 export type ArticleHeading = {
@@ -55,12 +56,24 @@ export async function getAllArticles(): Promise<Article[]> {
     return [];
   }
 
-  const { data: dbArticles, error } = await supabase
+  const query = supabase
     .from("articles")
     .select("*, research_sources(url)")
     .eq("review_status", "approved")
-    .eq("pipeline_state", "published")
+    .eq("pipeline_state", "published");
+
+  let { data: dbArticles, error } = await query
+    .eq("is_private", false)
     .order("published_at", { ascending: false });
+
+  if (error) {
+    if (error.code === "42703") {
+      console.warn("Column 'is_private' does not exist yet. Falling back to query without is_private filter.");
+      const fallbackResult = await query.order("published_at", { ascending: false });
+      dbArticles = fallbackResult.data;
+      error = fallbackResult.error;
+    }
+  }
 
   if (error || !dbArticles) {
     console.error("Error fetching articles from Supabase:", error);
@@ -88,6 +101,7 @@ export async function getAllArticles(): Promise<Article[]> {
       categoryTitle: category?.title ?? dbArticle.category,
       headings: getHeadings(dbArticle.body || ""),
       userId: dbArticle.user_id,
+      isPrivate: dbArticle.is_private || false,
     };
   });
 }
@@ -128,6 +142,7 @@ export async function getArticleBySlug(slug: string): Promise<Article> {
     categoryTitle: category?.title ?? dbArticle.category,
     headings: getHeadings(dbArticle.body || ""),
     userId: dbArticle.user_id,
+    isPrivate: dbArticle.is_private || false,
   };
 }
 

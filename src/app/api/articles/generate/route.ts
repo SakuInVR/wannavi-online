@@ -132,7 +132,8 @@ export async function POST(req: NextRequest) {
       availableTime = "毎日1時間", 
       budget = "できるだけ低予算", 
       youtubeUrls = [], 
-      extra_instructions 
+      extra_instructions,
+      isPrivate = false
     } = body;
 
     if (!goal || !category) {
@@ -232,6 +233,7 @@ export async function POST(req: NextRequest) {
         pipeline_state: "drafted",
         user_id: user.id, // Sets ownership
         generation_job_id: job?.id || null,
+        is_private: !!isPrivate,
         generation_input: {
           goal,
           currentSkill,

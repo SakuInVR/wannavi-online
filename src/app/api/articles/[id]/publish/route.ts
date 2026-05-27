@@ -34,15 +34,25 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden: You do not own this article" }, { status: 403 });
     }
 
+    // Read request body to check if is_private is passed
+    const body = await req.json().catch(() => ({}));
+    const isPrivate = body.is_private;
+
     // Publish article
+    const updateData: any = {
+      review_status: "approved",
+      pipeline_state: "published",
+      published_at: new Date().toISOString().split("T")[0],
+      state_updated_at: new Date().toISOString(),
+    };
+
+    if (typeof isPrivate === "boolean") {
+      updateData.is_private = isPrivate;
+    }
+
     const { error: updateError } = await supabase
       .from("articles")
-      .update({
-        review_status: "approved",
-        pipeline_state: "published",
-        published_at: new Date().toISOString().split("T")[0],
-        state_updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", id);
 
     if (updateError) {

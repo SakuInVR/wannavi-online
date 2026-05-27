@@ -83,28 +83,44 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
-  if (article.draft) {
-    notFound();
-  }
-
-  // Check Unlock status
+  // Check user and Supabase admin
   const user = await getServerUser();
   const supabase = getSupabaseAdmin();
+
+  // If the article is a draft, only allow the creator to view it
+  if (article.draft) {
+    if (!user || user.id !== article.userId) {
+      notFound();
+    }
+  }
+
+  // If the article is private, only allow the creator to view it
+  if (article.isPrivate) {
+    if (!user || user.id !== article.userId) {
+      notFound();
+    }
+  }
+
   let isUnlocked = false;
 
   // If the article has no user_id, it is an official admin article (free/unlocked for everyone)
   if (!article.userId) {
     isUnlocked = true;
   } else if (user && supabase) {
-    const { data: unlock } = await supabase
-      .from("article_unlocks")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("article_id", article.id)
-      .maybeSingle();
-    
-    if (unlock) {
+    // Creator automatically has their own article unlocked!
+    if (article.userId === user.id) {
       isUnlocked = true;
+    } else {
+      const { data: unlock } = await supabase
+        .from("article_unlocks")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("article_id", article.id)
+        .maybeSingle();
+      
+      if (unlock) {
+        isUnlocked = true;
+      }
     }
   }
 

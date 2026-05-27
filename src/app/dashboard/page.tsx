@@ -16,6 +16,7 @@ interface Article {
   created_at: string;
   free_retake_used: boolean;
   body?: string;
+  is_private?: boolean;
 }
 
 export default function DashboardPage() {
@@ -40,6 +41,13 @@ export default function DashboardPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [unlockedArticleIds, setUnlockedArticleIds] = useState<Set<string>>(new Set());
+  const [isPublishPrivate, setIsPublishPrivate] = useState(false);
+
+  useEffect(() => {
+    if (selectedArticle) {
+      setIsPublishPrivate(!!selectedArticle.is_private);
+    }
+  }, [selectedArticle]);
 
   const isDev = process.env.NODE_ENV === "development";
 
@@ -81,7 +89,7 @@ export default function DashboardPage() {
       // Fetch user articles
       const { data: userArticles, error } = await supabase
         .from("articles")
-        .select("id, title, category, review_status, pipeline_state, slug, created_at, free_retake_used, body")
+        .select("id, title, category, review_status, pipeline_state, slug, created_at, free_retake_used, body, is_private")
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false });
 
@@ -123,7 +131,7 @@ export default function DashboardPage() {
 
     const { data: userArticles } = await supabase
       .from("articles")
-      .select("id, title, category, review_status, pipeline_state, slug, created_at, free_retake_used, body")
+      .select("id, title, category, review_status, pipeline_state, slug, created_at, free_retake_used, body, is_private")
       .eq("user_id", uid)
       .order("created_at", { ascending: false });
     if (userArticles) setArticles(userArticles);
@@ -223,7 +231,7 @@ export default function DashboardPage() {
   };
 
   // Publish
-  const handlePublish = async (articleId: string) => {
+  const handlePublish = async (articleId: string, isPrivate: boolean) => {
     if (!supabase || !user) return;
     setActionLoading(true);
     setStatusMessage("");
@@ -236,6 +244,7 @@ export default function DashboardPage() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${session?.access_token}`,
         },
+        body: JSON.stringify({ is_private: isPrivate }),
       });
 
       const data = await res.json();
@@ -402,9 +411,20 @@ export default function DashboardPage() {
                         <span className="rounded bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-black text-amber-400">
                           {art.category}
                         </span>
-                        <span className="text-[10px] text-slate-500">
-                          {new Date(art.created_at).toLocaleDateString()}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          {art.is_private ? (
+                            <span className="rounded bg-slate-500/10 border border-slate-500/20 px-1.5 py-0.5 text-[9px] font-black text-slate-400">
+                              🔒 自分専用
+                            </span>
+                          ) : (
+                            <span className="rounded bg-sky-500/10 border border-sky-500/20 px-1.5 py-0.5 text-[9px] font-black text-sky-400">
+                              🌐 全体公開
+                            </span>
+                          )}
+                          <span className="text-[10px] text-slate-500">
+                            {new Date(art.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
                       </div>
                       <h4 className="font-black text-slate-200 mt-2 text-sm leading-snug">{art.title}</h4>
                     </div>
@@ -468,9 +488,20 @@ export default function DashboardPage() {
                         <span className="rounded bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-black text-emerald-400">
                           {art.category}
                         </span>
-                        <span className="text-[10px] text-slate-500">
-                          {new Date(art.created_at).toLocaleDateString()}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          {art.is_private ? (
+                            <span className="rounded bg-slate-500/10 border border-slate-500/20 px-1.5 py-0.5 text-[9px] font-black text-slate-400">
+                              🔒 自分専用
+                            </span>
+                          ) : (
+                            <span className="rounded bg-sky-500/10 border border-sky-500/20 px-1.5 py-0.5 text-[9px] font-black text-sky-400">
+                              🌐 全体公開
+                            </span>
+                          )}
+                          <span className="text-[10px] text-slate-500">
+                            {new Date(art.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
                       </div>
                       <h4 className="font-black text-slate-200 mt-2 text-sm leading-snug">{art.title}</h4>
                     </div>
@@ -507,9 +538,20 @@ export default function DashboardPage() {
             </button>
 
             <div className="border-b border-white/5 pb-4 mb-4">
-              <span className="rounded bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 text-xs font-black text-amber-400">
-                {selectedArticle.category} (承認待ち下書き)
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 text-xs font-black text-amber-400">
+                  {selectedArticle.category} ({selectedArticle.review_status === "approved" ? "公開済み" : "下書き"})
+                </span>
+                {isPublishPrivate ? (
+                  <span className="rounded bg-slate-500/10 border border-slate-500/20 px-2.5 py-1 text-xs font-black text-slate-400">
+                    🔒 自分専用 (非公開)
+                  </span>
+                ) : (
+                  <span className="rounded bg-sky-500/10 border border-sky-500/20 px-2.5 py-1 text-xs font-black text-sky-400">
+                    🌐 全体公開
+                  </span>
+                )}
+              </div>
               <h3 className="text-xl md:text-2xl font-black text-white mt-3 leading-snug">{selectedArticle.title}</h3>
             </div>
 
@@ -569,7 +611,19 @@ export default function DashboardPage() {
                 作成日: {new Date(selectedArticle.created_at).toLocaleString()}
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-4 items-center">
+                {unlockedArticleIds.has(selectedArticle.id) && (
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-300">
+                    <input
+                      type="checkbox"
+                      checked={isPublishPrivate}
+                      onChange={(e) => setIsPublishPrivate(e.target.checked)}
+                      className="rounded border-white/10 bg-slate-900 text-sky-500 focus:ring-0 focus:ring-offset-0 h-4 w-4"
+                    />
+                    自分専用（非公開）にする
+                  </label>
+                )}
+
                 {unlockedArticleIds.has(selectedArticle.id) && (
                   <button
                     onClick={() => {
@@ -582,7 +636,7 @@ export default function DashboardPage() {
                   </button>
                 )}
                 <button
-                  onClick={() => handlePublish(selectedArticle.id)}
+                  onClick={() => handlePublish(selectedArticle.id, isPublishPrivate)}
                   disabled={actionLoading || !unlockedArticleIds.has(selectedArticle.id)}
                   className="rounded-lg bg-emerald-500 text-white font-black px-6 py-2 text-sm cursor-pointer hover:bg-emerald-600 transition disabled:opacity-50 flex items-center gap-1.5"
                 >

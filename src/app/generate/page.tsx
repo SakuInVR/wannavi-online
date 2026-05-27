@@ -23,6 +23,7 @@ export default function GeneratePage() {
   const [budget, setBudget] = useState("できるだけお金をかけずに");
   const [youtubeUrls, setYoutubeUrls] = useState<string[]>(["", "", ""]);
   const [extraInstructions, setExtraInstructions] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
 
   // Generation states
   const [generating, setGenerating] = useState(false);
@@ -101,6 +102,7 @@ export default function GeneratePage() {
           budget,
           youtubeUrls: filteredUrls,
           extra_instructions: extraInstructions,
+          isPrivate,
         }),
       });
 
@@ -332,6 +334,49 @@ export default function GeneratePage() {
                 placeholder="例：『独学を前提にしたプランにして』『モチベーション維持のための具体的なアドバイスを多めにして』"
               />
             </div>
+
+            {/* Visibility Choice */}
+            <div>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">
+                8. ロードマップの公開設定
+              </label>
+              <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setIsPrivate(false)}
+                  className={`flex flex-col items-start text-left rounded-xl border p-4 cursor-pointer transition ${
+                    !isPrivate
+                      ? "border-sky-500 bg-sky-500/10 text-white"
+                      : "border-white/10 bg-white/5 text-slate-400 hover:border-white/20"
+                  }`}
+                >
+                  <span className="text-xs font-black flex items-center gap-1.5">
+                    🌐 全体公開
+                  </span>
+                  <span className="text-[10px] mt-1 leading-normal text-slate-400">
+                    他のユーザーも記事をアンロックして読むことができます。Wannaviの公開リストに掲載されます。
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsPrivate(true)}
+                  className={`flex flex-col items-start text-left rounded-xl border p-4 cursor-pointer transition ${
+                    isPrivate
+                      ? "border-sky-500 bg-sky-500/10 text-white"
+                      : "border-white/10 bg-white/5 text-slate-400 hover:border-white/20"
+                  }`}
+                >
+                  <span className="text-xs font-black flex items-center gap-1.5">
+                    🔒 自分専用 (非公開)
+                  </span>
+                  <span className="text-[10px] mt-1 leading-normal text-slate-400">
+                    自分だけが閲覧できます。他のユーザーやゲストはURLを推測しても一切閲覧できません。
+                  </span>
+                </button>
+              </div>
+            </div>
+
 
             <div className="border-t border-white/5 pt-4 flex items-center justify-between">
               <div className="text-xs text-slate-400">
