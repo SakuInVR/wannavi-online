@@ -7,7 +7,7 @@ const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  apiVersion: "2025-02-11.acacia" as any,
+  apiVersion: "2026-04-22.dahlia" as any,
 }) : null;
 
 export async function POST(req: NextRequest) {

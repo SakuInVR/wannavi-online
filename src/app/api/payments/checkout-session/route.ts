@@ -7,7 +7,7 @@ const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 // Initialize Stripe conditionally
 const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  apiVersion: "2025-02-11.acacia" as any, // Use Acacia API version or standard version
+  apiVersion: "2026-04-22.dahlia" as any, // Use Dahlia API version or standard version
 }) : null;
 
 export async function POST(req: NextRequest) {
