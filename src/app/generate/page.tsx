@@ -69,11 +69,6 @@ export default function GeneratePage() {
     e.preventDefault();
     if (!supabase || !user) return;
 
-    if (credits !== null && credits <= 0) {
-      setErrorMsg("クレジット残高がありません。ダッシュボードから追加購入してください。");
-      return;
-    }
-
     setGenerating(true);
     setGenStep(1);
     setErrorMsg("");
@@ -204,13 +199,13 @@ export default function GeneratePage() {
             AIロードマップの作成
           </h1>
           <p className="mt-2 text-xs text-slate-400 leading-normal">
-            なりたい姿や現在のレベルを伝えるだけで、あなた専用の100日学習プランを下書き生成します。生成自体は無料で行え、前半部分はすぐにプレビュー確認できます。
+            なりたい姿や現在のレベルを伝えるだけで、あなた専用のスモールステップ学習プランを下書き生成します。生成自体は無料で行え、前半部分はすぐにプレビュー確認できます。
           </p>
 
           <div className="mt-6 rounded-xl border border-sky-500/20 bg-sky-500/10 p-4 text-xs leading-normal">
             <span className="font-black text-sky-400 block mb-1">💡 クレジットの仕組み</span>
             ロードマップの生成と前半部分のプレビュー確認は**無料（クレジット消費なし）**です。
-            後半部分（51〜100日目の詳細、挫折防止対策、信頼できるリソース）をアンロックして閲覧・公開するには **1クレジット** を消費します。
+            後半部分（後半ステップの詳細、挫折防止対策、信頼できるリソース）をアンロックして閲覧・公開するには **1クレジット** を消費します。
             {credits !== null && <span className="block mt-1 font-bold">（現在の保有残高: {credits} クレジット）</span>}
           </div>
 

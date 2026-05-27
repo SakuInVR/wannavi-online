@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { getAuthenticatedUser, getServerUser } from "@/lib/auth-helpers";
 import {
   callDeepSeek,
   buildThreeVideoSystemPrompt,
   buildThreeVideoUserPrompt,
   buildArticleSystemPrompt,
   buildArticleUserPrompt,
+  buildRoadmapSystemPrompt,
+  buildRoadmapUserPrompt,
   extractTags,
 } from "@/lib/deepseek";
 import type { AspMaterialForPrompt, VideoAnalysis } from "@/lib/deepseek";
@@ -130,6 +133,11 @@ export async function POST(request: NextRequest) {
     asp_material_ids,
     extra_instructions,
     youtube_urls,
+    currentSkill,
+    availableTime,
+    budget,
+    link_to_user,
+    auto_unlock,
   } = body;
 
   if (!title || !category) {
@@ -137,6 +145,15 @@ export async function POST(request: NextRequest) {
       { error: "title and category are required" },
       { status: 400 }
     );
+  }
+
+  // Resolve user id if requested
+  let userId: string | null = null;
+  if (link_to_user) {
+    const authUser = (await getAuthenticatedUser(request)) || (await getServerUser());
+    if (authUser) {
+      userId = authUser.id;
+    }
   }
 
   const materialIds: string[] = asp_material_ids ?? [];
@@ -253,26 +270,25 @@ export async function POST(request: NextRequest) {
   const feedbackEntries = await fetchCategoryFeedback(category);
   const feedbackSuffix = buildFeedbackInjection(feedbackEntries);
 
-  // ── Step 4: Build prompts ──
-  const hasResearch = researchSucceeded && videoSources.some(s => s.analysis.length > 50);
+  // ── Step 4: Build prompts for Roadmap (Admin bypasses credit check) ──
+  const goal = title; // Use the provided title as the target goal
+  const systemPrompt = buildRoadmapSystemPrompt({
+    goal,
+    category,
+    currentSkill: currentSkill || "完全初心者",
+    availableTime: availableTime || "毎日1時間",
+    budget: budget || "できるだけ低予算",
+    extraInstructions: extra_instructions ?? undefined,
+  });
 
-  const systemPrompt = hasResearch
-    ? buildThreeVideoSystemPrompt({
-        title, category, videoA, videoB, videoC, aspMaterials,
-        extraInstructions: extra_instructions ?? undefined, feedbackSuffix,
-      })
-    : buildArticleSystemPrompt({
-        feedbackSuffix, aspMaterials,
-        extraInstructions: extra_instructions ?? undefined,
-        base: `あなたは「〇〇になりたい！」という読者の夢を応援する特化型ブログ「Wannavi」のプロフェッショナルライター兼メンターです。
-「${title}」という読者に向けて記事を書きます。
-読者が「今日から何をすべきか」「どの機材を買うべきか」が明確にわかるロードマップ記事を作成してください。
-読者に寄り添う、熱量のある「です・ます」調で、見出し・箇条書き・太字を使い、スマホでも読みやすく構造化してください。`,
-      });
-
-  const userPrompt = hasResearch
-    ? buildThreeVideoUserPrompt({ title, category, videoA, videoB, videoC, aspMaterials, feedbackSuffix })
-    : buildArticleUserPrompt({ title, category });
+  const userPrompt = buildRoadmapUserPrompt({
+    goal,
+    category,
+    currentSkill: currentSkill || "完全初心者",
+    availableTime: availableTime || "毎日1時間",
+    budget: budget || "できるだけ低予算",
+    extraInstructions: extra_instructions ?? undefined,
+  });
 
   // ── Step 5: Create job record ──
   const baseSlug = title
@@ -300,9 +316,9 @@ export async function POST(request: NextRequest) {
   const { data: job, error: jobError } = await supabase
     .from("article_generation_jobs")
     .insert({
-      title,
+      title: `「${goal}」の達成ロードマップ`,
       category,
-      asp_material_ids: materialIds.filter(id => id && id !== ""),
+      asp_material_ids: [],
       extra_instructions: extra_instructions ?? null,
       status: "running",
     })
@@ -320,27 +336,32 @@ export async function POST(request: NextRequest) {
       { role: "user", content: userPrompt },
     ]);
 
-    const { cleanBody: rawBody, tags } = extractTags(result.content);
+    const { cleanBody, tags } = extractTags(result.content);
+    const description = cleanBody.slice(0, 200).replace(/\n/g, " ") + "...";
 
-    // Auto-enrich: **商品名** → Amazon 検索アフィリエイトリンク
-    let cleanBody = enrichArticleWithSearchLinks(rawBody);
-    // Product enrichment: ToolRecommendation → ProductRecommendation (Amazon+楽天)
-    const enriched = await enrichArticleWithProductSearch(cleanBody);
-    cleanBody = enriched.body;
-    const description = cleanBody.slice(0, 200).replace(/\n/g, " ");
+    // Auto tags for roadmap
+    const finalTags = Array.from(new Set([...tags, "ユーザー投稿", "ロードマップ"]));
 
     const { data: article, error: articleError } = await supabase
       .from("articles")
       .insert({
         slug,
-        title,
+        title: `「${goal}」の達成ロードマップ`,
         description,
         category,
         body: cleanBody,
-        tags,
+        tags: finalTags,
         review_status: "pending",
         pipeline_state: "drafted",
         generation_job_id: job.id,
+        user_id: userId,
+        generation_input: {
+          goal,
+          currentSkill: currentSkill || "完全初心者",
+          availableTime: availableTime || "毎日1時間",
+          budget: budget || "できるだけ低予算",
+          extraInstructions: extra_instructions ?? null
+        }
       })
       .select("id")
       .single();
@@ -351,6 +372,19 @@ export async function POST(request: NextRequest) {
         .update({ status: "failed", error_message: articleError.message })
         .eq("id", job.id);
       return NextResponse.json({ error: articleError.message }, { status: 500 });
+    }
+
+    // Auto-unlock if user_id is set and auto_unlock is checked
+    if (article && userId && auto_unlock) {
+      const { error: unlockError } = await supabase
+        .from("article_unlocks")
+        .insert({
+          user_id: userId,
+          article_id: article.id
+        });
+      if (unlockError) {
+        console.error("[generate] auto unlock error:", unlockError);
+      }
     }
 
     // Link ASP materials (only if we have real UUIDs)

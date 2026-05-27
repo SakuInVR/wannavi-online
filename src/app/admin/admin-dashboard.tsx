@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { getSupabase } from "@/lib/supabase";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                              */
@@ -275,6 +276,11 @@ function NewArticleTab({
   const [youtube3, setYoutube3] = useState("");
   const [selectedAsps, setSelectedAsps] = useState<string[]>([]);
   const [extraInstructions, setExtraInstructions] = useState("");
+  const [currentSkill, setCurrentSkill] = useState("");
+  const [availableTime, setAvailableTime] = useState("毎日1時間");
+  const [budget, setBudget] = useState("できるだけお金をかけずに（無料メイン）");
+  const [linkToUser, setLinkToUser] = useState(true);
+  const [autoUnlock, setAutoUnlock] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [statusText, setStatusText] = useState("");
   const [result, setResult] = useState<{
@@ -303,19 +309,43 @@ function NewArticleTab({
 
     const youtubeUrls = [youtube1, youtube2, youtube3].filter(Boolean);
 
+    // Fetch auth token if we want to link this to the current logged-in user
+    let authHeader = "";
+    if (linkToUser) {
+      try {
+        const supabase = getSupabase();
+        if (supabase) {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) {
+            authHeader = `Bearer ${session.access_token}`;
+          }
+        }
+      } catch (e) {
+        console.error("Failed to fetch session:", e);
+      }
+    }
+
     try {
       // Step 1: Gemini research
       setStatusText("🔍 Geminiで動画リサーチ中...");
       
       const res = await fetch("/api/admin/articles/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(authHeader ? { "Authorization": authHeader } : {})
+        },
         body: JSON.stringify({
           title: title.trim(),
           category,
           asp_material_ids: selectedAsps.length > 0 ? selectedAsps : undefined,
           extra_instructions: extraInstructions.trim() || undefined,
           youtube_urls: youtubeUrls.length > 0 ? youtubeUrls : undefined,
+          currentSkill: currentSkill.trim() || undefined,
+          availableTime,
+          budget,
+          link_to_user: linkToUser,
+          auto_unlock: autoUnlock,
         }),
       });
 
@@ -334,6 +364,7 @@ function NewArticleTab({
       setResult({ type: "success", text: parts.join(" / "), articleId: json.article_id });
       setTitle(""); setExtraInstructions(""); setSelectedAsps([]);
       setYoutube1(""); setYoutube2(""); setYoutube3("");
+      setCurrentSkill("");
       onGenerated();
     } catch {
       setResult({ type: "error", text: "ネットワークエラー" });
@@ -416,6 +447,60 @@ function NewArticleTab({
               </div>
             );
           })()}
+        </div>
+
+        {/* Custom Questionnaire Fields for Roadmap */}
+        <div className="border-t border-gray-100 pt-3 space-y-3">
+          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">🎯 ロードマップ生成用のアンケート項目 (テスト用)</h4>
+          
+          {/* Current Skill */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">現在のスキルレベル・保有知識</label>
+            <textarea value={currentSkill} onChange={(e) => setCurrentSkill(e.target.value)}
+              rows={2} placeholder="例：完全未経験。PCの基本操作は可能"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {/* Available Time */}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">1日の学習可能時間</label>
+              <select value={availableTime} onChange={(e) => setAvailableTime(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                <option value="毎日30分程度">毎日30分程度</option>
+                <option value="毎日1時間">毎日1時間</option>
+                <option value="毎日2〜3時間">毎日2〜3時間</option>
+                <option value="週末にまとめて5時間以上">週末にまとめて5時間以上</option>
+              </select>
+            </div>
+
+            {/* Budget */}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">学習にあてられる予算</label>
+              <select value={budget} onChange={(e) => setBudget(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                <option value="できるだけお金をかけずに（無料メイン）">できるだけお金をかけずに（無料メイン）</option>
+                <option value="1万円以内（入門書や安価な教材）">1万円以内（入門書や安価な教材）</option>
+                <option value="5万円以内（有料スクールや機材導入も検討）">5万円以内（有料スクールや機材導入も検討）</option>
+                <option value="制限なし（最適な教材・環境を優先）">制限なし（最適な教材・環境を優先）</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Integration options */}
+          <div className="flex flex-wrap gap-4 pt-1">
+            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
+              <input type="checkbox" checked={linkToUser} onChange={(e) => setLinkToUser(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+              <span>自分のアカウントに紐付ける (マイダッシュボードに表示)</span>
+            </label>
+            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
+              <input type="checkbox" checked={autoUnlock} onChange={(e) => setAutoUnlock(e.target.checked)}
+                disabled={!linkToUser}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50" />
+              <span>最初からアンロック済みにする (クレジット消費なし)</span>
+            </label>
+          </div>
         </div>
 
         {/* Extra instructions */}

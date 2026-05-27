@@ -534,7 +534,7 @@ export default function DashboardPage() {
                     
                     {hasDelimiter && !isUnlocked && (
                       <div className="mt-8 border-t border-white/10 pt-6 text-center">
-                        <p className="text-sm font-bold text-slate-300 mb-3">🔒 残りの50日間の詳細計画と対策はロックされています</p>
+                        <p className="text-sm font-bold text-slate-300 mb-3">🔒 後半ステップの詳細計画と挫折対策はロックされています</p>
                         <button
                           onClick={async () => {
                             await handleUnlockArticle(selectedArticle.id);

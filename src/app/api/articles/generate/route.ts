@@ -197,7 +197,7 @@ export async function POST(req: NextRequest) {
     const { data: job } = await supabase
       .from("article_generation_jobs")
       .insert({
-        title: `「${goal}」の100日ロードマップ`,
+        title: `「${goal}」の達成ロードマップ`,
         category,
         asp_material_ids: [],
         extra_instructions: extra_instructions ?? null,
@@ -223,7 +223,7 @@ export async function POST(req: NextRequest) {
       .from("articles")
       .insert({
         slug,
-        title: `「${goal}」の100日ロードマップ`,
+        title: `「${goal}」の達成ロードマップ`,
         description,
         category,
         body: cleanBody,

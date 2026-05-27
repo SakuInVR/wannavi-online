@@ -134,7 +134,7 @@ export function UnlockCard({ articleId, slug }: UnlockCardProps) {
 
         <h3 className="text-lg font-black text-white">🔒 ロードマップの後半部分をアンロック</h3>
         <p className="mt-2 text-xs text-slate-400 leading-relaxed max-w-md mx-auto">
-          この先には、**残り50日間の詳細計画**、**挫折を防ぐための具体的な罠と対策**、**学習に使える信頼できるリソース（書籍・公式ドキュメント等）**のリストが含まれています。
+          この先には、**後半ステップの詳細計画**、**挫折を防ぐための具体的な罠と対策**、**学習に使える信頼できるリソース（書籍・公式ドキュメント等）**のリストが含まれています。
         </p>
 
         {errorMsg && (
