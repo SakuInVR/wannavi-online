@@ -57,22 +57,22 @@ export default async function Home() {
             あなたは、何になりたい？
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-            AI、音楽、VR、個人開発。なりたい姿までの最初の一歩を、
-            ロードマップと道具選びでナビゲートする実践メディアです。
+            なりたい姿への最適なステップをAIが分析し、あなた専用の学習ロードマップを瞬時に生成。
+            実践に必要な信頼できる教材や道具の選定までをナビゲートする、次世代の学習設計プラットフォームです。
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href="/categories"
-              className="rounded-full bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-sky-100"
+              href="/generate"
+              className="rounded-full bg-white px-6 py-3.5 text-sm font-black text-slate-950 transition hover:bg-sky-100 flex items-center gap-1.5 shadow-lg shadow-sky-500/10"
             >
-              ロードマップを見る
+              <span>🪄</span> AIで自分専用ロードマップを作る
             </Link>
-            <a
-              href="#latest"
-              className="rounded-full border border-white/30 px-5 py-3 text-sm font-black text-white transition hover:border-white"
+            <Link
+              href="/categories"
+              className="rounded-full border border-white/30 px-6 py-3.5 text-sm font-black text-white transition hover:border-white flex items-center gap-1.5"
             >
-              新着記事へ
-            </a>
+              <span>🌐</span> 公開ロードマップを探す
+            </Link>
           </div>
         </div>
 

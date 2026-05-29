@@ -209,12 +209,23 @@ export function HeaderNav({ defaultCategories }: HeaderNavProps) {
           </button>
         </div>
       ) : (
-        <Link
-          href="/login"
-          className="rounded-full bg-sky-500 px-4 py-1.5 text-xs font-black text-white hover:bg-sky-600 transition"
-        >
-          ログイン
-        </Link>
+        <div className="flex items-center gap-3 sm:gap-4">
+          <Link
+            href="/generate"
+            className="rounded-full bg-slate-900 px-3 py-1.5 text-xs text-white hover:bg-sky-600 transition flex items-center gap-1 font-black"
+          >
+            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            ロードマップ作成
+          </Link>
+          <Link
+            href="/login"
+            className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-black text-slate-700 hover:bg-slate-50 hover:text-slate-950 hover:border-slate-400 transition"
+          >
+            ログイン
+          </Link>
+        </div>
       )}
     </nav>
   );
