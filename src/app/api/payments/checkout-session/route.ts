@@ -24,56 +24,93 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Read dynamic credits parameter from request body
+    // Read dynamic credits/subscription parameters from request body
     const body = await req.json().catch(() => ({}));
-    const requestedCredits = Number(body.credits ?? 10);
-
-    let unitAmount = 1000;
-    let productName = "Wanna Navi 記事生成クレジット (10回分)";
-    let productDesc = "AI（Gemini & DeepSeek）を活用したロードマップ記事を10回アンロックできるクレジットです。";
-
-    if (requestedCredits === 1) {
-      unitAmount = 100;
-      productName = "Wanna Navi 記事生成クレジット (1回分)";
-      productDesc = "AI（Gemini & DeepSeek）を活用したロードマップ記事を1回アンロックできるお試しクレジットです。";
-    } else if (requestedCredits === 10) {
-      unitAmount = 1000;
-      productName = "Wanna Navi 記事生成クレジット (10回分)";
-      productDesc = "AI（Gemini & DeepSeek）を活用したロードマップ記事を10回アンロックできる標準クレジットです。";
-    } else if (requestedCredits === 30) {
-      unitAmount = 2500;
-      productName = "Wanna Navi 記事生成クレジット (30回分)";
-      productDesc = "AI（Gemini & DeepSeek）を活用したロードマップ記事を30回アンロックできる、500円お得なプロクレジットです。";
-    } else {
-      return NextResponse.json({ error: "無効なクレジット購入数が指定されました。" }, { status: 400 });
-    }
+    const requestedCredits = body.credits !== undefined ? Number(body.credits) : null;
+    const isSubscription = body.plan === "pro";
 
     // Determine request origin for redirection
     const origin = req.headers.get("origin") || new URL(req.url).origin;
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "jpy",
-            product_data: {
-              name: productName,
-              description: productDesc,
+    let sessionOptions: Stripe.Checkout.SessionCreateParams;
+
+    if (isSubscription) {
+      // 1. Subscription Mode (Wanna Navi Pro: ¥1,480/month)
+      sessionOptions = {
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "jpy",
+              product_data: {
+                name: "Wanna Navi Pro サブスクリプション",
+                description: "ロードマップ生成無制限、AIメンター相談し放題、進捗ログ・期限管理使い放題のプレミアム年間/月額プランです。",
+              },
+              unit_amount: 1480,
+              recurring: {
+                interval: "month",
+              },
             },
-            unit_amount: unitAmount,
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        mode: "subscription",
+        success_url: `${origin}/dashboard?subscription=success`,
+        cancel_url: `${origin}/dashboard?subscription=cancel`,
+        metadata: {
+          userId: user.id,
+          plan: "pro",
         },
-      ],
-      mode: "payment",
-      success_url: `${origin}/dashboard?payment=success`,
-      cancel_url: `${origin}/dashboard?payment=cancel`,
-      metadata: {
-        userId: user.id,
-        creditsAdded: String(requestedCredits),
-      },
-    });
+      };
+    } else {
+      // 2. Standard Credits Mode
+      const creditsCount = Number(requestedCredits ?? 10);
+      let unitAmount = 1000;
+      let productName = "Wanna Navi 記事生成クレジット (10回分)";
+      let productDesc = "AI（Gemini & DeepSeek）を活用したロードマップ記事を10回アンロックできるクレジットです。";
+
+      if (creditsCount === 1) {
+        unitAmount = 100;
+        productName = "Wanna Navi 記事生成クレジット (1回分)";
+        productDesc = "AI（Gemini & DeepSeek）を活用したロードマップ記事を1回アンロックできるお試しクレジットです。";
+      } else if (creditsCount === 10) {
+        unitAmount = 1000;
+        productName = "Wanna Navi 記事生成クレジット (10回分)";
+        productDesc = "AI（Gemini & DeepSeek）を活用したロードマップ記事を10回アンロックできる標準クレジットです。";
+      } else if (creditsCount === 30) {
+        unitAmount = 2500;
+        productName = "Wanna Navi 記事生成クレジット (30回分)";
+        productDesc = "AI（Gemini & DeepSeek）を活用したロードマップ記事を30回アンロックできる、500円お得なプロクレジットです。";
+      } else {
+        return NextResponse.json({ error: "無効なクレジット購入数が指定されました。" }, { status: 400 });
+      }
+
+      sessionOptions = {
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "jpy",
+              product_data: {
+                name: productName,
+                description: productDesc,
+              },
+              unit_amount: unitAmount,
+            },
+            quantity: 1,
+          },
+        ],
+        mode: "payment",
+        success_url: `${origin}/dashboard?payment=success`,
+        cancel_url: `${origin}/dashboard?payment=cancel`,
+        metadata: {
+          userId: user.id,
+          creditsAdded: String(creditsCount),
+        },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionOptions);
 
     return NextResponse.json({ url: session.url });
   } catch (err: unknown) {
